@@ -3,8 +3,8 @@ fastapi
 uvicorn[standard]
 python-dotenv
 
-# CrewAI (use latest versions)
-crewai[tools]
+# CrewAI (use latest versions with anthropic support)
+crewai[tools,anthropic]
 
 # HTTP Client
 httpx

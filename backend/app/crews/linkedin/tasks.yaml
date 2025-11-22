@@ -1,0 +1,37 @@
+search_linkedin_profiles:
+  description: |
+    Find LinkedIn prospects with REAL BUYING INTENT using these tools:
+
+    TOOL 1 - LinkedIn Posts Search (PRIMARY for intent detection):
+    Search for posts about: {search_query}
+    This finds people actively posting about problems, needs, or evaluations.
+
+    TOOL 2 - LinkedIn People Search (SECONDARY for decision-makers):
+    Find people by title/location if needed.
+
+    TOOL 3 - LinkedIn Profile Detail (for top 3-5 candidates):
+    Enrich best prospects with email and contact data.
+
+    STRATEGY:
+    1. Use Posts Search FIRST to find intent signals (complaints, questions, evaluations)
+    2. Extract author profile URLs from posts
+    3. Optionally search for decision-makers if posts don't yield enough leads
+    4. Enrich top 3-5 prospects with Profile Detail tool for contact info
+
+    Return prospects with:
+    - What problem they posted about (the intent signal)
+    - Their profile data (name, title, company)
+    - Contact info if enriched (email, phone)
+    - Timing (how recent the signal is)
+  expected_output: |
+    A prioritized list of prospects with REAL buying intent:
+
+    For each prospect include:
+    1. INTENT SIGNAL: What they posted/complained about
+    2. PROFILE: Name, title, company, LinkedIn URL
+    3. CONTACT: Email/phone if enriched
+    4. TIMING: How recent (24 hrs, 7 days, etc.)
+    5. PRIORITY: HIGH/MEDIUM/LOW based on intent + authority
+
+    Focus on quality over quantity. Better to have 5 hot leads than 50 cold ones.
+  agent: linkedin_intelligence_agent

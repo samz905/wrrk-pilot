@@ -2,8 +2,7 @@
 from typing import Type, Optional, List, Dict, Any
 from crewai.tools import BaseTool
 from pydantic import BaseModel, Field
-import httpx
-import time
+from apify_client import ApifyClient
 import os
 
 
@@ -43,79 +42,47 @@ class ApifyLinkedInSearchTool(BaseTool):
             if not apify_token:
                 return "Error: APIFY_API_TOKEN not found in environment"
 
-            # Build Apify input
-            actor_input = {
-                "startUrls": [],
-                "searchKeywords": keywords,
-                "maxResults": min(max_results, 100)  # Cap at 100 for MVP
+            print(f"\n[INFO] Starting LinkedIn search for: '{keywords}' in {location or 'Worldwide'}")
+
+            # Initialize Apify client
+            client = ApifyClient(apify_token)
+
+            # Prepare Actor input according to harvestapi/linkedin-profile-search docs
+            run_input = {
+                "profileScraperMode": "Full",
+                "searchQuery": keywords,
+                "maxItems": min(max_results, 100),
+                "locations": [location] if location else [],
+                "currentCompanies": [],
+                "pastCompanies": [],
+                "schools": [],
+                "currentJobTitles": [],
+                "pastJobTitles": [],
+                "startPage": 1,
             }
 
-            if location:
-                actor_input["locations"] = [location]
+            print(f"[INFO] Calling Apify actor M2FMdjRVeF1HPGFcc...")
 
-            # Start Apify actor run
-            response = httpx.post(
-                "https://api.apify.com/v2/acts/apify~linkedin-profile-scraper/runs",
-                params={"token": apify_token},
-                json=actor_input,
-                timeout=30.0
-            )
+            # Run the Actor and wait for it to finish
+            run = client.actor("M2FMdjRVeF1HPGFcc").call(run_input=run_input)
 
-            if response.status_code != 201:
-                return f"Error starting Apify actor: {response.text}"
+            print(f"[INFO] Actor run completed. Fetching results...")
 
-            run_data = response.json()
-            run_id = run_data["data"]["id"]
+            # Fetch results from the run's dataset
+            results = []
+            for item in client.dataset(run["defaultDatasetId"]).iterate_items():
+                results.append(item)
 
-            # Poll for completion (max 5 minutes)
-            max_polls = 60
-            poll_count = 0
+            print(f"[INFO] Found {len(results)} profiles")
 
-            while poll_count < max_polls:
-                time.sleep(5)  # Wait 5 seconds between polls
+            # Debug: Print first result to see actual field names
+            if results:
+                print(f"\n[DEBUG] First result keys: {list(results[0].keys())}\n")
 
-                status_response = httpx.get(
-                    f"https://api.apify.com/v2/actor-runs/{run_id}",
-                    params={"token": apify_token},
-                    timeout=10.0
-                )
-
-                if status_response.status_code != 200:
-                    return f"Error checking run status: {status_response.text}"
-
-                status_data = status_response.json()
-                status = status_data["data"]["status"]
-
-                if status == "SUCCEEDED":
-                    # Fetch results
-                    return self._fetch_results(run_id, apify_token)
-                elif status in ["FAILED", "ABORTED", "TIMED-OUT"]:
-                    return f"Apify actor run {status}: {status_data.get('data', {}).get('statusMessage', 'Unknown error')}"
-
-                poll_count += 1
-
-            return "Error: Apify actor run timed out after 5 minutes"
-
-        except Exception as e:
-            return f"Error executing LinkedIn search: {str(e)}"
-
-    def _fetch_results(self, run_id: str, token: str) -> str:
-        """Fetch and format results from completed Apify run."""
-        try:
-            results_response = httpx.get(
-                f"https://api.apify.com/v2/actor-runs/{run_id}/dataset/items",
-                params={"token": token},
-                timeout=30.0
-            )
-
-            if results_response.status_code != 200:
-                return f"Error fetching results: {results_response.text}"
-
-            results = results_response.json()
             return self._format_results(results)
 
         except Exception as e:
-            return f"Error fetching results: {str(e)}"
+            return f"Error executing LinkedIn search: {str(e)}"
 
     def _format_results(self, results: List[Dict[str, Any]]) -> str:
         """Format LinkedIn profile data into structured text."""
@@ -125,14 +92,35 @@ class ApifyLinkedInSearchTool(BaseTool):
         formatted_leads = []
 
         for idx, profile in enumerate(results, 1):
+            # Extract name
+            first_name = profile.get('firstName', '')
+            last_name = profile.get('lastName', '')
+            full_name = f"{first_name} {last_name}".strip() or 'N/A'
+
+            # Extract location
+            location_data = profile.get('location', {})
+            if isinstance(location_data, dict):
+                location = location_data.get('linkedinText', 'N/A')
+            else:
+                location = 'N/A'
+
+            # Extract company from currentPosition
+            current_position = profile.get('currentPosition', {})
+            company = current_position.get('companyName', 'N/A') if isinstance(current_position, dict) else 'N/A'
+
+            # Extract summary (first 200 chars)
+            about = profile.get('about', '')
+            summary = (about[:200] + '...') if about and len(about) > 200 else (about or 'N/A')
+
             lead = f"""
 Lead #{idx}:
-- Name: {profile.get('fullName', 'N/A')}
-- Title: {profile.get('title', 'N/A')}
-- Company: {profile.get('company', 'N/A')}
-- Location: {profile.get('location', 'N/A')}
-- LinkedIn URL: {profile.get('url', 'N/A')}
+- Name: {full_name}
+- Title: {profile.get('headline', 'N/A')}
+- Company: {company}
+- Location: {location}
+- LinkedIn URL: {profile.get('linkedinUrl', 'N/A')}
 - Connections: {profile.get('connectionsCount', 'N/A')}
+- Summary: {summary}
 """
             formatted_leads.append(lead.strip())
 
