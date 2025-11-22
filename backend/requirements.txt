@@ -1,0 +1,13 @@
+# Core
+fastapi
+uvicorn[standard]
+python-dotenv
+
+# CrewAI (use latest versions)
+crewai[tools]
+
+# HTTP Client
+httpx
+
+# Testing
+pytest
