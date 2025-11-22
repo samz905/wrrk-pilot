@@ -1,0 +1,151 @@
+======================================================================
+REDDIT INTENT SIGNALS: 'looking for CRM'
+======================================================================
+
+Found 8 Reddit discussions:
+
+Intent Signal #1
+──────────────────────────────────────────────────────────────────────
+Title: How do you manage professional relationships without a full CRM
+Content: Entrepreneurs of reddit, how are you keeping track of important relationships (investors, advisors, mentors, clients, partners)? most CRMs are built for the sales stuff and not  relationship mgt.
+
+I am looking for something that helps me stay on top of who to follow up with and when. Most tools are ...
+
+Subreddit: r/Entrepreneur
+Author: u/Informal_Art8809
+Engagement: 14 upvotes, 41 comments
+Posted: 2025-11-11T18:33:01.000Z
+URL: https://www.reddit.com/r/Entrepreneur/comments/1ouhdto/how_do_you_manage_professional_relationships/
+
+💡 Intent Score: 81/100
+Intent Level: 🔥 VERY HIGH - Explicit request or very active discussion
+
+Intent Signal #2
+──────────────────────────────────────────────────────────────────────
+Title: finding b2b leads without paying $5 per contact
+Content: running a b2b saas. need leads constantly. tried apollo, zoominfo, all those lead databases. problem is they charge $3-5 per contact and the quality is hit or miss.
+
+budget is tight. need maybe 200 new leads per month. at $5 per contact thats $1k just for contact info. with 2% conversion rate thats ...
+
+Subreddit: r/Entrepreneur
+Author: u/Secure-Run9146
+Engagement: 8 upvotes, 20 comments
+Posted: 2025-11-14T05:20:06.000Z
+URL: https://www.reddit.com/r/Entrepreneur/comments/1ownyov/finding_b2b_leads_without_paying_5_per_contact/
+
+💡 Intent Score: 60/100
+Intent Level: 🟢 HIGH - Strong intent signal
+
+Intent Signal #3
+──────────────────────────────────────────────────────────────────────
+Title: Founders: I built a lean VA/Operations service for you. Can you tell me what you’d improve before I scale it?
+Content: Hey everyone,
+
+I’ve been building a virtual assistant + operations support service for solo founders, consultants, and small teams, and I’d really appreciate some feedback from people who’ve grown service businesses.
+
+**What I do (in short):**  
+I help founders with inbox management, scheduling, CRM...
+
+Subreddit: r/Entrepreneur
+Author: u/InitialCauliflower21
+Engagement: 4 upvotes, 15 comments
+Posted: 2025-11-17T06:07:26.000Z
+URL: https://www.reddit.com/r/Entrepreneur/comments/1oz8rwe/founders_i_built_a_lean_vaoperations_service_for/
+
+💡 Intent Score: 47/100
+Intent Level: 🟡 MEDIUM - Moderate intent
+
+Intent Signal #4
+──────────────────────────────────────────────────────────────────────
+Title: Exploring Automated Business Systems for Creators and Small Businesses
+Content: Hello guys,
+
+I'm interested in developing automated systems to help creators and small businesses streamline their operations. The idea is to create customized funnels, landing pages, and email sequences using tools, enabling businesses to automate lead generation, sales, and customer engagement.
+
+K...
+
+Subreddit: r/Entrepreneur
+Author: u/thelegendsan
+Engagement: 2 upvotes, 11 comments
+Posted: 2025-10-26T16:12:43.000Z
+URL: https://www.reddit.com/r/Entrepreneur/comments/1ogokvv/exploring_automated_business_systems_for_creators/
+
+💡 Intent Score: 60/100
+Intent Level: 🟢 HIGH - Strong intent signal
+
+Intent Signal #5
+──────────────────────────────────────────────────────────────────────
+Title: Built an AI agent workspace. Just launched the waitlist. Curious if this solves a real problem.
+Content: I spent the last few months building something and just put it out there yesterday. Figured I'd share it here and get real feedback from people who actually run businesses.
+
+The problem I was trying to solve: AI tools are powerful individually, but they don't work together. I'd use ChatGPT for one t...
+
+Subreddit: r/Entrepreneur
+Author: u/AshishKulkarni1411
+Engagement: 0 upvotes, 7 comments
+Posted: 2025-10-31T07:07:44.000Z
+URL: https://www.reddit.com/r/Entrepreneur/comments/1oknw6m/built_an_ai_agent_workspace_just_launched_the/
+
+💡 Intent Score: 33/100
+Intent Level: 🔵 LOW - Weak signal
+
+Intent Signal #6
+──────────────────────────────────────────────────────────────────────
+Title: What prospecting software are you using?
+Content: Any small b2b service providers here that have used platforms like Apollo or Uplead? How was your experience and would you recommend?
+
+Looking for a solution to build lists of prospects without copy/pasting leads into my CRM from google search results.
+
+Subreddit: r/Entrepreneur
+Author: u/placeithereplz
+Engagement: 3 upvotes, 6 comments
+Posted: 2025-10-31T18:54:20.000Z
+URL: https://www.reddit.com/r/Entrepreneur/comments/1ol31iu/what_prospecting_software_are_you_using/
+
+💡 Intent Score: 48/100
+Intent Level: 🟡 MEDIUM - Moderate intent
+
+Intent Signal #7
+──────────────────────────────────────────────────────────────────────
+Title: Cold leads are never as good as referrals. If you've done cold outreach, this isn't news to you, but here's what you can do about it...
+Content: It was 9pm and the name "Dan" popped up on my phone in a text message from my longest standing client.
+
+The message was a shared contact followed by a second message:
+
+*"Dan needs help. He asked who my marketing guy was and he said I can share his info with you."*
+
+I called Dan the next morning. 
+
+W...
+
+Subreddit: r/Entrepreneur
+Author: u/placeithereplz
+Engagement: 2 upvotes, 3 comments
+Posted: 2025-11-14T17:42:21.000Z
+URL: https://www.reddit.com/r/Entrepreneur/comments/1ox36n5/cold_leads_are_never_as_good_as_referrals_if/
+
+💡 Intent Score: 26/100
+Intent Level: 🔵 LOW - Weak signal
+
+Intent Signal #8
+──────────────────────────────────────────────────────────────────────
+Title: Finding the courage to actually offer services
+Content: Hi I just turned 20 and I’m still at university, recently I’ve been teaching myself some hard skills on the side incase I want to go down a different path rather than working in finance being stuck in an office environment. I’ve been looking into all things ai from prompts to understanding the use o...
+
+Subreddit: r/Entrepreneur
+Author: u/dollygirl10
+Engagement: 2 upvotes, 5 comments
+Posted: 2025-10-24T00:23:37.000Z
+URL: https://www.reddit.com/r/Entrepreneur/comments/1oejoyu/finding_the_courage_to_actually_offer_services/
+
+💡 Intent Score: 22/100
+Intent Level: 🔵 LOW - Weak signal
+
+======================================================================
+
+KEY INSIGHTS:
+- Total discussions found: 8
+- Subreddits represented: 1
+- Average upvotes: 4.4
+- Average comments: 13.5
+======================================================================
