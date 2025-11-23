@@ -1,0 +1,91 @@
+search_reddit_discussions:
+  description: |
+    Find Reddit discussions showing REAL BUYING INTENT for: {search_query}
+
+    TARGET SUBREDDITS (prioritize these):
+    - r/sales - Sales professionals discussing tools and pain points
+    - r/entrepreneur - Founders with budget authority
+    - r/startups - Early-stage companies evaluating first tools
+    - r/SaaS - SaaS operators and founders
+    - r/smallbusiness - Small business owners (budget-conscious)
+
+    SEARCH STRATEGY:
+    Use the Reddit Discussion Search tool to find posts matching these patterns:
+
+    1. HELP REQUESTS (Highest Intent):
+       - "Can anyone recommend a [solution]?"
+       - "What do you use for [problem]?"
+       - "Looking for [tool type]"
+
+    2. COMPLAINT THREADS (High Intent):
+       - "Why is [problem] so hard?"
+       - "[Competitor] is too expensive/slow/complicated"
+       - "Frustrated with [current solution]"
+
+    3. ALTERNATIVE SEARCHES (High Intent):
+       - "Cheaper alternative to [competitor]?"
+       - "[Product A] vs [Product B]"
+       - "Switching from [old tool]"
+
+    4. PROBLEM DISCUSSIONS (Medium Intent):
+       - "How do you solve [specific problem]?"
+       - "Struggling with [pain point]"
+       - "Need better way to [task]"
+
+    PRIORITIZATION CRITERIA:
+    - Focus on discussions with 10+ comments (active engagement = validated pain point)
+    - Prioritize recent posts (last 30 days) for timing advantage
+    - Look for posts with HIGH upvotes (community validation)
+    - Note posts where MULTIPLE people express same problem in comments
+
+    REDDIT-SPECIFIC INSIGHTS:
+    - Reddit usernames are often anonymous, so focus on the PROBLEM not the person
+    - A highly-upvoted post means many people have the same pain
+    - Active comment threads indicate urgent, unresolved problems
+    - Cross-reference: If same problem appears in multiple subreddits = widespread need
+
+    TIME FILTER: Use "month" for freshness (problems discussed recently)
+    RESULTS TARGET: 20-50 discussions showing clear intent signals
+
+  expected_output: |
+    A prioritized list of Reddit discussions showing buying intent:
+
+    For each discussion include:
+
+    1. INTENT SIGNAL: What problem they're discussing
+       - Quote the most compelling part of the post
+       - Classify intent type: help_request, complaint, alternative_search, problem_discussion
+
+    2. ENGAGEMENT METRICS:
+       - Upvotes (community validation)
+       - Comment count (discussion depth)
+       - Post age (timing)
+
+    3. SUBREDDIT CONTEXT:
+       - Which subreddit (indicates audience type)
+       - Why this subreddit matters (r/entrepreneur = founders, r/sales = professionals)
+
+    4. INTENT SCORE (from tool output):
+       - 80-100: VERY HIGH - Explicit request or very active discussion
+       - 60-79: HIGH - Strong complaint or clear alternative search
+       - 40-59: MEDIUM - Problem discussion with moderate engagement
+       - Below 40: Filter out (weak signal)
+
+    5. DISCUSSION URL:
+       - Direct Reddit link for reference
+
+    6. KEY INSIGHT:
+       - Why this is a qualified lead signal
+       - What action to take (e.g., "Multiple people in comments asking for same solution")
+
+    SUMMARY SECTION:
+    - Total discussions found
+    - Top 3 pain points discovered
+    - Subreddits with highest intent
+    - Recommended follow-up actions
+
+    NOTE: Reddit is great for INTENT DISCOVERY but weak for CONTACT EXTRACTION.
+    Use these signals to understand market pain points, then cross-reference with LinkedIn
+    for actual decision-makers at companies discussing these problems.
+
+  agent: reddit_intelligence_agent

@@ -1,0 +1,709 @@
+[
+  {
+    "id": "1663878836201635846",
+    "created_at": "Wed May 31 12:03:22 +0000 2023",
+    "created_at_datetime": "2023-05-31T12:03:22+00:00",
+    "user": {
+      "id": "1533111600755920898",
+      "created_at": "Sat Jun 04 15:41:13 +0000 2022",
+      "name": "Luke Ward",
+      "screen_name": "LukeWarrd",
+      "profile_image_url": "https://pbs.twimg.com/profile_images/1873097905575206912/MQ2yRuL8_normal.jpg",
+      "profile_banner_url": "https://pbs.twimg.com/profile_banners/1533111600755920898/1670361215",
+      "url": null,
+      "location": "",
+      "description": "Master of systems, ai, automation, and data viz | Scaling a portfolio of online businesses",
+      "description_urls": [],
+      "urls": null,
+      "pinned_tweet_ids": [
+        "1633454850435432449"
+      ],
+      "is_blue_verified": true,
+      "verified": false,
+      "possibly_sensitive": false,
+      "can_dm": true,
+      "can_media_tag": false,
+      "want_retweets": false,
+      "default_profile": true,
+      "default_profile_image": false,
+      "has_custom_timelines": true,
+      "followers_count": 14857,
+      "fast_followers_count": 0,
+      "normal_followers_count": 14857,
+      "following_count": 359,
+      "favourites_count": 3033,
+      "listed_count": 109,
+      "media_count": 224,
+      "statuses_count": 2168,
+      "is_translator": false,
+      "translator_type": "none",
+      "withheld_in_countries": [],
+      "protected": false
+    },
+    "text": "I've helped £20m+ businesses Optimize their CRM\n\n- Pipeline Structure\n- Custom Fields\n- List / Smart Views\n- Automation's\n\nI've created a guide on how YOU can Setup &amp; Optimize YOUR CRM\n\n👉 Like + comment \"CRM\" and Ill send you the file\n\n(Must be following or I can't DM) https://t.co/J59OcLy9YA",
+    "lang": "en",
+    "in_reply_to": null,
+    "is_quote_status": false,
+    "quote": null,
+    "retweeted_tweet": null,
+    "possibly_sensitive": false,
+    "possibly_sensitive_editable": true,
+    "quote_count": 0,
+    "media": [
+      {
+        "id": "1663878833232130055",
+        "display_url": "pic.x.com/J59OcLy9YA",
+        "expanded_url": "https://x.com/LukeWarrd/status/1663878836201635846/photo/1",
+        "media_url": "https://pbs.twimg.com/media/FxdI-7QXsAcjIXw.jpg",
+        "source_status_id": null,
+        "source_user_id": null,
+        "type": "photo",
+        "url": "https://t.co/J59OcLy9YA",
+        "sizes": {
+          "large": {
+            "h": 1080,
+            "w": 1920,
+            "resize": "fit"
+          },
+          "medium": {
+            "h": 675,
+            "w": 1200,
+            "resize": "fit"
+          },
+          "small": {
+            "h": 383,
+            "w": 680,
+            "resize": "fit"
+          },
+          "thumb": {
+            "h": 150,
+            "w": 150,
+            "resize": "crop"
+          }
+        },
+        "original_info": {
+          "height": 1080,
+          "width": 1920,
+          "focus_rects": [
+            {
+              "x": 0,
+              "y": 0,
+              "w": 1920,
+              "h": 1075
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "w": 1080,
+              "h": 1080
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "w": 947,
+              "h": 1080
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "w": 540,
+              "h": 1080
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "w": 1920,
+              "h": 1080
+            }
+          ]
+        },
+        "width": 1920,
+        "height": 1080,
+        "focus_rects": [
+          {
+            "x": 0,
+            "y": 0,
+            "w": 1920,
+            "h": 1075
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "w": 1080,
+            "h": 1080
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "w": 947,
+            "h": 1080
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "w": 540,
+            "h": 1080
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "w": 1920,
+            "h": 1080
+          }
+        ],
+        "features": {
+          "large": {
+            "faces": []
+          },
+          "medium": {
+            "faces": []
+          },
+          "small": {
+            "faces": []
+          },
+          "orig": {
+            "faces": []
+          }
+        }
+      }
+    ],
+    "reply_count": 257,
+    "favorite_count": 266,
+    "favorited": false,
+    "view_count": "32260",
+    "view_count_state": "EnabledWithCount",
+    "retweet_count": 35,
+    "bookmark_count": 37,
+    "bookmarked": false,
+    "place": null,
+    "editable_until_msecs": "1685536402000",
+    "is_translatable": false,
+    "is_edit_eligible": false,
+    "edits_remaining": "5",
+    "replies": null,
+    "reply_to": null,
+    "related_tweets": null,
+    "hastags": [],
+    "has_card": false,
+    "thumbnail_title": null,
+    "thumbnail_url": null,
+    "urls": [],
+    "full_text": "I've helped £20m+ businesses Optimize their CRM\n\n- Pipeline Structure\n- Custom Fields\n- List / Smart Views\n- Automation's\n\nI've created a guide on how YOU can Setup &amp; Optimize YOUR CRM\n\n👉 Like + comment \"CRM\" and Ill send you the file\n\n(Must be following or I can't DM) https://t.co/J59OcLy9YA"
+  },
+  {
+    "id": "1872318132901318814",
+    "created_at": "Thu Dec 26 16:26:43 +0000 2024",
+    "created_at_datetime": "2024-12-26T16:26:43+00:00",
+    "user": {
+      "id": "1745394989906173952",
+      "created_at": "Thu Jan 11 10:41:05 +0000 2024",
+      "name": "Laiba Web Expert - impeccify.com 🚀",
+      "screen_name": "laibacreatives",
+      "profile_image_url": "https://pbs.twimg.com/profile_images/1885600565843156992/bOtPkaW9_normal.jpg",
+      "profile_banner_url": "https://pbs.twimg.com/profile_banners/1745394989906173952/1762098031",
+      "url": "https://t.co/iYL22VdMbZ",
+      "location": "",
+      "description": "Get a High-Converting Website or App that turns Traffic into Customers! 💰\n\n💥 Unbeatable Prices\n⚡ Fast Delivery\n🔄 Unlimited Revisions\n\nDM me to get started 📩",
+      "description_urls": [],
+      "urls": [
+        {
+          "display_url": "impeccify.com",
+          "expanded_url": "https://www.impeccify.com/",
+          "url": "https://t.co/iYL22VdMbZ",
+          "indices": [
+            0,
+            23
+          ]
+        }
+      ],
+      "pinned_tweet_ids": [
+        "1854556743529054718"
+      ],
+      "is_blue_verified": false,
+      "verified": false,
+      "possibly_sensitive": false,
+      "can_dm": true,
+      "can_media_tag": false,
+      "want_retweets": false,
+      "default_profile": true,
+      "default_profile_image": false,
+      "has_custom_timelines": false,
+      "followers_count": 11827,
+      "fast_followers_count": 0,
+      "normal_followers_count": 11827,
+      "following_count": 2839,
+      "favourites_count": 52541,
+      "listed_count": 64,
+      "media_count": 298,
+      "statuses_count": 4578,
+      "is_translator": false,
+      "translator_type": "none",
+      "withheld_in_countries": [],
+      "protected": false
+    },
+    "text": "Designed this Website for a CRM Software Company 👩‍💻\n\nHow's it?     DM me for your Website 📩 https://t.co/KF28tyHdnm",
+    "lang": "en",
+    "in_reply_to": null,
+    "is_quote_status": false,
+    "quote": null,
+    "retweeted_tweet": null,
+    "possibly_sensitive": false,
+    "possibly_sensitive_editable": true,
+    "quote_count": 1,
+    "media": [
+      {
+        "id": "1872317807414951937",
+        "display_url": "pic.x.com/KF28tyHdnm",
+        "expanded_url": "https://x.com/laibacreatives/status/1872318132901318814/photo/1",
+        "media_url": "https://pbs.twimg.com/media/GfvPIDmbQAEBCR5.jpg",
+        "source_status_id": null,
+        "source_user_id": null,
+        "type": "photo",
+        "url": "https://t.co/KF28tyHdnm",
+        "sizes": {
+          "large": {
+            "h": 2048,
+            "w": 1443,
+            "resize": "fit"
+          },
+          "medium": {
+            "h": 1200,
+            "w": 845,
+            "resize": "fit"
+          },
+          "small": {
+            "h": 680,
+            "w": 479,
+            "resize": "fit"
+          },
+          "thumb": {
+            "h": 150,
+            "w": 150,
+            "resize": "crop"
+          }
+        },
+        "original_info": {
+          "height": 3276,
+          "width": 2308,
+          "focus_rects": [
+            {
+              "x": 0,
+              "y": 1401,
+              "w": 2308,
+              "h": 1292
+            },
+            {
+              "x": 0,
+              "y": 893,
+              "w": 2308,
+              "h": 2308
+            },
+            {
+              "x": 0,
+              "y": 645,
+              "w": 2308,
+              "h": 2631
+            },
+            {
+              "x": 670,
+              "y": 0,
+              "w": 1638,
+              "h": 3276
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "w": 2308,
+              "h": 3276
+            }
+          ]
+        },
+        "width": 2308,
+        "height": 3276,
+        "focus_rects": [
+          {
+            "x": 0,
+            "y": 1401,
+            "w": 2308,
+            "h": 1292
+          },
+          {
+            "x": 0,
+            "y": 893,
+            "w": 2308,
+            "h": 2308
+          },
+          {
+            "x": 0,
+            "y": 645,
+            "w": 2308,
+            "h": 2631
+          },
+          {
+            "x": 670,
+            "y": 0,
+            "w": 1638,
+            "h": 3276
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "w": 2308,
+            "h": 3276
+          }
+        ],
+        "features": {
+          "large": {
+            "faces": [
+              {
+                "x": 145,
+                "y": 977,
+                "h": 89,
+                "w": 89
+              },
+              {
+                "x": 353,
+                "y": 977,
+                "h": 91,
+                "w": 91
+              },
+              {
+                "x": 561,
+                "y": 977,
+                "h": 87,
+                "w": 87
+              }
+            ]
+          },
+          "medium": {
+            "faces": [
+              {
+                "x": 85,
+                "y": 572,
+                "h": 52,
+                "w": 52
+              },
+              {
+                "x": 207,
+                "y": 572,
+                "h": 53,
+                "w": 53
+              },
+              {
+                "x": 328,
+                "y": 572,
+                "h": 51,
+                "w": 51
+              }
+            ]
+          },
+          "small": {
+            "faces": [
+              {
+                "x": 48,
+                "y": 324,
+                "h": 29,
+                "w": 29
+              },
+              {
+                "x": 117,
+                "y": 324,
+                "h": 30,
+                "w": 30
+              },
+              {
+                "x": 186,
+                "y": 324,
+                "h": 29,
+                "w": 29
+              }
+            ]
+          },
+          "orig": {
+            "faces": [
+              {
+                "x": 233,
+                "y": 1564,
+                "h": 143,
+                "w": 143
+              },
+              {
+                "x": 566,
+                "y": 1564,
+                "h": 147,
+                "w": 147
+              },
+              {
+                "x": 898,
+                "y": 1564,
+                "h": 140,
+                "w": 140
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "reply_count": 40,
+    "favorite_count": 554,
+    "favorited": false,
+    "view_count": "26130",
+    "view_count_state": "EnabledWithCount",
+    "retweet_count": 31,
+    "bookmark_count": 251,
+    "bookmarked": false,
+    "place": null,
+    "editable_until_msecs": "1735234003000",
+    "is_translatable": false,
+    "is_edit_eligible": true,
+    "edits_remaining": "5",
+    "replies": null,
+    "reply_to": null,
+    "related_tweets": null,
+    "hastags": [],
+    "has_card": false,
+    "thumbnail_title": null,
+    "thumbnail_url": null,
+    "urls": [],
+    "full_text": "Designed this Website for a CRM Software Company 👩‍💻\n\nHow's it?     DM me for your Website 📩 https://t.co/KF28tyHdnm"
+  },
+  {
+    "id": "1988715685921407018",
+    "created_at": "Wed Nov 12 21:09:02 +0000 2025",
+    "created_at_datetime": "2025-11-12T21:09:02+00:00",
+    "user": {
+      "id": "1428735484004601862",
+      "created_at": "Fri Aug 20 15:08:01 +0000 2021",
+      "name": "FEMI EMMANUEL ",
+      "screen_name": "femikvnq",
+      "profile_image_url": "https://pbs.twimg.com/profile_images/1932180404171063296/wzzsb02p_normal.jpg",
+      "profile_banner_url": "https://pbs.twimg.com/profile_banners/1428735484004601862/1763466575",
+      "url": "https://t.co/YeXDP8LTwg",
+      "location": "sales chanel",
+      "description": "Matt 6:33 ✞ | I help you Land your next high-paying remote sales role in 30 days using AI | https://t.co/0so7gUeZmt | Placed 500+ sales reps",
+      "description_urls": [
+        {
+          "display_url": "guaranteedsalesjobs.com",
+          "expanded_url": "http://www.guaranteedsalesjobs.com",
+          "url": "https://t.co/0so7gUeZmt",
+          "indices": [
+            92,
+            115
+          ]
+        }
+      ],
+      "urls": [
+        {
+          "display_url": "dailysalesjobs.com/apply",
+          "expanded_url": "http://www.dailysalesjobs.com/apply",
+          "url": "https://t.co/YeXDP8LTwg",
+          "indices": [
+            0,
+            23
+          ]
+        }
+      ],
+      "pinned_tweet_ids": [
+        "1930952218372428286"
+      ],
+      "is_blue_verified": true,
+      "verified": false,
+      "possibly_sensitive": false,
+      "can_dm": true,
+      "can_media_tag": true,
+      "want_retweets": false,
+      "default_profile": true,
+      "default_profile_image": false,
+      "has_custom_timelines": false,
+      "followers_count": 613,
+      "fast_followers_count": 0,
+      "normal_followers_count": 613,
+      "following_count": 120,
+      "favourites_count": 3222,
+      "listed_count": 6,
+      "media_count": 272,
+      "statuses_count": 2026,
+      "is_translator": false,
+      "translator_type": "none",
+      "withheld_in_countries": [],
+      "protected": false
+    },
+    "text": "‼️HIRING APPOINTMENT SETTERS ‼️\n\nFrontend Development | Tech Transition Offer\n\nOTE: $10K–$13K/month\n6 Days/Week | Remote | Scaling Fast\n\nWe’re doing $1.6M/month and scaling to $3M by February — so we’re only looking for killers.\n\n✅ Warm Outbound Leads (200K+ leads in CRM)\n✅ https://t.co/WYB7tZYRUN",
+    "lang": "en",
+    "in_reply_to": null,
+    "is_quote_status": false,
+    "quote": null,
+    "retweeted_tweet": null,
+    "possibly_sensitive": false,
+    "possibly_sensitive_editable": true,
+    "quote_count": 0,
+    "media": [
+      {
+        "id": "1988715677897674752",
+        "display_url": "pic.x.com/WYB7tZYRUN",
+        "expanded_url": "https://x.com/femikvnq/status/1988715685921407018/photo/1",
+        "media_url": "https://pbs.twimg.com/media/G5lWX1RXUAAyKyo.jpg",
+        "source_status_id": null,
+        "source_user_id": null,
+        "type": "photo",
+        "url": "https://t.co/WYB7tZYRUN",
+        "sizes": {
+          "large": {
+            "h": 1204,
+            "w": 1170,
+            "resize": "fit"
+          },
+          "medium": {
+            "h": 1200,
+            "w": 1166,
+            "resize": "fit"
+          },
+          "small": {
+            "h": 680,
+            "w": 661,
+            "resize": "fit"
+          },
+          "thumb": {
+            "h": 150,
+            "w": 150,
+            "resize": "crop"
+          }
+        },
+        "original_info": {
+          "height": 1204,
+          "width": 1170,
+          "focus_rects": [
+            {
+              "x": 0,
+              "y": 549,
+              "w": 1170,
+              "h": 655
+            },
+            {
+              "x": 0,
+              "y": 34,
+              "w": 1170,
+              "h": 1170
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "w": 1056,
+              "h": 1204
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "w": 602,
+              "h": 1204
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "w": 1170,
+              "h": 1204
+            }
+          ]
+        },
+        "width": 1170,
+        "height": 1204,
+        "focus_rects": [
+          {
+            "x": 0,
+            "y": 549,
+            "w": 1170,
+            "h": 655
+          },
+          {
+            "x": 0,
+            "y": 34,
+            "w": 1170,
+            "h": 1170
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "w": 1056,
+            "h": 1204
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "w": 602,
+            "h": 1204
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "w": 1170,
+            "h": 1204
+          }
+        ],
+        "features": {
+          "large": {
+            "faces": [
+              {
+                "x": 43,
+                "y": 683,
+                "h": 402,
+                "w": 402
+              }
+            ]
+          },
+          "medium": {
+            "faces": [
+              {
+                "x": 42,
+                "y": 680,
+                "h": 400,
+                "w": 400
+              }
+            ]
+          },
+          "small": {
+            "faces": [
+              {
+                "x": 24,
+                "y": 385,
+                "h": 227,
+                "w": 227
+              }
+            ]
+          },
+          "orig": {
+            "faces": [
+              {
+                "x": 43,
+                "y": 683,
+                "h": 402,
+                "w": 402
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "reply_count": 17,
+    "favorite_count": 9,
+    "favorited": false,
+    "view_count": "1089",
+    "view_count_state": "EnabledWithCount",
+    "retweet_count": 4,
+    "bookmark_count": 2,
+    "bookmarked": false,
+    "place": null,
+    "editable_until_msecs": "1762985342000",
+    "is_translatable": false,
+    "is_edit_eligible": true,
+    "edits_remaining": "5",
+    "replies": null,
+    "reply_to": null,
+    "related_tweets": null,
+    "hastags": [],
+    "has_card": false,
+    "thumbnail_title": null,
+    "thumbnail_url": null,
+    "urls": [],
+    "full_text": "‼️HIRING APPOINTMENT SETTERS ‼️\n\nFrontend Development | Tech Transition Offer\n\nOTE: $10K–$13K/month\n6 Days/Week | Remote | Scaling Fast\n\nWe’re doing $1.6M/month and scaling to $3M by February — so we’re only looking for killers.\n\n✅ Warm Outbound Leads (200K+ leads in CRM)\n✅ $16K/day ad spend\n✅ Serious pipeline, serious opportunity\n\nIf you’re a top-performing setter in your current or past role and ready to level up with a high-growth offer — this is it.\n\n(US/UK or EU based)\n\n•Reply “TECH” below and I’ll send you the details.\n•And Repost"
+  }
+]
