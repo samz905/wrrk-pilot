@@ -190,6 +190,7 @@ class ApifyRedditSearchTool(BaseTool):
         Calculate intent signal strength (0-100).
 
         Based on:
+        - Disqualifying signals (filter out sellers/promoters)
         - Keyword analysis (35 points)
         - Engagement metrics (35 points)
         - Discussion depth (30 points)
@@ -197,6 +198,26 @@ class ApifyRedditSearchTool(BaseTool):
 
         intent_score = 0
         combined_text = (title + " " + text).lower()
+
+        # DISQUALIFYING SIGNALS - Filter out sellers/promoters
+        seller_keywords = [
+            'i built', 'we built', 'i created', 'we created', 'i made', 'we made',
+            'my product', 'our product', 'my tool', 'our tool', 'my solution',
+            'check out my', 'try my', 'launching', 'just launched', 'built this',
+            'introducing my', 'proud to announce', 'excited to share',
+            'signup', 'sign up for', 'get started with my', 'free trial'
+        ]
+        if any(kw in combined_text for kw in seller_keywords):
+            return 5  # Seller/promoter, not a buyer
+
+        # People who already solved their problem
+        solved_keywords = [
+            'i solved', 'we solved', 'here is how i fixed', 'problem solved',
+            'finally found a solution', 'no longer need', 'already have',
+            'switched to and love it', 'now using and happy'
+        ]
+        if any(kw in combined_text for kw in solved_keywords):
+            return 10  # Problem already solved
 
         # Keyword scoring (35 points)
         keyword_score = 0

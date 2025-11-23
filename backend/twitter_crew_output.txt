@@ -1,0 +1,110 @@
+1. **Tweet Text**: "I just cancelled my subscriptions to ChatGPT, Claude, Gemini, Llama, Grok, Midjourney, Flux, Ideogram, Perplexity, DeepSeek, Runway and Luma. Because I found an alternative that is 10X better and cheaper. Here's how to use it ↓"
+   - **Intent Classification**: complaint
+   - **Author Information**:
+      - Username: @Rana_kamran43
+      - Display Name: kamran Hassan
+      - Followers Count: 58170
+      - Verified Status: Yes
+   - **Engagement Metrics**:
+      - Likes: 244
+      - Retweets: 43
+      - Replies: 50
+      - Views: 143446
+   - **Timing**:
+      - Post Timestamp: 2025-01-21
+      - Age in Days: 0
+   - **Intent Score**: 88/100
+   - **Tweet URL**: [Link](https://twitter.com/Rana_kamran43/status/1881658536092147817)
+   - **Outreach Recommendation**: This user has a significant following and is expressing a clear need for a better solution. Consider replying publicly to engage.
+
+2. **Tweet Text**: "I'm a big fan of open-source, so I decided to put together a list of alternatives for you. See thread for more details 👇"
+   - **Intent Classification**: help_request
+   - **Author Information**:
+      - Username: @zenorocha
+      - Display Name: Zeno Rocha
+      - Followers Count: 56289
+      - Verified Status: Yes
+   - **Engagement Metrics**:
+      - Likes: 2356
+      - Retweets: 541
+      - Replies: 42
+      - Views: 0
+   - **Timing**:
+      - Post Timestamp: 2021-03-24
+      - Age in Days: 0
+   - **Intent Score**: 88/100
+   - **Tweet URL**: [Link](https://twitter.com/zenorocha/status/1374764208043126784)
+   - **Outreach Recommendation**: Engage with this user by providing them with valuable insights or alternatives. 
+
+3. **Tweet Text**: "Bro, the SaaS space is cooked. I just vibe coded an entire CRM (with login, database, backend) in a little over an hour using UI Bakery."
+   - **Intent Classification**: problem
+   - **Author Information**:
+      - Username: @v_lugovsky
+      - Display Name: Vlad 🍩
+      - Followers Count: 485
+      - Verified Status: Yes
+   - **Engagement Metrics**:
+      - Likes: 804
+      - Retweets: 42
+      - Replies: 196
+      - Views: 153017
+   - **Timing**:
+      - Post Timestamp: 2025-11-06
+      - Age in Days: 0
+   - **Intent Score**: 70/100
+   - **Tweet URL**: [Link](https://twitter.com/v_lugovsky/status/1986451771217105157)
+   - **Outreach Recommendation**: This user seems to have technical skills and is looking for effective solutions. A direct message with suggestions could be beneficial.
+
+4. **Tweet Text**: "I hate CRMs. Always forget to update it Too many graphs I don't need Crappy automation options Can't customize what I want so I built an open-source, no-code CRM."
+   - **Intent Classification**: complaint
+   - **Author Information**:
+      - Username: @RMHildebrandt
+      - Display Name: Ryan Hildebrandt
+      - Followers Count: 17618
+      - Verified Status: Yes
+   - **Engagement Metrics**:
+      - Likes: 203
+      - Retweets: 23
+      - Replies: 485
+      - Views: 59148
+   - **Timing**:
+      - Post Timestamp: 2023-12-11
+      - Age in Days: 0
+   - **Intent Score**: 92/100
+   - **Tweet URL**: [Link](https://twitter.com/RMHildebrandt/status/1734242836822843697)
+   - **Outreach Recommendation**: This user has a strong negative sentiment towards existing solutions. A direct message with a better alternative could be effective.
+
+5. **Tweet Text**: "We built a CRM that works like texting your co-founder. Natural language. No dropdowns. Revolutionary, right?"
+   - **Intent Classification**: help_request
+   - **Author Information**:
+      - Username: @coffeewithone
+      - Display Name: Coffee with One 🇺🇸
+      - Followers Count: 5208
+      - Verified Status: Yes
+   - **Engagement Metrics**:
+      - Likes: 399
+      - Retweets: 20
+      - Replies: 30
+      - Views: 71856
+   - **Timing**:
+      - Post Timestamp: 2025-10-24
+      - Age in Days: 0
+   - **Intent Score**: 100/100
+   - **Tweet URL**: [Link](https://twitter.com/coffeewithone/status/1981780724786376899)
+   - **Outreach Recommendation**: This user is actively promoting a new CRM solution. Engage in conversation to explore potential collaboration or feedback.
+
+Total tweets found: 100
+Top 3 pain points discovered:
+1. Frustration with existing CRM solutions.
+2. Need for better alternatives.
+3. Seeking open-source or customizable options.
+
+Most active authors (potential influencers):
+1. @zenorocha
+2. @coffeewithone
+3. @RMHildebrandt
+
+Recommended immediate follow-ups: 
+1. Engage with verified accounts expressing strong dissatisfaction.
+2. Offer solutions to users looking for alternatives.
+3. Consider direct messaging for deeper engagement with influential authors.

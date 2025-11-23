@@ -1,0 +1,108 @@
+search_twitter_intent:
+  description: |
+    Find Twitter/X posts showing REAL-TIME BUYING INTENT for: {search_query}
+
+    TWITTER SEARCH STRATEGY:
+    Use the Twitter Intent Search tool to find tweets matching these intent patterns:
+
+    1. HELP REQUESTS (Highest Intent - Immediate Need):
+       - "Anyone recommend a [solution]?"
+       - "What's the best [tool type]?"
+       - "Need help finding [specific solution]"
+       - "Looking for recommendations on [problem]"
+
+    2. COMPLAINT TWEETS (Very High Intent - Ready to Switch):
+       - "So frustrated with [current tool]"
+       - "[Competitor] is terrible/awful/useless"
+       - "Can't believe [tool] doesn't have [feature]"
+       - "Time to switch from [competitor]"
+
+    3. EVALUATION TWEETS (High Intent - Active Decision Process):
+       - "[Tool A] vs [Tool B] - which is better?"
+       - "Comparing [solution options]"
+       - "Switching from [old tool], what should I use?"
+       - "Trying to decide between [alternatives]"
+
+    4. PROBLEM TWEETS (Medium Intent - Pain Point Identified):
+       - "Struggling to [specific task]"
+       - "How do you solve [problem]?"
+       - "Is there a better way to [process]?"
+       - "[Specific challenge] is killing our productivity"
+
+    SEARCH EXECUTION:
+    Run multiple targeted searches to capture different intent signals:
+
+    - Primary search: Exact query (e.g., "looking for CRM")
+    - Competitor search: "[Competitor name] alternative"
+    - Problem search: "frustrated with [problem area]"
+    - Recommendation search: "recommend [solution type]"
+
+    Use query_type="Top" for most relevant tweets (higher quality)
+    Use query_type="Latest" for freshest signals (recent activity)
+
+    PRIORITIZATION CRITERIA:
+    Focus on tweets that show strong buying intent:
+
+    - Intent Score: Prioritize 60+ scores (HIGH and VERY HIGH intent)
+    - Recency: Tweets from last 30 days (fresher = warmer lead)
+    - Engagement: 10+ likes OR 5+ retweets OR 5+ replies (validated pain)
+    - Author Influence: 1K+ followers (likely decision-maker)
+    - Verified Accounts: Higher credibility and authority
+
+    TWITTER-SPECIFIC INSIGHTS:
+    - Verified accounts with high followers = executives/founders
+    - Active reply threads = urgent, unresolved problems
+    - Retweets amplify the signal (others share the pain)
+    - Recent tweets = timely outreach opportunity
+
+    RESULTS TARGET: 50-100 tweets showing clear intent signals
+
+  expected_output: |
+    A prioritized list of Twitter posts showing buying intent:
+
+    For each tweet include:
+
+    1. INTENT SIGNAL:
+       - Tweet text (full content)
+       - Intent classification: help_request, complaint, evaluation, problem
+
+    2. AUTHOR INFORMATION:
+       - Username and display name
+       - Followers count (authority indicator)
+       - Verified status (credibility marker)
+
+    3. ENGAGEMENT METRICS:
+       - Likes (community agreement)
+       - Retweets (problem amplification)
+       - Replies (discussion depth)
+       - Views (reach)
+
+    4. TIMING:
+       - Post timestamp (recency indicator)
+       - Age in days (for follow-up timing)
+
+    5. INTENT SCORE (from tool output):
+       - 80-100: VERY HIGH - Explicit request or viral complaint
+       - 60-79: HIGH - Strong pain point with engagement
+       - 40-59: MEDIUM - Problem discussion with moderate validation
+       - Below 40: Filter out (weak signal)
+
+    6. TWEET URL:
+       - Direct link for reference and outreach
+
+    7. OUTREACH RECOMMENDATION:
+       - Why this is a qualified lead
+       - Suggested approach (reply publicly, DM, etc.)
+       - Timing consideration (respond within 24hrs for freshest tweets)
+
+    SUMMARY SECTION:
+    - Total tweets found
+    - Top 3 pain points discovered
+    - Most active authors (potential influencers)
+    - Recommended immediate follow-ups
+
+    NOTE: Twitter is excellent for REAL-TIME INTENT SIGNALS. These are people
+    actively discussing problems right now. Speed matters - respond quickly
+    while the pain is fresh.
+
+  agent: twitter_signal_hunter

@@ -164,6 +164,7 @@ class ApifyTwitterSearchTool(BaseTool):
         Calculate intent signal strength (0-100) based on tweet content and engagement.
 
         Scoring logic:
+        - Disqualifying signals: Filter out sellers/promoters (return low score)
         - Keyword analysis (40 points): Intent keywords in tweet
         - Engagement (35 points): Likes + retweets show community agreement
         - Discussion (25 points): Replies indicate active problem discussion
@@ -171,12 +172,36 @@ class ApifyTwitterSearchTool(BaseTool):
         intent_score = 0
         text_lower = text.lower()
 
+        # DISQUALIFYING SIGNALS - These indicate seller/promoter, not buyer
+        # People promoting their own solutions are NOT prospects
+        seller_keywords = [
+            'we built', 'i built', 'i created', 'we created', 'we made', 'i made',
+            'our product', 'our solution', 'our tool', 'our platform', 'our app',
+            'check out', 'try our', 'announcing', 'launching', 'just launched',
+            'introducing', 'proud to announce', 'excited to share', 'built this',
+            'my product', 'my tool', 'my solution', 'signup', 'sign up',
+            'get started', 'join us', 'free trial', 'beta access'
+        ]
+        if any(kw in text_lower for kw in seller_keywords):
+            # This is a seller/promoter, not a buyer - very low intent
+            return 5
+
+        # People who already solved their problem are NOT prospects
+        solved_keywords = [
+            'i solved', 'we solved', 'here is how i', 'here is what i did',
+            'finally found', 'problem solved', 'no longer need', "don't need",
+            'already have', 'already using', 'switched to', 'now using'
+        ]
+        if any(kw in text_lower for kw in solved_keywords):
+            # Problem already solved - low intent
+            return 10
+
         # Keyword scoring (40 points max)
         # Explicit help requests (strongest intent)
         help_request_keywords = [
             'recommend', 'recommendation', 'suggestions', 'looking for',
             'need help', 'anyone know', 'what do you use', 'best tool',
-            'which tool', 'help me find'
+            'which tool', 'help me find', 'any suggestions', 'please help'
         ]
         if any(kw in text_lower for kw in help_request_keywords):
             keyword_score = 40
