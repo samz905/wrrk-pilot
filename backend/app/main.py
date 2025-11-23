@@ -2,6 +2,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.v1 import router as api_v1_router
+
 app = FastAPI(
     title="Lead Prospecting API",
     description="Intent-based lead prospecting tool",
@@ -16,6 +18,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include API routes
+app.include_router(api_v1_router)
 
 
 @app.get("/")
