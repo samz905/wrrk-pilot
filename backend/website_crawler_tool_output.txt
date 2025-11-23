@@ -1,0 +1,38 @@
+=== WEBSITE CONTENT EXTRACTION ===
+Crawled: 1 pages
+
+--- Page 1 ---
+Title: 48% Of Sales Leaders Say Their CRM System Doesn’t Meet Their Needs. The Good News Is That This Is Fixable.
+URL: https://www.forbes.com/sites/quickerbettertech/2021/02/19/on-crm-48-percent-say-that-their-crm-system-doesnt-meet-their-needs-the-good-news-is-that-this-is-fixable/
+Content Length: 5606 characters
+
+Content:
+# 48% Of Sales Leaders Say Their CRM System Doesn’t Meet Their Needs. The Good News Is That This Is Fixable.
+
+![CRM Customer Relationship Management for business sales marketing system concept](https://imageio.forbes.com/specials-images/imageserve/602e8e840268ddd64f435a56/CRM-Customer-Relationship-Management-for-business-sales-marketing-system-concept/0x0.jpg?width=960)
+
+Everyone in a company should be using a CRM system.
+
+getty
+
+People are not happy with their CRM systems. That's the conclusion of a [new survey](https://www.sugarcrm.com/hd-cx/content/crm-sales-impact/ "https://www.sugarcrm.com/hd-cx/content/crm-sales-impact/") of more than 1,000 sales professionals and decision-makers from CRM software vendor [SugarCRM](http://www.sugarcrm.com/ "http://www.sugarcrm.com/").
+
+According to the survey:
+
+· 52 percent of sales leaders reported that their CRM platform is costing potential revenue opportunities;
+
+· 50 percent of the companies said they cannot access customer data across marketing, sales and service systems;
+
+· Nearly one-third complained that their customer data is incomplete, out of date, or inaccurate;
+
+· 53 percent of respondents said that the administrative burdens of their CRM system causes friction for their sales team and
+
+· 57 percent said that they have trouble predicting when customers will churn and 48 percent of those surveyed say they don’t know why customers have churned.
+
+"A new reality came into focus in 2020," says SugarCRM's CEO Craig Charlton. "Companies are having a customer relationship crisis. 48 percent (of the sales leaders and decision-makers surveyed) reported that their CRM doesn’t meet their needs, providing an insufficient, out-of-date view of customers. In fact, our research reveals a picture of companies struggling with platforms and data practices riddled with blind spots and roadblocks."
+
+[![Graphic Best High-Yield Savings Accounts Of 2024](https://thumbor.forbes.com/thumbor/fit-in/1290x/https://www.forbes.com/advisor/wp-co
+
+... [Content truncated, total length: 5606 chars]
+
+======================================================================

@@ -1,0 +1,194 @@
+[
+  {
+    "url": "https://www.forbes.com/sites/quickerbettertech/2021/02/19/on-crm-48-percent-say-that-their-crm-system-doesnt-meet-their-needs-the-good-news-is-that-this-is-fixable/",
+    "crawl": {
+      "loadedUrl": "https://www.forbes.com/sites/quickerbettertech/2021/02/19/on-crm-48-percent-say-that-their-crm-system-doesnt-meet-their-needs-the-good-news-is-that-this-is-fixable/",
+      "loadedTime": "2025-11-23T20:28:45.216Z",
+      "referrerUrl": "https://www.forbes.com/sites/quickerbettertech/2021/02/19/on-crm-48-percent-say-that-their-crm-system-doesnt-meet-their-needs-the-good-news-is-that-this-is-fixable/",
+      "depth": 0,
+      "httpStatusCode": 200
+    },
+    "metadata": {
+      "canonicalUrl": "https://www.forbes.com/sites/quickerbettertech/2021/02/19/on-crm-48-percent-say-that-their-crm-system-doesnt-meet-their-needs-the-good-news-is-that-this-is-fixable/",
+      "title": "48% Of Sales Leaders Say Their CRM System Doesn’t Meet Their Needs. The Good News Is That This Is Fixable.",
+      "description": "CRM systems are used poorly because they're not used enough.",
+      "author": "Gene Marks",
+      "keywords": "sugar,sugarcm,crm,todd cohen,cohen",
+      "languageCode": "en",
+      "openGraph": [
+        {
+          "property": "og:site_name",
+          "content": "Forbes"
+        },
+        {
+          "property": "og:title",
+          "content": "48% Of Sales Leaders Say Their CRM System Doesn’t Meet Their Needs. The Good News Is That This Is Fixable."
+        },
+        {
+          "property": "og:type",
+          "content": "article"
+        },
+        {
+          "property": "og:url",
+          "content": "https://www.forbes.com/sites/quickerbettertech/2021/02/19/on-crm-48-percent-say-that-their-crm-system-doesnt-meet-their-needs-the-good-news-is-that-this-is-fixable/"
+        },
+        {
+          "property": "og:image",
+          "content": "https://imageio.forbes.com/specials-images/imageserve/602e8e840268ddd64f435a56/0x0.jpg?format=jpg&height=900&width=1600&fit=bounds"
+        },
+        {
+          "property": "og:image:type",
+          "content": "image/jpeg"
+        },
+        {
+          "property": "og:description",
+          "content": "CRM systems are used poorly because they're not used enough."
+        },
+        {
+          "property": "article:channel",
+          "content": "Small Business"
+        },
+        {
+          "property": "article:section",
+          "content": "Small Business Strategy"
+        },
+        {
+          "property": "article:section_url",
+          "content": "https://www.forbes.com/small-business-strategy/"
+        },
+        {
+          "property": "article:id",
+          "content": "blogAndPostId/blog/post/1217-602e8e137f96ca000783fcf4"
+        },
+        {
+          "property": "article:published",
+          "content": "2021-02-19"
+        },
+        {
+          "property": "article:modified",
+          "content": "2024-06-03"
+        },
+        {
+          "property": "article:author",
+          "content": "Gene Marks"
+        },
+        {
+          "property": "og:updated_time",
+          "content": "2024-06-03T08:16:32.395-04:00"
+        }
+      ],
+      "jsonLd": [
+        {
+          "@context": "https://schema.org",
+          "@type": "NewsArticle",
+          "url": "https://www.forbes.com/sites/quickerbettertech/2021/02/19/on-crm-48-percent-say-that-their-crm-system-doesnt-meet-their-needs-the-good-news-is-that-this-is-fixable/",
+          "image": {
+            "@type": "ImageObject",
+            "url": "https://imageio.forbes.com/specials-images/imageserve/602e8e840268ddd64f435a56/0x0.jpg?format=jpg&height=900&width=1600&fit=bounds",
+            "width": 542.79,
+            "height": 304.6
+          },
+          "publisher": {
+            "@type": "NewsMediaOrganization",
+            "name": "Forbes",
+            "url": "https://www.forbes.com/",
+            "ethicsPolicy": "https://www.forbes.com/sites/forbesstaff/article/forbes-editorial-values-and-standards/",
+            "logo": "https://imageio.forbes.com/i-forbesimg/media/amp/images/forbes-logo-dark.png?format=png&height=455&width=650&fit=bounds"
+          },
+          "headline": "48% Of Sales Leaders Say Their CRM System Doesn’t Meet Their Needs. The Good News Is That This Is Fixable.",
+          "description": "CRM systems are used poorly because they're not used enough.",
+          "datePublished": "2021-02-19T10:59:00-05:00",
+          "dateModified": "2022-04-29T14:48:23-04:00",
+          "articleSection": "Small Business Strategy",
+          "name": "48% Of Sales Leaders Say Their CRM System Doesn’t Meet Their Needs. The Good News Is That This Is Fixable.",
+          "isAccessibleForFree": "False",
+          "cssSelector": ".zephr-modal-content",
+          "author": [
+            {
+              "@type": "Person",
+              "name": "Gene Marks",
+              "url": "https://www.forbes.com/sites/quickerbettertech/",
+              "description": "I am a Certified Public Accountant and run a 10 person technology and financial management consulting firm. I speak 50+ times per year to business groups on technology, the economy, public policy and workplace topics and am the author of six books on business management. A former columnist for the New York Times and Washington Post I now write regularly for The Guardian, The Hill, The Philly Inquirer, Entrepreneur and other national platforms. I appear frequently on Fox Business and MSNBC, as well as The Wharton Business Channel on Sirius/XM and The John Batchelor Show on CBS Radio. I also host two weekly business podcasts for Paychex and The Hartford.",
+              "sameAs": [
+                "https://www.linkedin.com/in/genemarks",
+                "https://www.twitter.com/genemarks",
+                "https://www.genemarks.com",
+                "genejmarks"
+              ]
+            }
+          ]
+        },
+        {
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Forbes Homepage",
+              "item": "https://www.forbes.com/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Small Business",
+              "item": "https://www.forbes.com/small-business/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 3,
+              "name": "Small Business Strategy",
+              "item": "https://www.forbes.com/small-business-strategy/"
+            }
+          ]
+        }
+      ],
+      "headers": {
+        "server": "rhino-core-shield",
+        "content-type": "text/html; charset=utf-8",
+        "cache-control": "public, max-age=1800",
+        "x-envoy-upstream-service-time": "695",
+        "x-malcolm": "H",
+        "backend": "dnsresolver",
+        "x-backend": "simple-site-prod-h",
+        "x-yourttl": "1800.000",
+        "content-encoding": "gzip",
+        "x-cicero-cache": "MISS",
+        "via": "1.1 google, 1.1 varnish",
+        "x-fastly-backend": "24YyrkkiTBhSwXWzJgvwW6--F_GCP_Cicero_Varnish",
+        "x-fastly-x-is-cn": "false",
+        "x-fastly-x-is-us-dpa": "false",
+        "x-fastly-x-is-us": "true",
+        "x-fastlyttl": "86400.000",
+        "accept-ranges": "bytes",
+        "age": "0",
+        "date": "Sun, 23 Nov 2025 20:28:25 GMT",
+        "x-served-by": "cache-chi-kigq8000057-CHI",
+        "x-cache": "MISS",
+        "x-cache-hits": "0",
+        "x-timer": "S1763929705.203210, VS0, VE749",
+        "vary": "X-Country-Code, Accept-Encoding, X-is-EU, X-is-CN, X-is-US-DPA, X-is-US, X-Device, canary, X-Is-Ad-Light, is-vwo-enabled, x-malcolm, x-malcolm, X-is-EU, X-is-CN, X-is-US-DPA, X-is-US, X-Device, x-backend, canary, X-Is-Ad-Light, is-vwo-enabled",
+        "x-country-code": "US",
+        "x-postal-code": "14202",
+        "x-region": "NY",
+        "x-city-code": "buffalo",
+        "permissions-policy": "unload=()",
+        "x-frame-options": "SAMEORIGIN",
+        "content-security-policy": "upgrade-insecure-requests",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "access-control-allow-credentials": "true",
+        "x-device": "doge",
+        "state": "MISS-CLUSTER",
+        "alt-svc": "h3=\":443\";ma=86400, h3-29=\":443\";ma=86400, h3-27=\":443\";ma=86400",
+        "content-length": "197573",
+        "x-firefox-spdy": "h2"
+      }
+    },
+    "screenshotUrl": null,
+    "text": "48% Of Sales Leaders Say Their CRM System Doesn’t Meet Their Needs. The Good News Is That This Is Fixable.\nEveryone in a company should be using a CRM system.\ngetty\nPeople are not happy with their CRM systems. That's the conclusion of a new survey of more than 1,000 sales professionals and decision-makers from CRM software vendor SugarCRM.\nAccording to the survey:\n· 52 percent of sales leaders reported that their CRM platform is costing potential revenue opportunities;\n· 50 percent of the companies said they cannot access customer data across marketing, sales and service systems;\n· Nearly one-third complained that their customer data is incomplete, out of date, or inaccurate;\n· 53 percent of respondents said that the administrative burdens of their CRM system causes friction for their sales team and\n· 57 percent said that they have trouble predicting when customers will churn and 48 percent of those surveyed say they don’t know why customers have churned.\n\"A new reality came into focus in 2020,\" says SugarCRM's CEO Craig Charlton. \"Companies are having a customer relationship crisis. 48 percent (of the sales leaders and decision-makers surveyed) reported that their CRM doesn’t meet their needs, providing an insufficient, out-of-date view of customers. In fact, our research reveals a picture of companies struggling with platforms and data practices riddled with blind spots and roadblocks.\"\nThat’s bad news for the CRM industry. But there is good news: it’s a problem that can be fixed. \nIn fact, like just about all problems in business, this problem comes down to two factors: time and money. The blunt fact is that most companies are not willing to spend the necessary time or money needed to enable their CRM systems to truly do what they’re designed to do.\nCRM systems are not just for sales teams. And they're not just for service teams. For a CRM system to be effective, a company must adapt it as its main, collaborative platform. Which means that - like my friend and sales management expert Todd Cohen often says - a company must realize that EVERYONE is in sales. Everyone.\nThink about it: CRM means Customer Relationship Management. Every employee in a company is employed only to ensure that the company's customers are happy. Period. Which means that when there is any interaction with a customer – whether it’s a quote, service issue, open job, ongoing project, overdue invoice, a new project manager or even an invite to a holiday party – everyone in an organization that is involved must be able to access and share whatever information is necessary to satisfactorily engage with that customer. \nThis data, by the way, is not just limited to customers. Access to any information pertaining to any human being that touches the organization from prospects to vendors to partners and even the employees themselves is critical for a company to be its best.\nSo what better system is there than a CRM database to do all of this? If configured the right way, that's the place for notes, emails, activities, sales history, forecasts, social engagement, web interactions, linked documents, opportunities and other demographic information that's critical to continuing and building relationships.\nUnfortunately, most companies don't see it that way. They see a CRM system as a sales tool to manage a pipeline and quotes. Or a customer service device that tracks complaints and issues. But it goes well beyond that. And to take it to the next level there are two things that are needed: time and money. Which is something that most companies don't care to spend. So instead they continue to do things the old way with multiple systems, various database and countless spreadsheets. \nAnd the result? Well, just look at the SugarCRM survey. It's the loss of potential revenue opportunities. It’s the inability to access customer information across departments. It’s the incomplete, inaccurate and out of date information. It’s the higher administrative costs and increasing and unaccountable churn. It’s simply dissatisfaction and disappointment. \nThe takeaway is this: if you want your CRM system to be worth the investment then make it your main, collaborative, shareable database that's used by everyone across your entire organization. Because everyone really is in sales. Everyone.",
+    "markdown": "# 48% Of Sales Leaders Say Their CRM System Doesn’t Meet Their Needs. The Good News Is That This Is Fixable.\n\n![CRM Customer Relationship Management for business sales marketing system concept](https://imageio.forbes.com/specials-images/imageserve/602e8e840268ddd64f435a56/CRM-Customer-Relationship-Management-for-business-sales-marketing-system-concept/0x0.jpg?width=960)\n\nEveryone in a company should be using a CRM system.\n\ngetty\n\nPeople are not happy with their CRM systems. That's the conclusion of a [new survey](https://www.sugarcrm.com/hd-cx/content/crm-sales-impact/ \"https://www.sugarcrm.com/hd-cx/content/crm-sales-impact/\") of more than 1,000 sales professionals and decision-makers from CRM software vendor [SugarCRM](http://www.sugarcrm.com/ \"http://www.sugarcrm.com/\").\n\nAccording to the survey:\n\n· 52 percent of sales leaders reported that their CRM platform is costing potential revenue opportunities;\n\n· 50 percent of the companies said they cannot access customer data across marketing, sales and service systems;\n\n· Nearly one-third complained that their customer data is incomplete, out of date, or inaccurate;\n\n· 53 percent of respondents said that the administrative burdens of their CRM system causes friction for their sales team and\n\n· 57 percent said that they have trouble predicting when customers will churn and 48 percent of those surveyed say they don’t know why customers have churned.\n\n\"A new reality came into focus in 2020,\" says SugarCRM's CEO Craig Charlton. \"Companies are having a customer relationship crisis. 48 percent (of the sales leaders and decision-makers surveyed) reported that their CRM doesn’t meet their needs, providing an insufficient, out-of-date view of customers. In fact, our research reveals a picture of companies struggling with platforms and data practices riddled with blind spots and roadblocks.\"\n\n[![Graphic Best High-Yield Savings Accounts Of 2024](https://thumbor.forbes.com/thumbor/fit-in/1290x/https://www.forbes.com/advisor/wp-content/uploads/2020/12/getty_1-best-online-savings-thumbnail_101920pm.jpg)](https://www.forbes.com/advisor/banking/savings/best-high-yield-savings-accounts/?utm_source=forbes&utm_medium=recirc&utm_campaign=tiger-sept23)\n\n[![Graphic Best 5% Interest Savings Accounts of 2024](https://thumbor.forbes.com/thumbor/fit-in/900x510/https://www.forbes.com/advisor/wp-content/uploads/2023/09/Saving-Rates-2.jpg)](https://www.forbes.com/advisor/banking/savings/best-5-percent-interest-savings-accounts/?utm_source=forbes&utm_medium=recirc&utm_campaign=tiger-sept23)\n\nThat’s bad news for the CRM industry. But there is good news: it’s a problem that can be fixed.\n\nIn fact, like just about all problems in business, this problem comes down to two factors: time and money. The blunt fact is that most companies are not willing to spend the necessary time or money needed to enable their CRM systems to truly do what they’re designed to do.\n\nCRM systems are not just for sales teams. And they're not just for service teams. For a CRM system to be effective, a company must adapt it as its main, collaborative platform. Which means that - like my friend and sales management expert [Todd Cohen](https://toddcohen.com/ \"https://toddcohen.com/\") often says - a company must realize that EVERYONE is in sales. Everyone.\n\nThink about it: CRM means Customer Relationship Management. Every employee in a company is employed only to ensure that the company's customers are happy. Period. Which means that when there is any interaction with a customer – whether it’s a quote, service issue, open job, ongoing project, overdue invoice, a new project manager or even an invite to a holiday party – everyone in an organization that is involved must be able to access and share whatever information is necessary to satisfactorily engage with that customer.\n\nThis data, by the way, is not just limited to customers. Access to any information pertaining to any human being that touches the organization from prospects to vendors to partners and even the employees themselves is critical for a company to be its best.\n\nSo what better system is there than a CRM database to do all of this? If configured the right way, that's the place for notes, emails, activities, sales history, forecasts, social engagement, web interactions, linked documents, opportunities and other demographic information that's critical to continuing and building relationships.\n\nUnfortunately, most companies don't see it that way. They see a CRM system as a sales tool to manage a pipeline and quotes. Or a customer service device that tracks complaints and issues. But it goes well beyond that. And to take it to the next level there are two things that are needed: time and money. Which is something that most companies don't care to spend. So instead they continue to do things the old way with multiple systems, various database and countless spreadsheets.\n\nAnd the result? Well, just look at the SugarCRM survey. It's the loss of potential revenue opportunities. It’s the inability to access customer information across departments. It’s the incomplete, inaccurate and out of date information. It’s the higher administrative costs and increasing and unaccountable churn. It’s simply dissatisfaction and disappointment.\n\nThe takeaway is this: if you want your [CRM system](https://sellingsignals.com/best-crm-software/ \"https://sellingsignals.com/best-crm-software/\") to be worth the investment then make it your main, collaborative, shareable database that's used by everyone across your entire organization. Because everyone really is in sales. Everyone.",
+    "debug": {
+      "requestHandlerMode": "browser"
+    }
+  }
+]
