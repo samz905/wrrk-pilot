@@ -17,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from crews.linkedin.crew import LinkedInProspectingCrew
 from crews.reddit.crew import RedditProspectingCrew
 from crews.twitter.crew import TwitterProspectingCrew
+from crews.google.crew import GoogleProspectingCrew
 
 
 class ProspectingState(BaseModel):
@@ -37,6 +38,7 @@ class ProspectingFlow(Flow[ProspectingState]):
     1. Reddit Crew - Finds intent signals in discussions
     2. LinkedIn Crew - Identifies decision-makers and enriches profiles
     3. Twitter Crew - Discovers conversations and pain points
+    4. Google Crew - Finds company triggers (funding, leadership changes)
 
     Each crew runs independently and results are aggregated.
     Real-time events are streamed via SSE for UI visibility.
@@ -63,7 +65,7 @@ class ProspectingFlow(Flow[ProspectingState]):
         self.emit_event("thought", "Initializing intelligent prospecting flow...")
         self.emit_event("thought", f"Search query: {self.state.query}")
         self.emit_event("thought", f"Target: {self.state.max_leads} high-quality leads")
-        self.emit_event("thought", "Will orchestrate LinkedIn, Reddit, and Twitter crews")
+        self.emit_event("thought", "Will orchestrate LinkedIn, Reddit, Twitter, and Google crews")
 
         self.state.status = "searching"
         return self.state
@@ -201,14 +203,59 @@ class ProspectingFlow(Flow[ProspectingState]):
             return state
 
     @listen(twitter_prospecting)
+    def google_prospecting(self, state: ProspectingState):
+        """
+        Run Google crew to find company triggers.
+
+        Google discovers:
+        - Funding announcements
+        - Leadership changes
+        - Company expansions
+        - Problem announcements
+        """
+        self.emit_event("crew_started", "Google Crew - Finding company triggers...")
+
+        try:
+            # Initialize Google crew
+            google_crew = GoogleProspectingCrew()
+
+            # Prepare inputs
+            inputs = {
+                "search_query": state.query,
+                "max_results": 30
+            }
+
+            self.emit_event("thought", f"Google Crew researching company triggers for: {state.query}")
+
+            # Execute Google crew
+            result = google_crew.crew().kickoff(inputs=inputs)
+
+            # Store results
+            state.crew_results["google"] = {
+                "raw_output": str(result),
+                "status": "completed"
+            }
+
+            self.emit_event("crew_completed", f"Google Crew finished - Found company triggers")
+            return state
+
+        except Exception as e:
+            state.crew_results["google"] = {
+                "error": str(e),
+                "status": "failed"
+            }
+            self.emit_event("error", f"Google Crew failed: {str(e)}")
+            return state
+
+    @listen(google_prospecting)
     def aggregate_results(self, state: ProspectingState):
         """
         Aggregate results from all crews.
 
-        Combines leads from LinkedIn, Reddit, and Twitter into
+        Combines leads from LinkedIn, Reddit, Twitter, and Google into
         a unified lead list with scoring.
         """
-        self.emit_event("thought", "Aggregating results from all crews...")
+        self.emit_event("thought", "Aggregating results from all 4 crews...")
 
         try:
             # TODO: Parse crew outputs and extract structured leads
@@ -217,11 +264,12 @@ class ProspectingFlow(Flow[ProspectingState]):
                 "reddit": state.crew_results.get("reddit", {}).get("raw_output", ""),
                 "linkedin": state.crew_results.get("linkedin", {}).get("raw_output", ""),
                 "twitter": state.crew_results.get("twitter", {}).get("raw_output", ""),
+                "google": state.crew_results.get("google", {}).get("raw_output", ""),
                 "timestamp": "now"
             }]
 
             state.status = "completed"
-            self.emit_event("thought", f"Prospecting complete! Aggregated results from all crews.")
+            self.emit_event("thought", f"Prospecting complete! Aggregated results from all 4 crews.")
 
             return state
 

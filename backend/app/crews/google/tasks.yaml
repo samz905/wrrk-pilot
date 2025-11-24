@@ -1,0 +1,94 @@
+search_company_triggers:
+  description: |
+    Find companies with recent buying triggers related to: {search_query}
+
+    SEARCH STRATEGY:
+    Use Google SERP Search tool and Website Crawler tool to find company trigger events.
+
+    TOOL 1 - Google SERP Search (PRIMARY for finding articles):
+    Search for recent news about: {search_query}
+
+    Effective search queries to try:
+    1. FUNDING TRIGGERS:
+       - "[Industry] Series A funding" (past month)
+       - "[Industry] raises $" (past month)
+       - "startup funding [problem domain]"
+
+    2. LEADERSHIP CHANGES:
+       - "new CTO hired [industry]"
+       - "VP Sales appointed [industry]"
+       - "[job title] joins [industry]"
+
+    3. EXPANSION SIGNALS:
+       - "[industry] opens new office"
+       - "[industry] expands to [region]"
+       - "hiring spree [industry]"
+
+    4. PROBLEM ANNOUNCEMENTS:
+       - "company struggles with [problem]"
+       - "[industry] faces [challenge]"
+       - "data breach [industry]" (if relevant)
+
+    5. COMPETITOR MENTIONS:
+       - "switching from [competitor]"
+       - "[company] evaluating [tool category]"
+       - "replacing [incumbent solution]"
+
+    TOOL 2 - Website Crawler (SECONDARY for detailed context):
+    For the most promising articles found in SERP:
+    - Crawl the full article to extract:
+      - Exact company names mentioned
+      - Specific trigger details (funding amount, exec names, etc.)
+      - Timing information (when did this happen)
+      - Context about the company's needs
+
+    PRIORITIZATION CRITERIA:
+    - Recency: Events from last 30 days are HOT (likely actively buying)
+    - Authority: TechCrunch, Business Insider, industry publications > blogs
+    - Specificity: "DataCorp raised $50M" > "Startup raises funding"
+    - Relevance: Company's problem/trigger aligns with our solution
+
+    TIME FILTER: Use date_range="30d" or "90d" for recent triggers
+    RESULTS TARGET: 30-50 company trigger events
+
+  expected_output: |
+    A prioritized list of companies with recent buying triggers:
+
+    For each company include:
+
+    1. COMPANY NAME & TRIGGER:
+       - Exact company name
+       - Trigger type: funding, leadership_change, expansion, problem, competitor_mention
+       - Specific details: "$20M Series B" or "New CTO hired: Jane Smith"
+
+    2. TIMING:
+       - Date of trigger event
+       - Days ago (for urgency scoring)
+       - Buy window estimate: "Next 30-60 days likely active"
+
+    3. SOURCE INFORMATION:
+       - Article title and URL
+       - Publication (TechCrunch, etc.)
+       - Key quote from article showing the trigger
+
+    4. RELEVANCE SCORE (0-100):
+       - 90-100: Perfect match - company explicitly discussing our problem domain
+       - 70-89: Strong match - trigger type indicates need for our solution
+       - 50-69: Good match - industry/timing right, less explicit need
+       - Below 50: Filter out (weak signal)
+
+    5. NEXT STEPS:
+       - LinkedIn search suggestion: "VP of Sales at [Company]"
+       - Why this is actionable: "Just raised $50M, hiring 20 sales reps → needs CRM"
+
+    SUMMARY SECTION:
+    - Total triggers found
+    - Top 3 trigger types discovered
+    - Hottest companies (most recent/relevant)
+    - Recommended LinkedIn cross-reference strategy
+
+    NOTE: Google is great for COMPANY DISCOVERY but weak for CONTACT EXTRACTION.
+    Use these company names to then search LinkedIn for decision-makers at these
+    companies who are likely driving the buying process.
+
+  agent: google_researcher
