@@ -193,3 +193,66 @@ async def get_job_status(job_id: str):
         created_at=job.created_at,
         error=job.error
     )
+
+
+@router.get("/{job_id}/results")
+async def get_job_results(job_id: str):
+    """
+    Get final results of a completed prospecting job.
+
+    Returns the top 10 qualified leads with:
+    - Fit scores
+    - Intent signals
+    - Match reasons
+    - Contact information
+    - Priority levels
+
+    Perfect for demo - shows clean, structured lead data.
+    """
+    if job_id not in active_jobs:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    job = active_jobs[job_id]
+
+    if job.status == "running":
+        raise HTTPException(status_code=202, detail="Job still running, check status endpoint")
+
+    if job.status == "failed":
+        raise HTTPException(status_code=500, detail=f"Job failed: {job.error}")
+
+    if job.status != "completed" or not job.result:
+        raise HTTPException(status_code=404, detail="No results available yet")
+
+    # Extract structured results from the flow
+    try:
+        leads_data = job.result.leads if hasattr(job.result, 'leads') else []
+
+        if not leads_data:
+            return {
+                "job_id": job_id,
+                "query": job.query,
+                "status": "completed",
+                "lead_count": 0,
+                "leads": [],
+                "message": "No leads found"
+            }
+
+        # Get qualified leads output (top 10 with scores)
+        qualified_output = leads_data[0].get("qualified_leads", "") if leads_data else ""
+
+        return {
+            "job_id": job_id,
+            "query": job.query,
+            "status": "completed",
+            "pipeline": "Reddit → LinkedIn → Twitter → Google → Aggregation → Qualification",
+            "lead_count": "Top 10",
+            "qualified_leads_text": qualified_output,
+            "raw_results": {
+                "aggregation": leads_data[0].get("aggregated_results", "") if leads_data else "",
+                "platform_data": leads_data[0].get("raw_platform_data", {}) if leads_data else {}
+            },
+            "message": "Top 10 highest-quality leads identified and scored"
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing results: {str(e)}")

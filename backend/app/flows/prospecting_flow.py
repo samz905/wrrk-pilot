@@ -19,6 +19,7 @@ from crews.reddit.crew import RedditProspectingCrew
 from crews.twitter.crew import TwitterProspectingCrew
 from crews.google.crew import GoogleProspectingCrew
 from crews.aggregation.crew import AggregationCrew
+from crews.qualification.crew import QualificationCrew
 
 
 class ProspectingState(BaseModel):
@@ -41,9 +42,10 @@ class ProspectingFlow(Flow[ProspectingState]):
     3. Twitter Crew - Discovers conversations and pain points
     4. Google Crew - Finds company triggers (funding, leadership changes)
     5. Aggregation Crew - Deduplicates and merges leads across platforms
+    6. Qualification Crew - Scores and prioritizes leads, returns top 10
 
-    Platform crews run sequentially, then the Aggregation Crew consolidates
-    all results into unique leads with tier categorization.
+    Platform crews run sequentially, then Aggregation consolidates,
+    and finally Qualification scores and ranks the top 10 leads.
     Real-time events are streamed via SSE for UI visibility.
     """
 
@@ -68,7 +70,7 @@ class ProspectingFlow(Flow[ProspectingState]):
         self.emit_event("thought", "Initializing intelligent prospecting flow...")
         self.emit_event("thought", f"Search query: {self.state.query}")
         self.emit_event("thought", f"Target: {self.state.max_leads} high-quality leads")
-        self.emit_event("thought", "Will orchestrate 5 crews: Reddit → LinkedIn → Twitter → Google → Aggregation")
+        self.emit_event("thought", "Will orchestrate 6 crews: Reddit → LinkedIn → Twitter → Google → Aggregation → Qualification")
 
         self.state.status = "searching"
         return self.state
@@ -301,9 +303,9 @@ class ProspectingFlow(Flow[ProspectingState]):
                 "timestamp": "now"
             }]
 
-            state.status = "completed"
+            state.status = "processing"
             self.emit_event("crew_completed", "Aggregation Crew finished - Leads deduplicated")
-            self.emit_event("thought", "Prospecting complete! All 5 crews executed successfully.")
+            self.emit_event("thought", "Moving to qualification...")
 
             return state
 
@@ -315,4 +317,62 @@ class ProspectingFlow(Flow[ProspectingState]):
                 "status": "failed"
             }
             self.emit_event("error", f"Aggregation Crew failed: {str(e)}")
+            return state
+
+    @listen(aggregate_results)
+    def qualify_leads(self, state: ProspectingState):
+        """
+        Run Qualification Crew to score and prioritize leads.
+
+        Takes deduplicated leads from Aggregation Crew and:
+        - Scores each lead against ICP (Ideal Customer Profile)
+        - Calculates final quality score (0-100)
+        - Prioritizes leads (hot/warm/cold/disqualified)
+        - Returns top 10 highest-quality leads
+        """
+        self.emit_event("crew_started", "Qualification Crew - Scoring and prioritizing leads...")
+
+        try:
+            # Initialize Qualification crew
+            qualification_crew = QualificationCrew()
+
+            # Prepare inputs from aggregation results
+            inputs = {
+                "deduplicated_leads": state.crew_results.get("aggregation", {}).get("deduplicated_output", "No deduplicated leads")
+            }
+
+            self.emit_event("thought", "Scoring leads against ICP and calculating quality scores...")
+
+            # Execute Qualification crew
+            result = qualification_crew.crew().kickoff(inputs=inputs)
+
+            # Store qualified results
+            state.crew_results["qualification"] = {
+                "qualified_output": str(result),
+                "status": "completed"
+            }
+
+            # Update leads with qualified results
+            state.leads = [{
+                "qualified_leads": str(result),
+                "aggregated_results": state.crew_results.get("aggregation", {}).get("deduplicated_output", ""),
+                "raw_platform_data": state.leads[0].get("raw_platform_data", {}) if state.leads else {},
+                "timestamp": "now"
+            }]
+
+            state.status = "completed"
+            self.emit_event("crew_completed", "Qualification Crew finished - Top 10 leads identified")
+            self.emit_event("thought", "Prospecting complete! All 6 crews executed successfully.")
+            self.emit_event("thought", "Final pipeline: Reddit → LinkedIn → Twitter → Google → Aggregation → Qualification")
+
+            return state
+
+        except Exception as e:
+            state.status = "failed"
+            state.error = str(e)
+            state.crew_results["qualification"] = {
+                "error": str(e),
+                "status": "failed"
+            }
+            self.emit_event("error", f"Qualification Crew failed: {str(e)}")
             return state

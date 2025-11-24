@@ -1,0 +1,177 @@
+qualify_and_score_leads:
+  description: |
+    Score and qualify deduplicated leads to identify the top 10 highest-quality prospects.
+
+    INPUT DATA:
+    You will receive deduplicated leads from the Aggregation Crew: {deduplicated_leads}
+
+    TOOLS AVAILABLE:
+    1. ICP Matcher - Scores leads against Ideal Customer Profile (0-100)
+    2. Lead Quality Scorer - Combines all factors into final score
+
+    QUALIFICATION PROCESS:
+
+    STEP 1: PARSE DEDUPLICATED LEADS
+    Extract from each lead:
+    - Name and title
+    - Company name
+    - Contact info (email, LinkedIn, Twitter)
+    - Intent signals (what they said/did on each platform)
+    - Platform tier (1/2/3)
+    - Company domain
+    - Recency
+
+    STEP 2: SCORE EACH LEAD WITH ICP MATCHER
+    For each lead, use the ICP Matcher tool to evaluate:
+    - Job title (authority level)
+    - Industry/company type
+    - Intent signal strength
+
+    ICP Matcher returns:
+    - Score (0-100)
+    - Fit level (excellent/good/fair/poor)
+    - Reasons for the score
+
+    STEP 3: CALCULATE FINAL SCORE WITH LEAD SCORER
+    For each lead, use Lead Quality Scorer to combine:
+    - ICP score (from Step 2)
+    - Platform tier (1/2/3)
+    - Contact quality (has_email, has_linkedin)
+    - Intent strength (high/medium/low)
+    - Data completeness (% of fields populated)
+
+    Lead Scorer returns:
+    - Final score (0-100)
+    - Priority (hot/warm/cold/disqualified)
+    - Recommendation
+    - Score breakdown
+
+    STEP 4: RANK AND FILTER
+    - Sort all leads by final score (highest first)
+    - Filter out leads scoring < 50 (disqualified)
+    - Select TOP 10 highest-scoring leads
+
+    STEP 5: EXPLAIN EACH TOP LEAD
+    For each of the top 10 leads, provide:
+    - Why they're a good fit (match reason)
+    - Key intent signals across platforms
+    - Recommended outreach approach
+
+    OUTPUT FORMAT:
+    Return ONLY the top 10 leads in this exact format:
+
+    ```
+    QUALIFICATION SUMMARY:
+    - Total leads evaluated: [number]
+    - Leads scoring 50+: [number]
+    - Top 10 average score: [number]
+
+    TOP 10 QUALIFIED LEADS:
+
+    LEAD 1 (Score: [0-100]) - [PRIORITY: HOT/WARM/COLD]
+    Name: [Full name or Unknown]
+    Title: [Job title]
+    Company: [Company name]
+    Contact:
+      - Email: [email if available]
+      - LinkedIn: [URL if available]
+      - Twitter: [handle if available]
+
+    Fit Score: [0-100]
+    ICP Match:
+      - Title Score: [0-50] - [C-level/VP/Director/Manager/IC]
+      - Industry Score: [0-25] - [Perfect fit/Acceptable/Unknown]
+      - Signals Score: [0-25] - [Strong intent/Pain points/Some interest]
+
+    Final Score Breakdown:
+      - ICP contribution: [points]
+      - Platform diversity (Tier [1/2/3]): [points]
+      - Contact quality: [points]
+      - Intent strength: [points]
+      - Data completeness: [points]
+
+    Match Reason: [1-2 sentences explaining why this is a valuable lead]
+
+    Intent Signals:
+      - [Platform]: [What they said/did]
+      - [Platform]: [What they said/did]
+
+    Platforms Found: [LinkedIn, Twitter, Reddit, Google]
+    Recency: [Most recent signal]
+    Domain: [company domain]
+
+    Recommended Action: [Immediate outreach/Prioritize/Nurture/Skip]
+
+    ---
+
+    LEAD 2 (Score: [0-100]) - [PRIORITY]
+    [... same format ...]
+
+    [Continue for all 10 leads]
+    ```
+
+    SCORING GUIDELINES:
+    - HOT (80-100): C-level/VP with strong buying intent at tech companies
+    - WARM (60-79): Directors/managers with pain points at relevant companies
+    - COLD (40-59): Questionable fit or weak intent
+    - Disqualified (<40): Wrong role, wrong industry, or no intent
+
+    IMPORTANT:
+    - Only return the TOP 10 leads
+    - Quality over quantity - be ruthless about filtering
+    - Explain match reasons clearly for each lead
+    - If fewer than 10 leads score 50+, return only those that qualify
+
+  expected_output: |
+    A ranked list of the top 10 highest-quality leads with detailed scoring breakdowns.
+
+    Example output:
+
+    ```
+    QUALIFICATION SUMMARY:
+    - Total leads evaluated: 45
+    - Leads scoring 50+: 18
+    - Top 10 average score: 76
+
+    TOP 10 QUALIFIED LEADS:
+
+    LEAD 1 (Score: 92) - PRIORITY: HOT
+    Name: Sarah Chen
+    Title: VP of Sales
+    Company: DataTech Corp
+    Contact:
+      - Email: sarah.chen@datatech.com
+      - LinkedIn: linkedin.com/in/sarachen
+      - Twitter: @sarachen
+
+    Fit Score: 85
+    ICP Match:
+      - Title Score: 45 - VP level in revenue organization
+      - Industry Score: 25 - Perfect fit (B2B SaaS)
+      - Signals Score: 25 - Strong buying intent detected
+
+    Final Score Breakdown:
+      - ICP contribution: 34 (from 85 ICP score)
+      - Platform diversity (Tier 2): 15
+      - Contact quality: 20 (email + LinkedIn)
+      - Intent strength: 15 (high intent)
+      - Data completeness: 8
+
+    Match Reason: VP of Sales at B2B SaaS company actively evaluating CRM alternatives with strong buying signals across multiple platforms. High authority decision-maker with immediate need.
+
+    Intent Signals:
+      - LinkedIn: Posted about evaluating CRM alternatives 5 days ago
+      - Twitter: "Salesforce is way too expensive for what we need" 3 days ago
+
+    Platforms Found: LinkedIn, Twitter
+    Recency: 3 days ago
+    Domain: datatech.com
+
+    Recommended Action: Immediate outreach - reach out via LinkedIn with personalized message addressing pricing concerns
+
+    ---
+
+    [... 9 more leads in same format ...]
+    ```
+
+  agent: qualification_specialist
