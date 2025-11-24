@@ -1,0 +1,149 @@
+merge_and_deduplicate_leads:
+  description: |
+    Merge and deduplicate leads from all platform crews.
+
+    INPUT DATA:
+    You will receive lead data from 4 platform crews:
+    - LinkedIn leads: {linkedin_leads}
+    - Reddit leads: {reddit_leads}
+    - Twitter leads: {twitter_leads}
+    - Google leads: {google_leads}
+
+    TOOLS AVAILABLE:
+    1. Fuzzy Name and Company Matcher - Compare names/companies for duplicates
+    2. Company Domain Extractor - Extract domains for matching
+
+    DEDUPLICATION STRATEGY:
+
+    STEP 1: PARSE LEADS FROM EACH PLATFORM
+    Extract structured data from each crew's output:
+    - Name (if available)
+    - Company name
+    - Title/Role
+    - LinkedIn URL
+    - Twitter handle
+    - Email (if found)
+    - Intent signal (what they said/did)
+    - Platform source
+    - Timestamp/recency
+
+    STEP 2: NORMALIZE DATA
+    - Clean names: "John Smith" vs "J. Smith"
+    - Clean companies: "DataTech Inc" vs "DataTech"
+    - Extract domains from all sources
+    - Standardize formats
+
+    STEP 3: IDENTIFY DUPLICATES
+    Use Fuzzy Matcher tool to compare leads. A duplicate is when:
+
+    HIGH CONFIDENCE (Definitive duplicate):
+    - Same LinkedIn URL (100% match)
+    - Same email address (100% match)
+    - Exact name + company match after normalization (95%+ match)
+
+    MEDIUM CONFIDENCE (Likely duplicate):
+    - Fuzzy name match (>80%) + exact company match
+    - Same company domain + similar name (>75%)
+
+    LOW CONFIDENCE (Keep separate):
+    - Match score <75%
+    - Same company but different people
+
+    STEP 4: MERGE DUPLICATES
+    When merging duplicate records, combine:
+    - Best contact info: LinkedIn URL > Email > Twitter handle
+    - All intent signals from all platforms
+    - Most recent timestamp
+    - All platform sources (mark as "found on: LinkedIn, Twitter, Reddit")
+    - Highest quality data for each field
+
+    STEP 5: QUALITY FILTERING
+    Remove leads that are:
+    - Missing both name AND company (can't identify who they are)
+    - Marked as "seller" or "vendor" in intent signals
+    - Duplicate records (keep only merged version)
+    - Obviously spam or bot accounts
+
+    STEP 6: CATEGORIZE BY SOURCE RICHNESS
+    Label each lead:
+    - TIER 1: Found on 3+ platforms (very high confidence)
+    - TIER 2: Found on 2 platforms (high confidence)
+    - TIER 3: Found on 1 platform (medium confidence)
+
+    OUTPUT FORMAT:
+    For each unique lead, provide:
+    ```
+    Name: [Full name or "Unknown" if N/A]
+    Company: [Company name]
+    Title: [Job title if available]
+    Contact Info:
+      - LinkedIn: [URL if available]
+      - Email: [Email if available]
+      - Twitter: [Handle if available]
+
+    Intent Signals (combined from all platforms):
+      - [Platform 1]: [What they said/did]
+      - [Platform 2]: [What they said/did]
+
+    Source Platforms: [LinkedIn, Reddit, Twitter, Google]
+    Tier: [1/2/3 based on # of platforms]
+    Recency: [Most recent signal timestamp]
+    Company Domain: [extracted domain]
+
+    Duplicate Info: [If merged, list the sources]
+    ```
+
+    METRICS TO TRACK:
+    - Total leads received from all crews
+    - Number of duplicates found
+    - Number of unique leads after deduplication
+    - Breakdown by tier (1/2/3)
+    - Quality filtering (how many removed)
+
+  expected_output: |
+    A clean, deduplicated list of unique leads with consolidated data.
+
+    FORMAT:
+    ```
+    AGGREGATION SUMMARY:
+    - Total raw leads received: [number]
+    - Duplicates identified: [number]
+    - Unique leads after dedup: [number]
+    - Quality filtered out: [number]
+    - Final lead count: [number]
+
+    TIER BREAKDOWN:
+    - Tier 1 (3+ platforms): [number] leads
+    - Tier 2 (2 platforms): [number] leads
+    - Tier 3 (1 platform): [number] leads
+
+    DEDUPLICATED LEADS:
+
+    LEAD 1:
+    Name: Sarah Chen
+    Company: DataTech Corp
+    Title: VP of Sales
+    Contact:
+      - LinkedIn: linkedin.com/in/sarachen
+      - Email: sarah.chen@datatech.com
+    Intent Signals:
+      - LinkedIn: Posted about evaluating CRM alternatives 5 days ago
+      - Twitter: Tweeted "Salesforce is too expensive" 3 days ago
+    Platforms: LinkedIn, Twitter
+    Tier: 2
+    Recency: 3 days ago
+    Domain: datatech.com
+
+    [Duplicate of LinkedIn lead #5 and Twitter lead #12 - merged]
+
+    LEAD 2:
+    [... continue for all unique leads ...]
+    ```
+
+    IMPORTANT NOTES:
+    - Quality over quantity - better to have 50 clean leads than 100 with duplicates
+    - Preserve all intent signals when merging
+    - Mark confidence clearly (Tier 1/2/3)
+    - Flag any ambiguous matches for human review
+
+  agent: aggregation_specialist

@@ -18,6 +18,7 @@ from crews.linkedin.crew import LinkedInProspectingCrew
 from crews.reddit.crew import RedditProspectingCrew
 from crews.twitter.crew import TwitterProspectingCrew
 from crews.google.crew import GoogleProspectingCrew
+from crews.aggregation.crew import AggregationCrew
 
 
 class ProspectingState(BaseModel):
@@ -39,8 +40,10 @@ class ProspectingFlow(Flow[ProspectingState]):
     2. LinkedIn Crew - Identifies decision-makers and enriches profiles
     3. Twitter Crew - Discovers conversations and pain points
     4. Google Crew - Finds company triggers (funding, leadership changes)
+    5. Aggregation Crew - Deduplicates and merges leads across platforms
 
-    Each crew runs independently and results are aggregated.
+    Platform crews run sequentially, then the Aggregation Crew consolidates
+    all results into unique leads with tier categorization.
     Real-time events are streamed via SSE for UI visibility.
     """
 
@@ -65,7 +68,7 @@ class ProspectingFlow(Flow[ProspectingState]):
         self.emit_event("thought", "Initializing intelligent prospecting flow...")
         self.emit_event("thought", f"Search query: {self.state.query}")
         self.emit_event("thought", f"Target: {self.state.max_leads} high-quality leads")
-        self.emit_event("thought", "Will orchestrate LinkedIn, Reddit, Twitter, and Google crews")
+        self.emit_event("thought", "Will orchestrate 5 crews: Reddit → LinkedIn → Twitter → Google → Aggregation")
 
         self.state.status = "searching"
         return self.state
@@ -250,31 +253,66 @@ class ProspectingFlow(Flow[ProspectingState]):
     @listen(google_prospecting)
     def aggregate_results(self, state: ProspectingState):
         """
-        Aggregate results from all crews.
+        Run Aggregation Crew to deduplicate and merge leads.
 
-        Combines leads from LinkedIn, Reddit, Twitter, and Google into
-        a unified lead list with scoring.
+        Takes raw outputs from all 4 platform crews (LinkedIn, Reddit, Twitter, Google)
+        and uses the Aggregation Crew to:
+        - Deduplicate leads across platforms
+        - Merge duplicate records with consolidated intent signals
+        - Categorize leads by tier (1/2/3 based on # of platforms found)
+        - Extract company domains
+        - Filter low-quality leads
         """
-        self.emit_event("thought", "Aggregating results from all 4 crews...")
+        self.emit_event("crew_started", "Aggregation Crew - Deduplicating and merging leads...")
 
         try:
-            # TODO: Parse crew outputs and extract structured leads
-            # For now, store raw results
+            # Initialize Aggregation crew
+            aggregation_crew = AggregationCrew()
+
+            # Prepare inputs from all platform crews
+            inputs = {
+                "linkedin_leads": state.crew_results.get("linkedin", {}).get("raw_output", "No LinkedIn results"),
+                "reddit_leads": state.crew_results.get("reddit", {}).get("raw_output", "No Reddit results"),
+                "twitter_leads": state.crew_results.get("twitter", {}).get("raw_output", "No Twitter results"),
+                "google_leads": state.crew_results.get("google", {}).get("raw_output", "No Google results")
+            }
+
+            self.emit_event("thought", "Running deduplication across all platform results...")
+
+            # Execute Aggregation crew
+            result = aggregation_crew.crew().kickoff(inputs=inputs)
+
+            # Store deduplicated results
+            state.crew_results["aggregation"] = {
+                "deduplicated_output": str(result),
+                "status": "completed"
+            }
+
+            # Parse the aggregated output into structured leads
+            # For now, store the full aggregation output as a single "lead" entry
             state.leads = [{
-                "reddit": state.crew_results.get("reddit", {}).get("raw_output", ""),
-                "linkedin": state.crew_results.get("linkedin", {}).get("raw_output", ""),
-                "twitter": state.crew_results.get("twitter", {}).get("raw_output", ""),
-                "google": state.crew_results.get("google", {}).get("raw_output", ""),
+                "aggregated_results": str(result),
+                "raw_platform_data": {
+                    "reddit": state.crew_results.get("reddit", {}).get("raw_output", ""),
+                    "linkedin": state.crew_results.get("linkedin", {}).get("raw_output", ""),
+                    "twitter": state.crew_results.get("twitter", {}).get("raw_output", ""),
+                    "google": state.crew_results.get("google", {}).get("raw_output", "")
+                },
                 "timestamp": "now"
             }]
 
             state.status = "completed"
-            self.emit_event("thought", f"Prospecting complete! Aggregated results from all 4 crews.")
+            self.emit_event("crew_completed", "Aggregation Crew finished - Leads deduplicated")
+            self.emit_event("thought", "Prospecting complete! All 5 crews executed successfully.")
 
             return state
 
         except Exception as e:
             state.status = "failed"
             state.error = str(e)
-            self.emit_event("error", f"Error aggregating results: {str(e)}")
+            state.crew_results["aggregation"] = {
+                "error": str(e),
+                "status": "failed"
+            }
+            self.emit_event("error", f"Aggregation Crew failed: {str(e)}")
             return state

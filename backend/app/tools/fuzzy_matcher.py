@@ -23,12 +23,7 @@ class FuzzyMatcherTool(BaseTool):
     Returns a match score (0-100) and whether it's a match (>80 = match).
     """
 
-    def _run(
-        self,
-        string1: str = Field(..., description="First name or company"),
-        string2: str = Field(..., description="Second name or company"),
-        match_type: str = Field(default="name", description="Type: 'name' or 'company'")
-    ) -> str:
+    def _run(self, string1: str, string2: str, match_type: str = "name") -> str:
         """
         Compare two strings and determine if they match.
 

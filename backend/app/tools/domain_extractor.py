@@ -23,11 +23,7 @@ class DomainExtractorTool(BaseTool):
     Returns the extracted domain or a best guess based on company name.
     """
 
-    def _run(
-        self,
-        text: str = Field(..., description="Text to extract domain from"),
-        company_name: str = Field(default="", description="Company name for fallback guess")
-    ) -> str:
+    def _run(self, text: str, company_name: str = "") -> str:
         """
         Extract company domain from text or generate from company name.
 
