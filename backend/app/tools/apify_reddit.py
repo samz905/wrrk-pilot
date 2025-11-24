@@ -1,9 +1,11 @@
 """Reddit scraping tool using Apify - Find intent signals from Reddit discussions."""
 import os
-from typing import Type, Optional
+import json
+from typing import Type, Optional, Tuple
 from crewai.tools import BaseTool
 from pydantic import BaseModel, Field
 from apify_client import ApifyClient
+from openai import OpenAI
 
 
 class ApifyRedditSearchInput(BaseModel):
@@ -17,10 +19,10 @@ class ApifyRedditSearchInput(BaseModel):
 
 class ApifyRedditSearchTool(BaseTool):
     """
-    Search Reddit for posts and discussions showing buying intent and pain points.
+    Search Reddit for posts and discussions showing genuine interest and pain points.
 
     This tool finds people actively discussing problems, asking for recommendations,
-    and complaining about existing solutions - all strong intent signals.
+    and complaining about existing solutions across ANY topic or industry.
 
     Best for finding:
     - Help requests: "Can anyone recommend a [solution]?"
@@ -28,12 +30,9 @@ class ApifyRedditSearchTool(BaseTool):
     - Alternative searches: "Cheaper alternative to [competitor]?"
     - Problem discussions: "How do you solve [specific problem]?"
 
-    Key subreddits for B2B prospecting:
-    - r/sales - Sales professionals
-    - r/entrepreneur - Founders with budget authority
-    - r/startups - Early-stage companies
-    - r/SaaS - SaaS operators
-    - r/smallbusiness - Small business owners
+    Works across all subreddits - from technical communities to consumer forums,
+    from business subreddits to hobbyist groups. The search query determines
+    which communities are most relevant.
     """
 
     name: str = "Reddit Discussion Search"
@@ -143,34 +142,44 @@ class ApifyRedditSearchTool(BaseTool):
         output.append("=" * 70)
         output.append(f"\nFound {len(results)} Reddit discussions:\n")
 
-        for idx, post in enumerate(results, 1):
-            # Extract post data (actual field names from actor output)
-            title = post.get('title', 'No title')
-            text = post.get('body', post.get('text', ''))  # 'body' is the actual field name
-            author = post.get('author', 'Unknown')
-            subreddit = post.get('subreddit', 'Unknown')
-            score = post.get('score', 0)
-            num_comments = post.get('num_comments', 0)  # Actual field name
-            created = post.get('created_utc', post.get('created', 'Unknown'))  # Unix timestamp
-            url = post.get('url', 'No URL')
+        # STEP 1: Extract all post data for batch scoring
+        posts_data = []
+        for post in results:
+            posts_data.append({
+                'title': post.get('title', 'No title'),
+                'text': post.get('body', post.get('text', ''))[:800],  # Truncate for token limits
+                'author': post.get('author', 'Unknown'),
+                'subreddit': post.get('subreddit', 'Unknown'),
+                'score': post.get('score', 0),
+                'num_comments': post.get('num_comments', 0),
+                'created': post.get('created_utc', post.get('created', 'Unknown')),
+                'url': post.get('url', 'No URL')
+            })
 
-            # Calculate intent score based on engagement and keywords
-            intent_score = self._calculate_intent_score(title, text, score, num_comments)
+        # STEP 2: Batch score ALL posts in ONE API call
+        print(f"\n[INFO] Batch scoring {len(posts_data)} posts with LLM...")
+        scored_posts = self._batch_score_posts(query, posts_data)
+
+        # STEP 3: Format output with scores
+        for idx, (post_data, score_data) in enumerate(zip(posts_data, scored_posts), 1):
+            intent_score = score_data.get('score', 50)
+            reasoning = score_data.get('reasoning', 'No reasoning provided')
 
             output.append(f"Intent Signal #{idx}")
             output.append("─" * 70)
-            output.append(f"Title: {title}")
-            if text and len(text) > 0:
+            output.append(f"Title: {post_data['title']}")
+            if post_data['text'] and len(post_data['text']) > 0:
                 # Truncate long posts
-                display_text = text[:300] + "..." if len(text) > 300 else text
+                display_text = post_data['text'][:300] + "..." if len(post_data['text']) > 300 else post_data['text']
                 output.append(f"Content: {display_text}")
-            output.append(f"\nSubreddit: r/{subreddit}")
-            output.append(f"Author: u/{author}")
-            output.append(f"Engagement: {score} upvotes, {num_comments} comments")
-            output.append(f"Posted: {created}")
-            output.append(f"URL: {url}")
+            output.append(f"\nSubreddit: r/{post_data['subreddit']}")
+            output.append(f"Author: u/{post_data['author']}")
+            output.append(f"Engagement: {post_data['score']} upvotes, {post_data['num_comments']} comments")
+            output.append(f"Posted: {post_data['created']}")
+            output.append(f"URL: {post_data['url']}")
             output.append(f"\n💡 Intent Score: {intent_score}/100")
             output.append(f"Intent Level: {self._get_intent_level(intent_score)}")
+            output.append(f"Reasoning: {reasoning}")
             output.append("")
 
         output.append("=" * 70)
@@ -185,89 +194,198 @@ class ApifyRedditSearchTool(BaseTool):
 
         return "\n".join(output)
 
-    def _calculate_intent_score(self, title: str, text: str, score: int, num_comments: int) -> int:
+    def _batch_score_posts(self, query: str, posts: list) -> list:
         """
-        Calculate intent signal strength (0-100).
+        Score ALL posts in a SINGLE LLM API call for maximum efficiency.
 
-        Based on:
-        - Disqualifying signals (filter out sellers/promoters)
-        - Keyword analysis (35 points)
-        - Engagement metrics (35 points)
-        - Discussion depth (30 points)
+        Takes up to 100 posts and returns scores for all in one request.
+        Returns list of dicts: [{"score": 85, "reasoning": "..."}, ...]
         """
 
-        intent_score = 0
-        combined_text = (title + " " + text).lower()
+        if not posts:
+            return []
 
-        # DISQUALIFYING SIGNALS - Filter out sellers/promoters
-        seller_keywords = [
-            'i built', 'we built', 'i created', 'we created', 'i made', 'we made',
-            'my product', 'our product', 'my tool', 'our tool', 'my solution',
-            'check out my', 'try my', 'launching', 'just launched', 'built this',
-            'introducing my', 'proud to announce', 'excited to share',
-            'signup', 'sign up for', 'get started with my', 'free trial'
-        ]
-        if any(kw in combined_text for kw in seller_keywords):
-            return 5  # Seller/promoter, not a buyer
+        # Build batch prompt with all posts
+        posts_text = ""
+        for i, post in enumerate(posts, 1):
+            posts_text += f"\n---POST {i}---\n"
+            posts_text += f"Title: {post['title']}\n"
+            posts_text += f"Subreddit: r/{post['subreddit']}\n"
+            posts_text += f"Engagement: {post['score']} upvotes, {post['num_comments']} comments\n"
+            if post['text'] and len(post['text'].strip()) > 0:
+                # Show first 300 chars of content
+                content_preview = post['text'][:300] + "..." if len(post['text']) > 300 else post['text']
+                posts_text += f"Content: {content_preview}\n"
 
-        # People who already solved their problem
-        solved_keywords = [
-            'i solved', 'we solved', 'here is how i fixed', 'problem solved',
-            'finally found a solution', 'no longer need', 'already have',
-            'switched to and love it', 'now using and happy'
-        ]
-        if any(kw in combined_text for kw in solved_keywords):
-            return 10  # Problem already solved
+        prompt = f"""Score these {len(posts)} Reddit posts for relevance and buying intent related to: "{query}"
 
-        # Keyword scoring (35 points)
-        keyword_score = 0
+{posts_text}
 
-        # Explicit requests (highest intent)
-        request_keywords = ['recommend', 'suggestion', 'looking for', 'need help', 'what do you use', 'alternatives']
-        if any(kw in combined_text for kw in request_keywords):
-            keyword_score = 35
+For EACH post (1 through {len(posts)}), analyze:
+1. RELEVANCE: Is it actually about the search query topic?
+2. INTENT TYPE:
+   - Actively seeking recommendations/solutions → 80-100 (HIGHEST)
+   - Complaining about current tools → 60-79 (HIGH)
+   - Comparing/evaluating alternatives → 60-79 (HIGH)
+   - Discussing a problem that needs solving → 40-59 (MEDIUM)
+   - Just sharing general thoughts → 20-39 (LOW)
+   - Promoting their own product → 5-19 (DISQUALIFY)
+   - Already solved their problem → 10-19 (LOW)
+3. ENGAGEMENT: High upvotes/comments = validated pain point
 
-        # Complaints about competitors
-        elif any(word in combined_text for word in ['frustrated', 'hate', 'terrible', 'awful', 'sucks', 'expensive']):
-            keyword_score = 30
+SCORING RUBRIC:
+- 80-100: Explicit request for solution + highly relevant + strong engagement
+- 60-79: Clear pain point or complaint + relevant + decent engagement
+- 40-59: Problem discussion + somewhat relevant
+- 20-39: Tangentially related or weak signal
+- 5-19: Off-topic or seller/promoter
 
-        # Evaluation/comparison
-        elif any(word in combined_text for word in ['vs', 'versus', 'compare', 'better than', 'switch from']):
-            keyword_score = 25
+Return ONLY a JSON array with {len(posts)} objects (no markdown, no code blocks):
+[
+  {{"post_number": 1, "score": 85, "reasoning": "Explicitly asking for PM tool recommendations"}},
+  {{"post_number": 2, "score": 45, "reasoning": "Discusses project tracking but not seeking solutions"}},
+  ...
+]"""
 
-        # Problem discussion
-        elif any(word in combined_text for word in ['problem', 'issue', 'struggle', 'difficult', 'challenge']):
-            keyword_score = 20
+        try:
+            # Single API call for ALL posts
+            client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-        # General interest
+            print(f"[INFO] Making single batch API call for {len(posts)} posts...")
+
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "You are an expert at analyzing online discussions for buyer intent and relevance. Return only valid JSON arrays."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.3,
+                max_tokens=2000  # Enough for ~100 posts with scores and reasoning
+            )
+
+            # Parse LLM response
+            result_text = response.choices[0].message.content.strip()
+
+            # Clean up common formatting issues
+            result_text = result_text.replace("```json", "").replace("```", "").strip()
+
+            scores_array = json.loads(result_text)
+
+            print(f"[INFO] Successfully scored {len(scores_array)} posts in 1 API call")
+
+            # Validate we got scores for all posts
+            if len(scores_array) != len(posts):
+                print(f"[WARNING] Expected {len(posts)} scores but got {len(scores_array)}")
+
+            return scores_array
+
+        except json.JSONDecodeError as e:
+            print(f"[ERROR] Failed to parse LLM JSON response: {e}")
+            print(f"[DEBUG] Raw response: {result_text[:500]}")
+            # Return fallback scores
+            return [{"score": 50, "reasoning": "Batch scoring parse error"} for _ in posts]
+
+        except Exception as e:
+            print(f"[ERROR] Batch scoring failed: {e}")
+            import traceback
+            traceback.print_exc()
+            # Return fallback scores
+            return [{"score": 50, "reasoning": "Batch scoring API error"} for _ in posts]
+
+    def _calculate_intent_score_llm(self, query: str, title: str, text: str, score: int, num_comments: int) -> Tuple[int, str]:
+        """
+        Use LLM reasoning to calculate intent signal strength (0-100) and explain why.
+
+        This leverages GPT-4o-mini's ability to understand context, detect subtle patterns,
+        and make nuanced judgments that keyword matching cannot achieve.
+        """
+
+        # Truncate very long posts to stay within token limits
+        post_text = text[:800] if len(text) > 800 else text
+
+        # Build prompt for LLM
+        prompt = f"""Analyze this Reddit post to determine if it shows genuine interest or buying intent related to the search query.
+
+SEARCH QUERY: {query}
+
+REDDIT POST:
+Title: {title}
+Content: {post_text}
+
+Engagement: {score} upvotes, {num_comments} comments
+
+ANALYSIS GUIDELINES:
+1. Relevance: Is this post actually about the search query topic? Or is it off-topic?
+2. Intent Type: Is the person:
+   - Actively seeking recommendations/solutions (HIGHEST INTENT)
+   - Complaining about current tools (HIGH INTENT)
+   - Comparing/evaluating alternatives (HIGH INTENT)
+   - Discussing a problem that needs solving (MEDIUM INTENT)
+   - Just sharing general thoughts (LOW INTENT)
+   - Promoting their own product (DISQUALIFY - score 5)
+   - Already solved their problem (LOW INTENT - score 10)
+
+3. Engagement Context: High upvotes/comments suggest community validation of the pain point
+
+SCORING RUBRIC:
+- 80-100: Explicit request for solution + highly relevant + strong engagement
+- 60-79: Clear pain point or complaint + relevant + decent engagement
+- 40-59: Problem discussion + somewhat relevant
+- 20-39: Tangentially related or weak signal
+- 5-19: Off-topic or seller/promoter
+
+Return ONLY a JSON object (no markdown, no code blocks):
+{{"score": <0-100>, "reasoning": "<1-2 sentence explanation>"}}"""
+
+        try:
+            # Call GPT-4o-mini for intent analysis
+            client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "You are an expert at analyzing online discussions for buyer intent. Return only valid JSON."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.3,
+                max_tokens=150
+            )
+
+            # Parse LLM response
+            result_text = response.choices[0].message.content.strip()
+
+            # Clean up common formatting issues
+            result_text = result_text.replace("```json", "").replace("```", "").strip()
+
+            result = json.loads(result_text)
+            intent_score = int(result.get("score", 50))
+            reasoning = result.get("reasoning", "LLM analysis completed")
+
+            return (min(max(intent_score, 0), 100), reasoning)
+
+        except Exception as e:
+            print(f"[WARNING] LLM intent scoring failed: {e}")
+            # Fallback to simple heuristic if LLM fails
+            return self._fallback_intent_score(query, title, post_text, score, num_comments)
+
+    def _fallback_intent_score(self, query: str, title: str, text: str, score: int, num_comments: int) -> Tuple[int, str]:
+        """Fallback scoring if LLM call fails."""
+        combined = (title + " " + text).lower()
+
+        # Basic relevance check
+        query_words = query.lower().split()
+        if not any(word in combined for word in query_words if len(word) > 3):
+            return (15, "Low relevance to query")
+
+        # Simple pattern matching
+        if any(kw in combined for kw in ['recommend', 'looking for', 'need help']):
+            return (70, "Request for recommendations")
+        elif any(kw in combined for kw in ['frustrated', 'hate', 'expensive']):
+            return (60, "Complaint about current solution")
+        elif num_comments >= 20:
+            return (55, "High engagement discussion")
         else:
-            keyword_score = 10
-
-        intent_score += keyword_score
-
-        # Engagement scoring (35 points max)
-        # High upvotes = community validation of the problem
-        upvote_score = min(score / 10, 20)  # Max 20 points (200+ upvotes)
-        intent_score += upvote_score
-
-        # Comment count scoring (15 points max)
-        comment_score = min(num_comments / 2, 15)  # Max 15 points (30+ comments)
-        intent_score += comment_score
-
-        # Discussion depth (30 points)
-        # More comments = more people discussing = validated pain point
-        if num_comments >= 20:
-            discussion_score = 30  # Very active discussion
-        elif num_comments >= 10:
-            discussion_score = 20
-        elif num_comments >= 5:
-            discussion_score = 10
-        else:
-            discussion_score = 5
-
-        intent_score += discussion_score
-
-        return min(int(intent_score), 100)
+            return (40, "General discussion")
 
     def _get_intent_level(self, score: int) -> str:
         """Convert numerical score to intent level."""

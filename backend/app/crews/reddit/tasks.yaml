@@ -1,13 +1,11 @@
 search_reddit_discussions:
   description: |
-    Find Reddit discussions showing REAL BUYING INTENT for: {search_query}
+    Find Reddit discussions showing GENUINE INTEREST or PROBLEMS related to: {search_query}
 
-    TARGET SUBREDDITS (prioritize these):
-    - r/sales - Sales professionals discussing tools and pain points
-    - r/entrepreneur - Founders with budget authority
-    - r/startups - Early-stage companies evaluating first tools
-    - r/SaaS - SaaS operators and founders
-    - r/smallbusiness - Small business owners (budget-conscious)
+    SEARCH APPROACH:
+    - Search GLOBALLY across all Reddit (do NOT limit to specific subreddits)
+    - Let Reddit's algorithm identify the most relevant communities for this topic
+    - Focus on finding posts where people express real problems or needs
 
     SEARCH STRATEGY:
     Use the Reddit Discussion Search tool to find posts matching these patterns:
@@ -62,8 +60,8 @@ search_reddit_discussions:
        - Post age (timing)
 
     3. SUBREDDIT CONTEXT:
-       - Which subreddit (indicates audience type)
-       - Why this subreddit matters (r/entrepreneur = founders, r/sales = professionals)
+       - Which subreddit (indicates community/audience)
+       - Why this subreddit is relevant to the search query
 
     4. INTENT SCORE (from tool output):
        - 80-100: VERY HIGH - Explicit request or very active discussion
