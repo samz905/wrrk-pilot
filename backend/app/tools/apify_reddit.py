@@ -10,53 +10,37 @@ from openai import OpenAI
 
 class ApifyRedditSearchInput(BaseModel):
     """Input schema for Reddit search."""
-    query: str = Field(..., description="Search query or keywords (e.g., 'looking for CRM alternative')")
-    subreddit: Optional[str] = Field(None, description="Specific subreddit (e.g., 'sales', 'entrepreneur') or leave empty for all")
+    query: str = Field(..., description="Search query or keywords (e.g., 'project management software')")
+    subreddit: Optional[str] = Field(None, description="Specific subreddit or leave empty to search all Reddit")
     time_filter: str = Field(default="month", description="Time range: 'hour', 'day', 'week', 'month', 'year', 'all'")
     sort_by: str = Field(default="relevance", description="Sort order: 'relevance', 'hot', 'top', 'new', 'comments'")
-    max_results: int = Field(default=20, description="Maximum posts to return (1-100)")
+    max_results: int = Field(default=50, description="Posts to fetch from Reddit (will return top 10 after filtering)")
 
 
 class ApifyRedditSearchTool(BaseTool):
     """
-    Search Reddit for posts and discussions showing genuine interest and pain points.
+    Search Reddit for relevant discussions about any topic.
 
-    This tool finds people actively discussing problems, asking for recommendations,
-    and complaining about existing solutions across ANY topic or industry.
-
-    Best for finding:
-    - Help requests: "Can anyone recommend a [solution]?"
-    - Complaint threads: "Why is [problem] so hard?"
-    - Alternative searches: "Cheaper alternative to [competitor]?"
-    - Problem discussions: "How do you solve [specific problem]?"
-
-    Works across all subreddits - from technical communities to consumer forums,
-    from business subreddits to hobbyist groups. The search query determines
-    which communities are most relevant.
+    This tool searches across all Reddit communities to find discussions related to your query.
+    Use your reasoning to determine which posts contain potential leads.
     """
 
     name: str = "Reddit Discussion Search"
     description: str = """
-    Search Reddit for discussions showing buying intent and pain points.
-
-    Use this to find prospects who are:
-    - Asking for tool recommendations
-    - Complaining about current solutions
-    - Discussing specific problems
-    - Evaluating alternatives
+    Search Reddit for discussions related to a query.
 
     Input parameters:
-    - query: Search keywords (e.g., "frustrated with Salesforce")
-    - subreddit: Target subreddit (e.g., "sales") or leave empty for all
-    - time_filter: Recency filter (default: "month")
-    - sort_by: How to sort results (default: "relevance")
+    - query: Search keywords (what you're looking for)
+    - subreddit: Optional - specific subreddit or leave empty to search all Reddit
+    - time_filter: Time range (default: "month" for recent posts)
+    - sort_by: Sort order (default: "relevance" for most relevant posts)
     - max_results: Number of posts to return (default: 20)
 
     Returns Reddit posts with:
     - Post title and content
     - Author information
     - Subreddit and engagement metrics
-    - Intent signal scoring
+    - Intent/relevance score (0-100) with reasoning
     """
     args_schema: Type[BaseModel] = ApifyRedditSearchInput
 
@@ -66,7 +50,7 @@ class ApifyRedditSearchTool(BaseTool):
         subreddit: Optional[str] = None,
         time_filter: str = "month",
         sort_by: str = "relevance",
-        max_results: int = 20
+        max_results: int = 50
     ) -> str:
         """Execute Reddit search and return formatted results."""
 
@@ -138,9 +122,8 @@ class ApifyRedditSearchTool(BaseTool):
 
         output = []
         output.append("=" * 70)
-        output.append(f"REDDIT INTENT SIGNALS: '{query}'")
+        output.append(f"REDDIT LEAD SIGNALS: '{query}'")
         output.append("=" * 70)
-        output.append(f"\nFound {len(results)} Reddit discussions:\n")
 
         # STEP 1: Extract all post data for batch scoring
         posts_data = []
@@ -160,8 +143,29 @@ class ApifyRedditSearchTool(BaseTool):
         print(f"\n[INFO] Batch scoring {len(posts_data)} posts with LLM...")
         scored_posts = self._batch_score_posts(query, posts_data)
 
-        # STEP 3: Format output with scores
-        for idx, (post_data, score_data) in enumerate(zip(posts_data, scored_posts), 1):
+        # STEP 3: Filter out low-quality posts (score < 50)
+        QUALITY_THRESHOLD = 50
+        filtered_posts = []
+        for post_data, score_data in zip(posts_data, scored_posts):
+            intent_score = score_data.get('score', 50)
+            if intent_score >= QUALITY_THRESHOLD:
+                filtered_posts.append((post_data, score_data))
+
+        print(f"[INFO] Filtered to {len(filtered_posts)} high-quality posts (score >= {QUALITY_THRESHOLD})")
+
+        if not filtered_posts:
+            return f"No high-quality Reddit posts found for query: '{query}' (all posts scored below {QUALITY_THRESHOLD})"
+
+        # STEP 4: Sort by score (highest first)
+        filtered_posts.sort(key=lambda x: x[1].get('score', 0), reverse=True)
+
+        # STEP 5: Limit to top 10 most relevant discussions
+        TOP_N = 10
+        top_posts = filtered_posts[:TOP_N]
+
+        output.append(f"\nTop {len(top_posts)} most relevant discussions (from {len(filtered_posts)} high-quality, {len(results)} total):\n")
+
+        for idx, (post_data, score_data) in enumerate(top_posts, 1):
             intent_score = score_data.get('score', 50)
             reasoning = score_data.get('reasoning', 'No reasoning provided')
 
@@ -184,11 +188,13 @@ class ApifyRedditSearchTool(BaseTool):
 
         output.append("=" * 70)
         output.append("\nKEY INSIGHTS:")
-        output.append(f"- Total discussions found: {len(results)}")
-        output.append(f"- Subreddits represented: {len(set(p.get('subreddit', 'Unknown') for p in results))}")
-        avg_score = sum(p.get('score', 0) for p in results) / len(results) if results else 0
-        output.append(f"- Average upvotes: {avg_score:.1f}")
-        avg_comments = sum(p.get('num_comments', 0) for p in results) / len(results) if results else 0
+        output.append(f"- Top discussions shown: {len(top_posts)}")
+        output.append(f"- High-quality found: {len(filtered_posts)} (from {len(results)} total fetched)")
+        output.append(f"- Quality threshold: {QUALITY_THRESHOLD}/100")
+        output.append(f"- Subreddits in top results: {len(set(p[0]['subreddit'] for p in top_posts))}")
+        avg_intent = sum(p[1].get('score', 0) for p in top_posts) / len(top_posts) if top_posts else 0
+        output.append(f"- Average intent score: {avg_intent:.1f}/100")
+        avg_comments = sum(p[0]['num_comments'] for p in top_posts) / len(top_posts) if top_posts else 0
         output.append(f"- Average comments: {avg_comments:.1f}")
         output.append("=" * 70)
 

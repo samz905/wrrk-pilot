@@ -1,49 +1,17 @@
 search_reddit_discussions:
   description: |
-    Find Reddit discussions showing GENUINE INTEREST or PROBLEMS related to: {search_query}
+    Find Reddit discussions that could contain potential leads for: {search_query}
 
-    SEARCH APPROACH:
-    - Search GLOBALLY across all Reddit (do NOT limit to specific subreddits)
-    - Let Reddit's algorithm identify the most relevant communities for this topic
-    - Focus on finding posts where people express real problems or needs
+    Your goal is to find discussions where people are genuinely interested in, discussing problems about,
+    or seeking solutions related to the search query. Use your reasoning to determine what's relevant.
 
-    SEARCH STRATEGY:
-    Use the Reddit Discussion Search tool to find posts matching these patterns:
+    REQUIREMENTS:
+    - Search globally across all Reddit subreddits
+    - Focus on finding RELEVANT discussions only
+    - Use recent posts (last 30 days) for timing
+    - Prioritize posts with engagement (comments and upvotes indicate community interest)
 
-    1. HELP REQUESTS (Highest Intent):
-       - "Can anyone recommend a [solution]?"
-       - "What do you use for [problem]?"
-       - "Looking for [tool type]"
-
-    2. COMPLAINT THREADS (High Intent):
-       - "Why is [problem] so hard?"
-       - "[Competitor] is too expensive/slow/complicated"
-       - "Frustrated with [current solution]"
-
-    3. ALTERNATIVE SEARCHES (High Intent):
-       - "Cheaper alternative to [competitor]?"
-       - "[Product A] vs [Product B]"
-       - "Switching from [old tool]"
-
-    4. PROBLEM DISCUSSIONS (Medium Intent):
-       - "How do you solve [specific problem]?"
-       - "Struggling with [pain point]"
-       - "Need better way to [task]"
-
-    PRIORITIZATION CRITERIA:
-    - Focus on discussions with 10+ comments (active engagement = validated pain point)
-    - Prioritize recent posts (last 30 days) for timing advantage
-    - Look for posts with HIGH upvotes (community validation)
-    - Note posts where MULTIPLE people express same problem in comments
-
-    REDDIT-SPECIFIC INSIGHTS:
-    - Reddit usernames are often anonymous, so focus on the PROBLEM not the person
-    - A highly-upvoted post means many people have the same pain
-    - Active comment threads indicate urgent, unresolved problems
-    - Cross-reference: If same problem appears in multiple subreddits = widespread need
-
-    TIME FILTER: Use "month" for freshness (problems discussed recently)
-    RESULTS TARGET: 20-50 discussions showing clear intent signals
+    Use the Reddit Discussion Search tool to find the most relevant discussions.
 
   expected_output: |
     A prioritized list of Reddit discussions showing buying intent:
