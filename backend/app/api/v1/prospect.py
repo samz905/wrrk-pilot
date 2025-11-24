@@ -9,13 +9,14 @@ Routes:
 import asyncio
 import uuid
 from typing import Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 from queue import Queue
 import threading
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
+from typing import Optional
 
 from app.flows.prospecting_flow import ProspectingFlow, ProspectingState
 
@@ -31,7 +32,7 @@ class ProspectingJob:
         self.query = query
         self.max_leads = max_leads
         self.status = "initializing"  # initializing, running, completed, failed
-        self.created_at = datetime.now()
+        self.created_at = datetime.now(timezone.utc)
         self.events = Queue()
         self.result = None
         self.error = None
@@ -62,7 +63,7 @@ class JobStatusResponse(BaseModel):
     query: str
     max_leads: int
     created_at: datetime
-    error: str = None
+    error: Optional[str] = None
 
 
 @router.post("/start", response_model=StartProspectingResponse)

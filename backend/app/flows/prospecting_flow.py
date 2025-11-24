@@ -70,7 +70,7 @@ class ProspectingFlow(Flow[ProspectingState]):
         self.emit_event("thought", "Initializing intelligent prospecting flow...")
         self.emit_event("thought", f"Search query: {self.state.query}")
         self.emit_event("thought", f"Target: {self.state.max_leads} high-quality leads")
-        self.emit_event("thought", "Will orchestrate 6 crews: Reddit → LinkedIn → Twitter → Google → Aggregation → Qualification")
+        self.emit_event("thought", "Will orchestrate 6 crews: Reddit > LinkedIn > Twitter > Google > Aggregation > Qualification")
 
         self.state.status = "searching"
         return self.state
@@ -363,7 +363,7 @@ class ProspectingFlow(Flow[ProspectingState]):
             state.status = "completed"
             self.emit_event("crew_completed", "Qualification Crew finished - Top 10 leads identified")
             self.emit_event("thought", "Prospecting complete! All 6 crews executed successfully.")
-            self.emit_event("thought", "Final pipeline: Reddit → LinkedIn → Twitter → Google → Aggregation → Qualification")
+            self.emit_event("thought", "Final pipeline: Reddit > LinkedIn > Twitter > Google > Aggregation > Qualification")
 
             return state
 
