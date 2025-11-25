@@ -1,0 +1,130 @@
+prospect_leads:
+  description: |
+    Find high-intent leads for the product described below.
+
+    PRODUCT: {product_description}
+    TARGET: {target_leads} qualified leads with intent score >= 60
+    ICP CRITERIA: {icp_criteria}
+
+    == EXECUTION STRATEGY ==
+
+    STEP 1: ANALYZE THE QUERY
+    - Identify the product type (B2B SaaS, developer tool, enterprise, SMB)
+    - Determine the best target personas (job titles, seniority)
+    - List the most likely pain points and keywords
+
+    STEP 2: CHOOSE INITIAL APPROACH
+    - Intent signals: Find people actively discussing problems/seeking solutions
+    - Company triggers: Find companies with buying signals (funding, hiring, growth)
+    - Hybrid: Combine both approaches
+
+    STEP 3: EXECUTE SEARCHES
+    Use the Intent Signal Hunter tool to search across platforms:
+    - LinkedIn: Professional discussions, complaints, recommendations
+    - Reddit: Honest user discussions, tool comparisons
+    - Twitter: Real-time frustrations, help requests
+
+    STEP 4: REFLECT AND ADAPT
+    After each tool call, REFLECT on results:
+
+    QUANTITY CHECK:
+    - Got 0 results? Try different keywords or different platform
+    - Got < 5 results? Broaden the search or try synonyms
+    - Got > 20 results? Good, proceed to next step
+
+    QUALITY CHECK:
+    - Are results relevant to the query?
+    - Do people show genuine buying intent?
+    - Are these the right job titles?
+
+    ADAPT if needed:
+    - "These LinkedIn results are mostly sellers, let me try Reddit"
+    - "Query 'CRM software' is too broad, let me try 'Salesforce alternative'"
+    - "Not finding intent signals, switching to company trigger approach"
+
+    STEP 5: ENRICH HIGH-VALUE LEADS
+    For leads with intent_score >= 70:
+    - Use Decision Maker Finder to get detailed profile data
+    - Look for email and phone if available
+
+    STEP 6: SCORE AND FILTER
+    Use Lead Scorer tool or manually score each lead:
+    - Intent strength: 35%
+    - Title/seniority match: 25%
+    - Company fit: 20%
+    - Platform multiplicity: 10%
+    - Contact completeness: 10%
+
+    == EXAMPLE SCENARIOS ==
+
+    EXAMPLE 1: Design Agent for Founders
+    Query: "Find leads for our AI design agent that helps startups ship UI faster"
+
+    Reasoning:
+    1. Product: AI design tool for startups
+    2. Target: Founders, Head of Product, Design leads
+    3. Best signals: Design bottleneck discussions
+
+    Approach: Intent signals on LinkedIn + Reddit
+    - LinkedIn query: "frustrated with design" "hiring designers" "design bottleneck"
+    - Reddit query: "design agency recommendations" in r/startups, r/SaaS
+
+    Results: 12 qualified leads from LinkedIn posts + 6 from Reddit discussions
+
+    EXAMPLE 2: CRM Competitor Displacement
+    Query: "Find sales leaders frustrated with Salesforce pricing"
+
+    Reasoning:
+    1. Product: CRM (competitor to Salesforce)
+    2. Target: VP Sales, RevOps, CRO
+    3. Best signals: Salesforce complaints, pricing discussions
+
+    Approach: Intent signals first, then company triggers
+    - LinkedIn: "switching from Salesforce" "CRM migration"
+    - Reddit: "Salesforce pricing" in r/sales, r/salesforce
+    - Google: "companies hiring Salesforce Admin" (budget signal)
+
+    Results: 28 qualified leads combining complaint signals + decision makers
+
+    EXAMPLE 3: Code Review Tool
+    Query: "Find engineering managers who need faster code review"
+
+    Reasoning:
+    1. Product: Code review tool
+    2. Target: Engineering Manager, VP Eng, Director of Eng
+    3. Best signals: PR bottleneck, code review discussions
+
+    Approach: Reddit + Twitter first (dev communities), then LinkedIn enrichment
+    - Reddit: "code review bottleneck" "PR review time" in r/programming
+    - Twitter: "code review" "PR backlog"
+    - LinkedIn: Engineering Managers at mid-size tech companies
+
+    Results: 23 qualified leads from community discussions + company searches
+
+    == OUTPUT FORMAT ==
+
+    Return a structured list of leads with:
+    - name: Full name
+    - title: Job title
+    - company: Company name
+    - linkedin_url: LinkedIn profile URL (if available)
+    - intent_signal: Quote showing buying intent
+    - intent_score: 0-100 score
+    - source_platform: Where found (linkedin, reddit, twitter, etc.)
+    - source_url: Original post/discussion URL
+    - priority: "hot" (>=80), "warm" (60-79), or "cold" (<60)
+    - scoring_reasoning: Why this lead scores this way
+
+  expected_output: |
+    A list of {target_leads} qualified leads in structured format with:
+    - Minimum intent score of 60
+    - Clear intent signals (quotes showing buying interest)
+    - Source tracking (platform, URL)
+    - Priority classification (hot/warm/cold)
+
+    Include a summary with:
+    - Total leads found
+    - Breakdown by priority
+    - Platforms searched
+    - Strategies used
+  agent: orchestrator

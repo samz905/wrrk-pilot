@@ -68,28 +68,14 @@ class ApifyGoogleSERPTool(BaseTool):
         # Initialize Apify client
         client = ApifyClient(apify_token)
 
-        # Map max_results to valid limit values
-        # Actor only accepts: "10", "20", "30", "40", "50", "100", "all"
-        if max_results <= 10:
-            limit = "10"
-        elif max_results <= 20:
-            limit = "20"
-        elif max_results <= 30:
-            limit = "30"
-        elif max_results <= 40:
-            limit = "40"
-        elif max_results <= 50:
-            limit = "50"
-        else:
-            limit = "100"
-
-        # Prepare actor input (563JCPLOqM1kMmbbP)
+        # Prepare actor input (apify/google-search-scraper)
+        # Schema: queries (newline-separated), resultsPerPage, maxPagesPerQuery, aiMode, etc.
         run_input = {
-            "keyword": query,
-            "include_merged": True,
-            "limit": limit,
-            "country": country,
-            "hl": "en"
+            "queries": query,  # Single query string (can be newline-separated for multiple)
+            "resultsPerPage": min(max_results, 100),
+            "maxPagesPerQuery": 1,
+            "aiMode": "aiModeOff",
+            "forceExactMatch": False
         }
 
         try:

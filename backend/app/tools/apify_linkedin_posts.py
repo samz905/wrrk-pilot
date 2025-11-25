@@ -53,25 +53,37 @@ class ApifyLinkedInPostsSearchTool(BaseTool):
             client = ApifyClient(apify_token)
 
             # Prepare Actor input for apimaestro/linkedin-posts-search-scraper-no-cookies
+            # Schema: keyword, sort_type, page_number, date_filter, limit
             run_input = {
-                "searchQuery": query,
-                "maxPosts": min(max_results, 100),
-                "startPage": 1
+                "keyword": query,
+                "sort_type": "relevance",
+                "page_number": 1,
+                "date_filter": "",
+                "limit": min(max_results, 100)
             }
 
-            print(f"[INFO] Calling Apify actor 5QnEH5N71IK2mFLrP (LinkedIn Posts Search)...")
+            # Debug logging
+            import json
+            print(f"[DEBUG] Apify run_input: {json.dumps(run_input, indent=2)}")
+            print(f"[DEBUG] Calling Apify actor 5QnEH5N71IK2mFLrP (LinkedIn Posts Search)...")
 
-            # Run the Actor and wait for it to finish
-            run = client.actor("5QnEH5N71IK2mFLrP").call(run_input=run_input)
+            try:
+                # Run the Actor and wait for it to finish
+                run = client.actor("5QnEH5N71IK2mFLrP").call(run_input=run_input)
+                print(f"[DEBUG] Apify run completed, dataset: {run.get('defaultDatasetId', 'N/A')}")
 
-            print(f"[INFO] Actor run completed. Fetching posts...")
+                # Fetch results from the run's dataset
+                results = []
+                for item in client.dataset(run["defaultDatasetId"]).iterate_items():
+                    results.append(item)
 
-            # Fetch results from the run's dataset
-            results = []
-            for item in client.dataset(run["defaultDatasetId"]).iterate_items():
-                results.append(item)
+                print(f"[DEBUG] Apify returned {len(results)} posts")
 
-            print(f"[INFO] Found {len(results)} posts with intent signals")
+            except Exception as e:
+                print(f"[ERROR] Apify failed: {type(e).__name__}: {str(e)}")
+                import traceback
+                traceback.print_exc()
+                return f"Error: Apify actor failed - {str(e)}"
 
             if results:
                 print(f"\n[DEBUG] First post keys: {list(results[0].keys())}\n")
@@ -79,6 +91,9 @@ class ApifyLinkedInPostsSearchTool(BaseTool):
             return self._format_results(results)
 
         except Exception as e:
+            print(f"[ERROR] LinkedIn posts search failed: {type(e).__name__}: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return f"Error executing LinkedIn posts search: {str(e)}"
 
     def _format_results(self, results: List[Dict[str, Any]]) -> str:

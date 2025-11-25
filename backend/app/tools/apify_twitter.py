@@ -9,8 +9,10 @@ from apify_client import ApifyClient
 class ApifyTwitterSearchInput(BaseModel):
     """Input schema for Twitter search."""
     query: str = Field(..., description="Search query or keywords (e.g., 'looking for CRM', 'need better sales tool')")
-    query_type: str = Field(default="Top", description="Query type: 'Top' for most relevant, 'Latest' for most recent")
-    max_results: int = Field(default=20, description="Maximum tweets to return (1-100)")
+    query_type: str = Field(default="Latest", description="Query type: 'Top' for most relevant, 'Latest' for most recent")
+    max_results: int = Field(default=50, description="Maximum tweets to return (1-200)")
+    min_faves: int = Field(default=0, description="Minimum likes filter (0 = no filter)")
+    min_replies: int = Field(default=0, description="Minimum replies filter (0 = no filter)")
 
 
 class ApifyTwitterSearchTool(BaseTool):
@@ -56,8 +58,10 @@ class ApifyTwitterSearchTool(BaseTool):
     def _run(
         self,
         query: str,
-        query_type: str = "Top",
-        max_results: int = 20
+        query_type: str = "Latest",
+        max_results: int = 50,
+        min_faves: int = 0,
+        min_replies: int = 0
     ) -> str:
         """Execute Twitter search and return formatted results."""
 
@@ -71,19 +75,31 @@ class ApifyTwitterSearchTool(BaseTool):
         # Initialize Apify client
         client = ApifyClient(apify_token)
 
-        # Prepare ScrapeBadger actor input
-        # Actor ID: pzMmk1t7AZ8OKJhfU (ScrapeBadger)
+        # Calculate date range (last 30 days for fresh leads)
+        from datetime import datetime, timedelta
+        until_date = datetime.utcnow()
+        since_date = until_date - timedelta(days=30)
+
+        # Prepare new Tweet Scraper actor input
+        # Actor: kaitoeasyapi/twitter-x-data-tweet-scraper-pay-per-result-cheapest
         run_input = {
-            "mode": "Advanced Search",
-            "query": query,
-            "query_type": query_type,  # "Top" or "Latest"
-            "max_results": min(max_results, 100)  # Cap at 100
+            "searchTerms": [query],
+            "maxItems": min(max_results, 200),
+            "queryType": query_type,  # "Latest" or "Top"
+            "lang": "en",
+            "filter:has_engagement": False,
+            "min_faves": min_faves,
+            "min_replies": min_replies,
+            "since": since_date.strftime("%Y-%m-%d_00:00:00_UTC"),
+            "until": until_date.strftime("%Y-%m-%d_23:59:59_UTC"),
+            "filter:nativeretweets": False,
+            "filter:replies": False
         }
 
         try:
-            # Run the actor
-            print("[INFO] Running ScrapeBadger actor...")
-            run = client.actor("pzMmk1t7AZ8OKJhfU").call(run_input=run_input)
+            # Run the pay-per-result Twitter scraper (cheaper alternative)
+            print("[INFO] Running Twitter Scraper actor (pay-per-result)...")
+            run = client.actor("kaitoeasyapi/twitter-x-data-tweet-scraper-pay-per-result-cheapest").call(run_input=run_input)
 
             # Fetch results from dataset
             print("[INFO] Fetching results...")

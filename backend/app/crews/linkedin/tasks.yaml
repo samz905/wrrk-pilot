@@ -1,37 +1,53 @@
-search_linkedin_profiles:
+search_linkedin_posts:
   description: |
-    Find LinkedIn prospects with REAL BUYING INTENT using these tools:
+    Find the top {desired_results} LinkedIn posts relevant to: {search_query}
 
-    TOOL 1 - LinkedIn Posts Search (PRIMARY for intent detection):
-    Search for posts about: {search_query}
-    This finds people actively posting about problems, needs, or evaluations.
+    Use the LinkedIn Posts Search tool with:
+    - query: {search_query}
+    - max_results: {desired_results} multiplied by 3 (to filter down to best)
 
-    TOOL 2 - LinkedIn People Search (SECONDARY for decision-makers):
-    Find people by title/location if needed.
+    The tool returns posts with intent scores. Extract the top {desired_results} posts
+    with the highest intent scores.
 
-    TOOL 3 - LinkedIn Profile Detail (for top 3-5 candidates):
-    Enrich best prospects with email and contact data.
-
-    STRATEGY:
-    1. Use Posts Search FIRST to find intent signals (complaints, questions, evaluations)
-    2. Extract author profile URLs from posts
-    3. Optionally search for decision-makers if posts don't yield enough leads
-    4. Enrich top 3-5 prospects with Profile Detail tool for contact info
-
-    Return prospects with:
-    - What problem they posted about (the intent signal)
-    - Their profile data (name, title, company)
-    - Contact info if enriched (email, phone)
-    - Timing (how recent the signal is)
   expected_output: |
-    A prioritized list of prospects with REAL buying intent:
+    Return a JSON object with a "posts" array containing exactly {desired_results} items.
 
-    For each prospect include:
-    1. INTENT SIGNAL: What they posted/complained about
-    2. PROFILE: Name, title, company, LinkedIn URL
-    3. CONTACT: Email/phone if enriched
-    4. TIMING: How recent (24 hrs, 7 days, etc.)
-    5. PRIORITY: HIGH/MEDIUM/LOW based on intent + authority
+    Each post must have:
+    - author_name: Name of the poster
+    - author_title: Job title/headline
+    - author_url: LinkedIn profile URL
+    - post_content: The post text (max 300 chars)
+    - post_url: URL to the post
+    - likes: Number of likes
+    - comments: Number of comments
+    - intent_score: Score from 0-100
+    - intent_signal: Why this shows buying intent
 
-    Focus on quality over quantity. Better to have 5 hot leads than 50 cold ones.
   agent: linkedin_intelligence_agent
+
+extract_linkedin_leads:
+  description: |
+    Extract LinkedIn users with buying intent from the posts found in Task 1.
+
+    From the previous task output, extract the post URLs from each post.
+
+    Use the LinkedIn Lead Extraction tool with:
+    - query: {search_query}
+    - post_urls: List of post URLs from Task 1
+
+    The tool will analyze posts and commenters to find users with buying intent.
+
+  expected_output: |
+    Return a JSON object with a "leads" array.
+
+    Each lead must have:
+    - name: Full name
+    - title: Job title
+    - company: Company name
+    - linkedin_url: Profile URL
+    - intent_signal: Quote or action showing intent (max 100 chars)
+    - intent_score: Score from 0-100
+    - fit_reasoning: Why they're a good lead for {search_query}
+    - source_post_url: Where they were found
+
+  agent: lead_extraction_agent

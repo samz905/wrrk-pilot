@@ -1,0 +1,132 @@
+======================================================================
+INTENT SIGNAL HUNT: 'AI design tools'
+======================================================================
+
+Platforms searched: 1
+
+
+============================== REDDIT ==============================
+======================================================================
+REDDIT LEAD SIGNALS: 'AI design tools recommendation'
+======================================================================
+
+Top 5 most relevant discussions (from 17 high-quality, 46 total fetched):
+
+Intent Signal #1
+──────────────────────────────────────────────────────────────────────
+Title: 100 Best AI Tools, Categorized (2025 Edition)
+Content: **Looking for the top AI tools to improve your productivity, creativity, or income?**  
+
+Here’s a categorized list of 100 of the best AI tools to help you earn money with AI, whether you’re a writer, marketer, developer, or entrepreneur.  
+
+I’ve also grouped them into Free and Paid tools to help you...
+
+Subreddit: r/Aivolut
+Author: u/adrianmatuguina
+Engagement: 20 upvotes, 27 comments
+Posted: 2025-11-03T17:01:46.000Z
+URL: https://www.reddit.com/r/Aivolut/comments/1onhaag/100_best_ai_tools_categorized_2025_edition/
+
+💡 Intent Score: 90/100
+Intent Level: 🔥 VERY HIGH - Explicit request or very active discussion
+Reasoning: Explicitly lists AI tools for various uses; highly relevant and well-engaged.
+
+Intent Signal #2
+──────────────────────────────────────────────────────────────────────
+Title: 100 Best AI Tools — Categorized (2025 Edition)
+Content: **Looking for the top AI tools to improve your productivity, creativity, or income?**
+
+Here’s a categorized list of 100 of the best AI tools to help you earn money with AI, whether you’re a writer, marketer, developer, or entrepreneur.
+
+I’ve also grouped them into Free and Paid tools to help you cho...
+
+Subreddit: r/WritingWithAI
+Author: u/adrianmatuguina
+Engagement: 7 upvotes, 21 comments
+Posted: 2025-11-03T04:38:19.000Z
+URL: https://www.reddit.com/r/WritingWithAI/comments/1on2q0m/100_best_ai_tools_categorized_2025_edition/
+
+💡 Intent Score: 90/100
+Intent Level: 🔥 VERY HIGH - Explicit request or very active discussion
+Reasoning: Explicitly lists AI tools for various uses; highly relevant and well-engaged.
+
+Intent Signal #3
+──────────────────────────────────────────────────────────────────────
+Title: New AI Landscape Design tool. Would love your honest feedback.
+Content: I run a real-life landscape design company, and noticed over the past 3 years that most consumers could no longer afford our services. Between material and insurance inflation, most homeowners were being priced out of professional landscape design. 
+
+
+
+As AI started improving I figured there would b...
+
+Subreddit: r/landscaping
+Author: u/GreenGardenGremlin
+Engagement: 399 upvotes, 91 comments
+Posted: 2025-10-31T19:59:40.000Z
+URL: https://www.reddit.com/r/landscaping/comments/1ol4o11/new_ai_landscape_design_tool_would_love_your/
+
+💡 Intent Score: 85/100
+Intent Level: 🔥 VERY HIGH - Explicit request or very active discussion
+Reasoning: Seeks feedback on a new AI landscape design tool; relevant and well-engaged.
+
+Intent Signal #4
+──────────────────────────────────────────────────────────────────────
+Title: Weekly Tool Thread: Promote, Share, Discover, and Ask for AI Writing Tools Week of: November 04
+Content: **Welcome to the Weekly Writing With AI “Tool Thread"!**
+
+Every week, this post is your dedicated space to share what you’ve been building or ask for help in finding the right tool for you and your workflow. 
+
+**For Builders**
+
+whether it’s a small weekend project, a side hustle, a creative work, or...
+
+Subreddit: r/WritingWithAI
+Author: u/AutoModerator
+Engagement: 7 upvotes, 29 comments
+Posted: 2025-11-04T06:01:26.000Z
+URL: https://www.reddit.com/r/WritingWithAI/comments/1onzu2m/weekly_tool_thread_promote_share_discover_and_ask/
+
+💡 Intent Score: 80/100
+Intent Level: 🔥 VERY HIGH - Explicit request or very active discussion
+Reasoning: Actively seeking recommendations for AI writing tools; relevant and decent engagement.
+
+Intent Signal #5
+──────────────────────────────────────────────────────────────────────
+Title: Weekly Tool Thread: Promote, Share, Discover, and Ask for AI Writing Tools Week of: October 28
+Content: **Welcome to the Weekly Writing With AI “Tool Thread"!**
+
+Every week, this post is your dedicated space to share what you’ve been building or ask for help in finding the right tool for you and your workflow. 
+
+**For Builders**
+
+whether it’s a small weekend project, a side hustle, a creative work, or...
+
+Subreddit: r/WritingWithAI
+Author: u/AutoModerator
+Engagement: 2 upvotes, 25 comments
+Posted: 2025-10-28T06:01:14.000Z
+URL: https://www.reddit.com/r/WritingWithAI/comments/1oi1rjr/weekly_tool_thread_promote_share_discover_and_ask/
+
+💡 Intent Score: 80/100
+Intent Level: 🔥 VERY HIGH - Explicit request or very active discussion
+Reasoning: Actively sharing and seeking AI writing tools; relevant and decent engagement.
+
+======================================================================
+
+KEY INSIGHTS:
+- Returned: 5 high-quality discussions
+- Quality posts found: 17 (from 46 fetched)
+- Quality threshold: 50/100
+- Subreddits in results: 3
+- Average relevance score: 85.0/100
+- Average engagement: 38.6 comments/post
+======================================================================
+
+======================================================================
+
+COMBINED INSIGHTS:
+- Platforms with results: 1
+- Use these results to identify high-intent leads
+- Look for people explicitly asking for solutions
+- Prioritize recent posts with high engagement
+======================================================================

@@ -42,6 +42,13 @@ class Lead(BaseModel):
     fit_reasoning: str = Field(..., description="2-3 sentence explanation of why this is a good lead")
 
 
+class CommentClassification(BaseModel):
+    """Structured output for comment classification."""
+    comment_index: int = Field(..., description="Index of the comment (1-indexed)")
+    classification: str = Field(..., description="PROBLEM_RELATER, SOLUTION_GIVER, or IRRELEVANT")
+    confidence: int = Field(..., ge=0, le=100, description="Confidence score 0-100")
+
+
 class ApifyRedditSearchTool(BaseTool):
     """
     Search Reddit for relevant discussions about any topic.
@@ -384,6 +391,147 @@ class ApifyRedditSearchTool(BaseTool):
         print(f"[INFO] Scoring complete: {len(all_scores)} posts scored")
         return all_scores
 
+    def _classify_commenters_batch(
+        self,
+        query: str,
+        comments: List[Dict]
+    ) -> Dict[str, str]:
+        """
+        Classify commenters in batch to identify PROBLEM_RELATERS vs SOLUTION_GIVERS.
+
+        PROBLEM_RELATERS are potential leads - they:
+        - Relate to the problem ("I have the same issue", "me too", "we're struggling")
+        - Show pain points or frustration
+        - Ask follow-up questions about the problem
+
+        SOLUTION_GIVERS are NOT leads - they:
+        - Recommend tools/products ("try X", "I recommend Y")
+        - Promote their own solutions
+        - Provide answers/solutions
+
+        Args:
+            query: Search query for context
+            comments: List of comment dicts with 'author' and 'text'
+
+        Returns:
+            Dict mapping username -> classification (PROBLEM_RELATER, SOLUTION_GIVER, IRRELEVANT)
+        """
+        if not comments:
+            return {}
+
+        # Build batch prompt with all comments (up to 50)
+        comments_batch = comments[:50]  # Limit to 50 per batch
+
+        comments_text = ""
+        for i, comment in enumerate(comments_batch, 1):
+            comments_text += f"\n---COMMENT {i}---\n"
+            comments_text += f"Author: u/{comment.get('author', 'Unknown')}\n"
+            comments_text += f"Text: {comment.get('text', '')[:300]}\n"
+
+        prompt = f"""Classify these {len(comments_batch)} Reddit comments for a discussion about: "{query}"
+
+{comments_text}
+
+CLASSIFICATION RULES:
+1. PROBLEM_RELATER (potential lead) - User shows they HAVE the problem:
+   - "I have the same issue"
+   - "We're struggling with this too"
+   - "+1", "Same here", "me too"
+   - Asks questions about the problem
+   - Shows frustration with current situation
+   - Describes their own pain points
+
+2. SOLUTION_GIVER (NOT a lead) - User provides solutions/recommendations:
+   - "Try X tool" or "I recommend Y"
+   - Links to products or tools
+   - Provides advice or answers
+   - Promotes their own product/service
+   - Already solved the problem
+
+3. IRRELEVANT - Comment doesn't relate to buying intent:
+   - Off-topic discussion
+   - General chatter
+   - Jokes or memes
+   - Meta comments
+
+For EACH comment, classify as: PROBLEM_RELATER, SOLUTION_GIVER, or IRRELEVANT
+
+Return ONLY JSON (no markdown):
+{{"classifications": [
+    {{"comment_index": 1, "classification": "PROBLEM_RELATER", "confidence": 85}},
+    {{"comment_index": 2, "classification": "SOLUTION_GIVER", "confidence": 90}},
+    ...
+]}}"""
+
+        try:
+            client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+            print(f"[INFO] Classifying {len(comments_batch)} commenters in batch...")
+
+            # JSON schema for structured output
+            json_schema = {
+                "name": "comment_classifications",
+                "strict": True,
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "classifications": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "comment_index": {"type": "integer"},
+                                    "classification": {"type": "string"},
+                                    "confidence": {"type": "integer"}
+                                },
+                                "required": ["comment_index", "classification", "confidence"],
+                                "additionalProperties": False
+                            }
+                        }
+                    },
+                    "required": ["classifications"],
+                    "additionalProperties": False
+                }
+            }
+
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "You are an expert at classifying online comments to identify potential buyers vs sellers/promoters."},
+                    {"role": "user", "content": prompt}
+                ],
+                response_format={"type": "json_schema", "json_schema": json_schema},
+                temperature=0.3,
+                max_tokens=2000
+            )
+
+            result_text = response.choices[0].message.content.strip()
+            result = json.loads(result_text)
+            classifications = result.get("classifications", [])
+
+            # Build mapping of username -> classification
+            user_classifications = {}
+            for cls in classifications:
+                idx = cls.get("comment_index", 0) - 1  # Convert to 0-indexed
+                if 0 <= idx < len(comments_batch):
+                    username = comments_batch[idx].get("author", "Unknown")
+                    user_classifications[username] = cls.get("classification", "IRRELEVANT")
+
+            # Count classifications
+            problem_relaters = sum(1 for c in user_classifications.values() if c == "PROBLEM_RELATER")
+            solution_givers = sum(1 for c in user_classifications.values() if c == "SOLUTION_GIVER")
+
+            print(f"[INFO] Classified: {problem_relaters} problem_relaters, {solution_givers} solution_givers")
+
+            return user_classifications
+
+        except Exception as e:
+            print(f"[ERROR] Batch comment classification failed: {e}")
+            import traceback
+            traceback.print_exc()
+            # Return empty - all commenters will be considered
+            return {}
+
     def _run(
         self,
         query: str,
@@ -701,10 +849,10 @@ If NO users show buying intent, return an empty array: []
         post_data: Dict
     ) -> List[Dict]:
         """
-        Extract individual users with buying intent from a single discussion (v2 - with query context).
+        Extract individual users with buying intent from a single discussion (v2 - with commenter classification).
 
-        Uses LLM to analyze the post and comments to identify users showing
-        buying signals. Uses the search query for context.
+        Uses batch classification to identify PROBLEM_RELATERS (potential leads) vs
+        SOLUTION_GIVERS (not leads). Only extracts leads from users who relate to the problem.
 
         Args:
             query: Search query for context (e.g., "project management software")
@@ -714,7 +862,30 @@ If NO users show buying intent, return an empty array: []
             List of lead dictionaries with user info and buying signals
         """
 
-        # Build prompt for LLM to extract leads
+        comments = post_data.get('comments', [])
+
+        # STEP 1: Classify all commenters (batch scoring)
+        user_classifications = {}
+        if comments:
+            user_classifications = self._classify_commenters_batch(query, comments)
+
+        # Filter comments to only PROBLEM_RELATERS (exclude SOLUTION_GIVERS)
+        problem_relater_comments = []
+        for comment in comments[:20]:
+            username = comment.get('author', 'Unknown')
+            classification = user_classifications.get(username, 'UNKNOWN')
+            # Include PROBLEM_RELATERS and UNKNOWN (benefit of doubt)
+            if classification in ('PROBLEM_RELATER', 'UNKNOWN', 'IRRELEVANT'):
+                # Mark if they're a problem relater for higher scoring
+                comment_copy = comment.copy()
+                comment_copy['is_problem_relater'] = (classification == 'PROBLEM_RELATER')
+                problem_relater_comments.append(comment_copy)
+
+        excluded_count = len(comments[:20]) - len(problem_relater_comments)
+        if excluded_count > 0:
+            print(f"[INFO] Excluded {excluded_count} solution-givers from lead extraction")
+
+        # Build prompt for LLM to extract leads (only from problem relaters)
         prompt = f"""Analyze this Reddit discussion to extract individual users who show BUYING INTENT for: "{query}"
 
 DISCUSSION:
@@ -725,52 +896,48 @@ URL: {post_data['url']}
 ORIGINAL POST by u/{post_data['author']}:
 {post_data['text'][:600]}
 
-COMMENTS:
+COMMENTS (pre-filtered to exclude solution-givers):
 """
 
-        # Add comments to prompt
-        for i, comment in enumerate(post_data.get('comments', [])[:20], 1):
-            prompt += f"\n{i}. u/{comment['author']}: {comment['text'][:300]}\n"
+        # Add only problem-relater comments to prompt
+        for i, comment in enumerate(problem_relater_comments, 1):
+            relater_tag = " [PROBLEM_RELATER]" if comment.get('is_problem_relater') else ""
+            prompt += f"\n{i}. u/{comment['author']}{relater_tag}: {comment['text'][:300]}\n"
 
         prompt += f"""
 
-TASK: Extract users (post author OR commenters) who show BUYING INTENT related to the topic discussed:
+TASK: Extract users (post author OR commenters) who show BUYING INTENT:
+- PROBLEM_RELATERS: Users who relate to the problem, have the same issue, show frustration
 - Actively seeking recommendations or solutions
 - Complaining about current tools/solutions
 - Asking "what should I use?" or "any alternatives?"
-- Sharing specific pain points or problems
-- Comparing/evaluating options
+- Sharing specific pain points ("I struggle with...", "same here", "+1")
+
+EXCLUDE from leads:
+- Users recommending solutions (solution-givers already filtered)
+- Promoters of their own products
+- Users who have already solved their problem
 
 For EACH user with buying intent, return:
 1. username (without 'u/' prefix)
 2. buying_signal (exact quote showing their intent - keep it concise, max 100 chars)
 3. intent_score (0-100, how strong is their buying intent)
 4. fit_reasoning (2-3 sentences: why this user is a good lead, what problem they have, why they're likely to buy)
+5. user_type: "post_author" or "commenter"
 
 IMPORTANT:
-- Only include users who show GENUINE buying intent (not casual discussion)
+- Prioritize users tagged as [PROBLEM_RELATER] - they show they have the problem
+- "+1", "same here", "me too" comments indicate buying intent
 - Original poster counts as a lead if they show intent
-- Commenters who just agree but don't show intent should be excluded
 - Look for action-oriented language ("need", "looking for", "frustrated with")
 
-Return ONLY a JSON array (no markdown, no code blocks):
-[
-  {{
-    "username": "john_doe",
-    "buying_signal": "Does anyone know a better PM tool? Asana is too expensive",
-    "intent_score": 85,
-    "fit_reasoning": "User is actively seeking alternatives to Asana, specifically due to pricing concerns. Shows high purchase intent and clear pain point. Ready to evaluate new options immediately."
-  }},
-  ...
-]
-
-If NO users show buying intent, return an empty leads array.
+Return ONLY JSON (no markdown):
 """
 
         try:
             client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-            # JSON schema for structured output
+            # JSON schema for structured output (includes user_type for commenter classification)
             json_schema = {
                 "name": "lead_extraction",
                 "strict": True,
@@ -785,9 +952,10 @@ If NO users show buying intent, return an empty leads array.
                                     "username": {"type": "string"},
                                     "buying_signal": {"type": "string"},
                                     "intent_score": {"type": "integer"},
-                                    "fit_reasoning": {"type": "string"}
+                                    "fit_reasoning": {"type": "string"},
+                                    "user_type": {"type": "string"}
                                 },
-                                "required": ["username", "buying_signal", "intent_score", "fit_reasoning"],
+                                "required": ["username", "buying_signal", "intent_score", "fit_reasoning", "user_type"],
                                 "additionalProperties": False
                             }
                         }
@@ -800,7 +968,7 @@ If NO users show buying intent, return an empty leads array.
             response = client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": "You are an expert at identifying buying signals in online discussions. Extract only users with genuine purchase intent."},
+                    {"role": "system", "content": "You are an expert at identifying buying signals in online discussions. Extract only users with genuine purchase intent. Focus on PROBLEM_RELATERS who show they have the problem."},
                     {"role": "user", "content": prompt}
                 ],
                 response_format={"type": "json_schema", "json_schema": json_schema},
@@ -812,20 +980,28 @@ If NO users show buying intent, return an empty leads array.
             result = json.loads(result_text)
             leads_array = result.get("leads", [])
 
-            # Enrich leads with context
+            # Enrich leads with context and classification info
             enriched_leads = []
             for lead in leads_array:
+                username = lead.get('username', 'Unknown')
+                # Check if this user was classified as a problem relater
+                classification = user_classifications.get(username, 'UNKNOWN')
+                is_problem_relater = classification == 'PROBLEM_RELATER'
+
                 enriched_leads.append({
-                    'username': lead.get('username', 'Unknown'),
-                    'url': f"https://reddit.com/u/{lead.get('username', 'Unknown')}",
+                    'username': username,
+                    'url': f"https://reddit.com/u/{username}",
                     'buying_signal': lead.get('buying_signal', 'No signal captured'),
                     'intent_score': lead.get('intent_score', 50),
                     'fit_reasoning': lead.get('fit_reasoning', 'No reasoning provided'),
+                    'user_type': lead.get('user_type', 'unknown'),
+                    'is_problem_relater': is_problem_relater,
+                    'platform': 'reddit',
                     'source_post': {
                         'title': post_data['title'],
                         'url': post_data['url'],
                         'subreddit': post_data['subreddit'],
-                        'discussion_score': 0  # No score available in v2
+                        'discussion_score': 0
                     }
                 })
 
