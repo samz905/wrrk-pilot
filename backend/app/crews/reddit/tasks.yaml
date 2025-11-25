@@ -1,57 +1,50 @@
 search_reddit_discussions:
   description: |
-    Find Reddit discussions that could contain potential leads for: {search_query}
+    Find the top {desired_results} Reddit discussions relevant to: {search_query}
 
-    Your goal is to find discussions where people are genuinely interested in, discussing problems about,
-    or seeking solutions related to the search query. Use your reasoning to determine what's relevant.
+    Use the Reddit Discussion Search tool with:
+    - query: {search_query}
+    - desired_results: {desired_results}
 
-    REQUIREMENTS:
-    - Search globally across all Reddit subreddits
-    - Focus on finding RELEVANT discussions only
-    - Use recent posts (last 30 days) for timing
-    - Prioritize posts with engagement (comments and upvotes indicate community interest)
-
-    Use the Reddit Discussion Search tool to find the most relevant discussions.
+    The tool will return scored and filtered discussions. Extract exactly {desired_results}
+    discussions from the tool output.
 
   expected_output: |
-    A prioritized list of Reddit discussions showing buying intent:
+    Return a JSON object with a "discussions" array containing exactly {desired_results} items.
 
-    For each discussion include:
-
-    1. INTENT SIGNAL: What problem they're discussing
-       - Quote the most compelling part of the post
-       - Classify intent type: help_request, complaint, alternative_search, problem_discussion
-
-    2. ENGAGEMENT METRICS:
-       - Upvotes (community validation)
-       - Comment count (discussion depth)
-       - Post age (timing)
-
-    3. SUBREDDIT CONTEXT:
-       - Which subreddit (indicates community/audience)
-       - Why this subreddit is relevant to the search query
-
-    4. INTENT SCORE (from tool output):
-       - 80-100: VERY HIGH - Explicit request or very active discussion
-       - 60-79: HIGH - Strong complaint or clear alternative search
-       - 40-59: MEDIUM - Problem discussion with moderate engagement
-       - Below 40: Filter out (weak signal)
-
-    5. DISCUSSION URL:
-       - Direct Reddit link for reference
-
-    6. KEY INSIGHT:
-       - Why this is a qualified lead signal
-       - What action to take (e.g., "Multiple people in comments asking for same solution")
-
-    SUMMARY SECTION:
-    - Total discussions found
-    - Top 3 pain points discovered
-    - Subreddits with highest intent
-    - Recommended follow-up actions
-
-    NOTE: Reddit is great for INTENT DISCOVERY but weak for CONTACT EXTRACTION.
-    Use these signals to understand market pain points, then cross-reference with LinkedIn
-    for actual decision-makers at companies discussing these problems.
+    Each discussion must have:
+    - title: Post title
+    - url: Reddit post URL
+    - subreddit: Subreddit name (without r/)
+    - upvotes: Number of upvotes
+    - num_comments: Number of comments
+    - intent_score: Score from 0-100
+    - reasoning: Why this discussion is relevant
 
   agent: reddit_intelligence_agent
+
+extract_reddit_leads:
+  description: |
+    Extract Reddit users with buying intent from the discussions found in Task 1.
+
+    From the previous task output, extract all discussion URLs.
+
+    Use the Reddit Lead Extraction tool with:
+    - query: {search_query}
+    - post_urls: List of URLs from the discussions in Task 1
+
+    The tool will analyze posts and comments to find users with buying intent.
+
+  expected_output: |
+    Return a JSON object with a "leads" array.
+
+    Each lead must have:
+    - username: Reddit username (without u/)
+    - profile_url: https://reddit.com/u/[username]
+    - buying_signal: Exact quote showing intent (max 100 chars)
+    - intent_score: Score from 0-100
+    - fit_reasoning: 2-3 sentences explaining why they're a good lead
+    - source_url: URL of the discussion where found
+    - source_subreddit: Subreddit name
+
+  agent: lead_extraction_agent
