@@ -1,7 +1,9 @@
 """Reddit scraping tool using Apify - Find intent signals from Reddit discussions."""
 import os
 import json
-from typing import Type, Optional, Tuple
+import math
+from typing import Type, Optional, Tuple, List, Dict
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from crewai.tools import BaseTool
 from pydantic import BaseModel, Field
 from apify_client import ApifyClient
@@ -14,7 +16,7 @@ class ApifyRedditSearchInput(BaseModel):
     subreddit: Optional[str] = Field(None, description="Specific subreddit or leave empty to search all Reddit")
     time_filter: str = Field(default="month", description="Time range: 'hour', 'day', 'week', 'month', 'year', 'all'")
     sort_by: str = Field(default="relevance", description="Sort order: 'relevance', 'hot', 'top', 'new', 'comments'")
-    max_results: int = Field(default=50, description="Posts to fetch from Reddit (will return top 10 after filtering)")
+    desired_results: int = Field(default=10, description="Number of high-quality results to return (will fetch 5x this amount)")
 
 
 class ApifyRedditSearchTool(BaseTool):
@@ -27,22 +29,208 @@ class ApifyRedditSearchTool(BaseTool):
 
     name: str = "Reddit Discussion Search"
     description: str = """
-    Search Reddit for discussions related to a query.
+    Search Reddit for discussions related to a query with parallel processing for speed.
 
     Input parameters:
     - query: Search keywords (what you're looking for)
     - subreddit: Optional - specific subreddit or leave empty to search all Reddit
     - time_filter: Time range (default: "month" for recent posts)
     - sort_by: Sort order (default: "relevance" for most relevant posts)
-    - max_results: Number of posts to return (default: 20)
+    - desired_results: Number of high-quality results to return (default: 10, max: 500)
+                      System fetches 5x this amount and filters to best quality
 
-    Returns Reddit posts with:
+    Returns top N Reddit posts with:
     - Post title and content
     - Author information
     - Subreddit and engagement metrics
-    - Intent/relevance score (0-100) with reasoning
+    - Relevance score (0-100) with reasoning
+
+    Performance: Parallel processing for large requests (~3-4 min for 500 results)
     """
     args_schema: Type[BaseModel] = ApifyRedditSearchInput
+
+    def _fetch_single_batch(
+        self,
+        apify_token: str,
+        query: str,
+        batch_size: int,
+        subreddit: Optional[str],
+        time_filter: str,
+        sort_by: str
+    ) -> List[Dict]:
+        """
+        Fetch a single batch of posts from Apify.
+
+        Args:
+            apify_token: Apify API token
+            query: Search query
+            batch_size: Number of posts to fetch (max 100)
+            subreddit: Optional subreddit filter
+            time_filter: Time range filter
+            sort_by: Sort order
+
+        Returns:
+            List of post dictionaries
+        """
+        client = ApifyClient(apify_token)
+
+        # Build search query
+        queries = [f"subreddit:{subreddit} {query}"] if subreddit else [query]
+
+        # Prepare actor input
+        run_input = {
+            "queries": queries,
+            "sort": sort_by,
+            "timeframe": time_filter,
+            "urls": [],
+            "maxPosts": max(10, min(batch_size, 100)),  # Min 10, max 100
+            "maxComments": 1,
+            "scrapeComments": False,
+            "includeNsfw": False,
+        }
+
+        try:
+            # Run the actor
+            run = client.actor("TwqHBuZZPHJxiQrTU").call(run_input=run_input)
+
+            # Fetch results
+            results = []
+            for item in client.dataset(run["defaultDatasetId"]).iterate_items():
+                results.append(item)
+
+            return results
+
+        except Exception as e:
+            print(f"[ERROR] Batch fetch failed: {str(e)}")
+            return []
+
+    def _fetch_posts_parallel(
+        self,
+        apify_token: str,
+        query: str,
+        target_posts: int,
+        subreddit: Optional[str],
+        time_filter: str,
+        sort_by: str,
+        max_workers: int = 5
+    ) -> List[Dict]:
+        """
+        Fetch posts in parallel across multiple Apify calls.
+
+        Args:
+            target_posts: Total number of posts to fetch
+            max_workers: Number of parallel workers (default: 5)
+
+        Returns:
+            List of all fetched posts
+        """
+        BATCH_SIZE = 100  # Max posts per Apify call
+        num_batches = math.ceil(target_posts / BATCH_SIZE)
+
+        print(f"[INFO] Fetching {target_posts} posts across {num_batches} batches ({max_workers} parallel workers)...")
+
+        all_posts = []
+        seen_ids = set()  # Track post IDs to avoid duplicates
+
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # Submit all batch fetching tasks
+            future_to_batch = {
+                executor.submit(
+                    self._fetch_single_batch,
+                    apify_token,
+                    query,
+                    BATCH_SIZE,
+                    subreddit,
+                    time_filter,
+                    sort_by
+                ): batch_num
+                for batch_num in range(num_batches)
+            }
+
+            # Collect results as they complete
+            completed = 0
+            for future in as_completed(future_to_batch):
+                batch_num = future_to_batch[future]
+                try:
+                    batch_results = future.result()
+                    # Deduplicate by post ID
+                    for post in batch_results:
+                        post_id = post.get('id')
+                        if post_id and post_id not in seen_ids:
+                            seen_ids.add(post_id)
+                            all_posts.append(post)
+
+                    completed += 1
+                    print(f"[INFO] Batch {completed}/{num_batches} complete ({len(all_posts)} unique posts)")
+
+                except Exception as e:
+                    print(f"[ERROR] Batch {batch_num} failed: {str(e)}")
+
+        print(f"[INFO] Fetching complete: {len(all_posts)} unique posts")
+        return all_posts[:target_posts]  # Limit to target
+
+    def _score_posts_parallel(
+        self,
+        query: str,
+        posts: List[Dict],
+        max_workers: int = 5
+    ) -> List[Dict]:
+        """
+        Score posts in parallel batches.
+
+        Args:
+            query: Search query for context
+            posts: List of posts to score
+            max_workers: Number of parallel workers
+
+        Returns:
+            List of score dictionaries matching posts order
+        """
+        BATCH_SIZE = 100  # Score 100 posts per API call
+        num_batches = math.ceil(len(posts) / BATCH_SIZE)
+
+        print(f"[INFO] Scoring {len(posts)} posts across {num_batches} batches ({max_workers} parallel workers)...")
+
+        # Split posts into batches
+        post_batches = [posts[i:i+BATCH_SIZE] for i in range(0, len(posts), BATCH_SIZE)]
+
+        all_scores = []
+
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # Submit all scoring tasks
+            future_to_batch = {
+                executor.submit(
+                    self._batch_score_posts,
+                    query,
+                    batch
+                ): (batch_num, len(batch))
+                for batch_num, batch in enumerate(post_batches)
+            }
+
+            # Collect results in order
+            batch_scores = [None] * num_batches
+            completed = 0
+
+            for future in as_completed(future_to_batch):
+                batch_num, batch_len = future_to_batch[future]
+                try:
+                    scores = future.result()
+                    batch_scores[batch_num] = scores
+                    completed += 1
+                    print(f"[INFO] Scoring batch {completed}/{num_batches} complete")
+
+                except Exception as e:
+                    print(f"[ERROR] Scoring batch {batch_num} failed: {str(e)}")
+                    # Fallback scores
+                    batch_scores[batch_num] = [{"score": 50, "reasoning": "Scoring failed"} for _ in range(batch_len)]
+
+            # Flatten scores maintaining order
+            for scores in batch_scores:
+                if scores:
+                    all_scores.extend(scores)
+
+        print(f"[INFO] Scoring complete: {len(all_scores)} posts scored")
+        return all_scores
 
     def _run(
         self,
@@ -50,100 +238,117 @@ class ApifyRedditSearchTool(BaseTool):
         subreddit: Optional[str] = None,
         time_filter: str = "month",
         sort_by: str = "relevance",
-        max_results: int = 50
+        desired_results: int = 10
     ) -> str:
-        """Execute Reddit search and return formatted results."""
+        """
+        Execute Reddit search with parallel processing and return formatted results.
+
+        Args:
+            query: Search query
+            subreddit: Optional subreddit filter
+            time_filter: Time range
+            sort_by: Sort order
+            desired_results: Number of high-quality results to return (default: 10, max: 500)
+
+        Returns:
+            Formatted string with top N Reddit discussions
+        """
 
         apify_token = os.getenv("APIFY_API_TOKEN")
         if not apify_token:
             return "Error: APIFY_API_TOKEN not found in environment variables"
 
-        print(f"\n[INFO] Searching Reddit for: '{query}'")
+        # Validate and cap desired_results
+        desired_results = min(desired_results, 500)  # Max 500 results
+
+        # Calculate how many posts to fetch (5x multiplier for filtering)
+        MULTIPLIER = 5
+        fetch_target = desired_results * MULTIPLIER
+
+        print(f"\n[INFO] Reddit Search: '{query}'")
         if subreddit:
             print(f"[INFO] Subreddit: r/{subreddit}")
-        print(f"[INFO] Time filter: {time_filter}, Sort: {sort_by}, Max results: {max_results}")
-
-        # Initialize Apify client
-        client = ApifyClient(apify_token)
-
-        # Build search query with subreddit if specified
-        if subreddit:
-            # Search within specific subreddit
-            queries = [f"subreddit:{subreddit} {query}"]
-        else:
-            # Search across all subreddits
-            queries = [query]
-
-        # Prepare actor input
-        # Note: Actor requires min 10 posts, min 1 maxComments
-        run_input = {
-            "queries": queries,
-            "sort": sort_by,
-            "timeframe": time_filter,
-            "urls": [],  # Must be empty array, not None
-            "maxPosts": max(10, min(max_results, 100)),  # Min 10, max 100
-            "maxComments": 1,  # Min 1 required by actor (we won't use comments for now)
-            "scrapeComments": False,  # Don't actually scrape comment content
-            "includeNsfw": False,
-        }
-
-        print(f"[INFO] Calling Apify actor TwqHBuZZPHJxiQrTU (Reddit Scraper Pro)...")
+        print(f"[INFO] Strategy: Fetch {fetch_target} posts -> Filter to top {desired_results}")
+        print(f"[INFO] Time: {time_filter}, Sort: {sort_by}\n")
 
         try:
-            # Run the actor
-            run = client.actor("TwqHBuZZPHJxiQrTU").call(run_input=run_input)
+            # STEP 1: Fetch posts (parallel if needed)
+            if fetch_target <= 100:
+                # Single batch - no parallel needed
+                print(f"[INFO] Fetching {fetch_target} posts (single batch)...")
+                all_posts = self._fetch_single_batch(
+                    apify_token, query, fetch_target, subreddit, time_filter, sort_by
+                )
+            else:
+                # Multiple batches - use parallel processing
+                all_posts = self._fetch_posts_parallel(
+                    apify_token, query, fetch_target, subreddit, time_filter, sort_by
+                )
 
-            print(f"[INFO] Actor run completed. Fetching posts...")
-
-            # Fetch results
-            results = []
-            for item in client.dataset(run["defaultDatasetId"]).iterate_items():
-                results.append(item)
-
-            print(f"[INFO] Found {len(results)} posts\n")
-
-            if not results:
+            if not all_posts:
                 return f"No Reddit posts found for query: '{query}'"
 
-            print(f"[DEBUG] First post keys: {list(results[0].keys())}\n")
+            print(f"\n[INFO] Fetched {len(all_posts)} posts total")
 
-            # Format results for agent consumption
-            return self._format_results(results, query)
+            # STEP 2: Extract post data for scoring
+            posts_data = []
+            for post in all_posts:
+                posts_data.append({
+                    'title': post.get('title', 'No title'),
+                    'text': post.get('body', post.get('text', ''))[:800],
+                    'author': post.get('author', 'Unknown'),
+                    'subreddit': post.get('subreddit', 'Unknown'),
+                    'score': post.get('score', 0),
+                    'num_comments': post.get('num_comments', 0),
+                    'created': post.get('created_utc', post.get('created', 'Unknown')),
+                    'url': post.get('url', 'No URL')
+                })
+
+            # STEP 3: Score posts (parallel if needed)
+            if len(posts_data) <= 100:
+                # Single batch scoring
+                print(f"\n[INFO] Scoring {len(posts_data)} posts (single batch)...")
+                scored_posts = self._batch_score_posts(query, posts_data)
+            else:
+                # Parallel scoring
+                scored_posts = self._score_posts_parallel(query, posts_data)
+
+            # STEP 4: Format and return results
+            return self._format_results(posts_data, scored_posts, query, desired_results)
 
         except Exception as e:
-            error_msg = f"Error calling Apify Reddit actor: {str(e)}"
+            error_msg = f"Error in Reddit search: {str(e)}"
             print(f"[ERROR] {error_msg}")
             import traceback
             traceback.print_exc()
             return error_msg
 
-    def _format_results(self, results: list, query: str) -> str:
-        """Format Reddit posts into readable output with intent scoring."""
+    def _format_results(
+        self,
+        posts_data: List[Dict],
+        scored_posts: List[Dict],
+        query: str,
+        desired_results: int
+    ) -> str:
+        """
+        Format Reddit posts into readable output.
+
+        Args:
+            posts_data: List of post dictionaries (already extracted)
+            scored_posts: List of score dictionaries (already computed)
+            query: Search query
+            desired_results: Number of top results to return
+
+        Returns:
+            Formatted string output
+        """
 
         output = []
         output.append("=" * 70)
         output.append(f"REDDIT LEAD SIGNALS: '{query}'")
         output.append("=" * 70)
 
-        # STEP 1: Extract all post data for batch scoring
-        posts_data = []
-        for post in results:
-            posts_data.append({
-                'title': post.get('title', 'No title'),
-                'text': post.get('body', post.get('text', ''))[:800],  # Truncate for token limits
-                'author': post.get('author', 'Unknown'),
-                'subreddit': post.get('subreddit', 'Unknown'),
-                'score': post.get('score', 0),
-                'num_comments': post.get('num_comments', 0),
-                'created': post.get('created_utc', post.get('created', 'Unknown')),
-                'url': post.get('url', 'No URL')
-            })
-
-        # STEP 2: Batch score ALL posts in ONE API call
-        print(f"\n[INFO] Batch scoring {len(posts_data)} posts with LLM...")
-        scored_posts = self._batch_score_posts(query, posts_data)
-
-        # STEP 3: Filter out low-quality posts (score < 50)
+        # Filter out low-quality posts (score < 50)
         QUALITY_THRESHOLD = 50
         filtered_posts = []
         for post_data, score_data in zip(posts_data, scored_posts):
@@ -151,19 +356,18 @@ class ApifyRedditSearchTool(BaseTool):
             if intent_score >= QUALITY_THRESHOLD:
                 filtered_posts.append((post_data, score_data))
 
-        print(f"[INFO] Filtered to {len(filtered_posts)} high-quality posts (score >= {QUALITY_THRESHOLD})")
+        print(f"\n[INFO] Filtered to {len(filtered_posts)} high-quality posts (score >= {QUALITY_THRESHOLD})")
 
         if not filtered_posts:
             return f"No high-quality Reddit posts found for query: '{query}' (all posts scored below {QUALITY_THRESHOLD})"
 
-        # STEP 4: Sort by score (highest first)
+        # Sort by score (highest first)
         filtered_posts.sort(key=lambda x: x[1].get('score', 0), reverse=True)
 
-        # STEP 5: Limit to top 10 most relevant discussions
-        TOP_N = 10
-        top_posts = filtered_posts[:TOP_N]
+        # Limit to desired number of results
+        top_posts = filtered_posts[:desired_results]
 
-        output.append(f"\nTop {len(top_posts)} most relevant discussions (from {len(filtered_posts)} high-quality, {len(results)} total):\n")
+        output.append(f"\nTop {len(top_posts)} most relevant discussions (from {len(filtered_posts)} high-quality, {len(posts_data)} total fetched):\n")
 
         for idx, (post_data, score_data) in enumerate(top_posts, 1):
             intent_score = score_data.get('score', 50)
@@ -188,14 +392,14 @@ class ApifyRedditSearchTool(BaseTool):
 
         output.append("=" * 70)
         output.append("\nKEY INSIGHTS:")
-        output.append(f"- Top discussions shown: {len(top_posts)}")
-        output.append(f"- High-quality found: {len(filtered_posts)} (from {len(results)} total fetched)")
+        output.append(f"- Returned: {len(top_posts)} high-quality discussions")
+        output.append(f"- Quality posts found: {len(filtered_posts)} (from {len(posts_data)} fetched)")
         output.append(f"- Quality threshold: {QUALITY_THRESHOLD}/100")
-        output.append(f"- Subreddits in top results: {len(set(p[0]['subreddit'] for p in top_posts))}")
+        output.append(f"- Subreddits in results: {len(set(p[0]['subreddit'] for p in top_posts))}")
         avg_intent = sum(p[1].get('score', 0) for p in top_posts) / len(top_posts) if top_posts else 0
-        output.append(f"- Average intent score: {avg_intent:.1f}/100")
+        output.append(f"- Average relevance score: {avg_intent:.1f}/100")
         avg_comments = sum(p[0]['num_comments'] for p in top_posts) / len(top_posts) if top_posts else 0
-        output.append(f"- Average comments: {avg_comments:.1f}")
+        output.append(f"- Average engagement: {avg_comments:.1f} comments/post")
         output.append("=" * 70)
 
         return "\n".join(output)
