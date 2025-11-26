@@ -134,19 +134,33 @@ class ProspectingFlowV2(Flow[ProspectingState]):
         self.logger.log_phase("Initialization", status="completed")
         return self.state
 
-    @listen(initialize)
-    def run_orchestrator(self, state: ProspectingState):
-        """
-        Run the Orchestrator Agent to find leads.
+    def _merge_leads(self, existing_leads: List[Dict], new_leads: List[Dict]) -> List[Dict]:
+        """Merge new leads with existing, avoiding duplicates by username."""
+        seen = set()
+        merged = []
 
-        The agent autonomously:
-        - Analyzes the query
-        - Chooses best platforms/tools
-        - Executes searches
-        - Reflects on results
-        - Adapts strategy if needed
-        - Enriches and scores leads
-        """
+        # First add existing leads
+        for lead in existing_leads:
+            key = lead.get('username', lead.get('name', ''))
+            if key and key not in seen:
+                seen.add(key)
+                merged.append(lead)
+            elif not key:
+                merged.append(lead)
+
+        # Then add new leads that aren't duplicates
+        for lead in new_leads:
+            key = lead.get('username', lead.get('name', ''))
+            if key and key not in seen:
+                seen.add(key)
+                merged.append(lead)
+            elif not key:
+                merged.append(lead)
+
+        return merged
+
+    def _execute_orchestrator(self, state: ProspectingState) -> bool:
+        """Execute the orchestrator crew once. Returns True on success."""
         self.logger.log_phase("Orchestrator Agent Execution")
         self.emit_event("agent_started", "Orchestrator Agent analyzing query...")
         self.emit_event("thought", f"Strategy: {state.current_strategy or 'Agent will decide'}")
@@ -169,85 +183,117 @@ class ProspectingFlowV2(Flow[ProspectingState]):
             # Parse structured output
             output: ProspectingOutput = result.pydantic
 
-            # Update state with results
-            state.leads = [lead.model_dump() for lead in output.leads]
-            state.hot_leads = output.hot_leads
-            state.warm_leads = output.warm_leads
-            state.platforms_searched = output.platforms_searched
-            state.strategies_used = output.strategies_used
+            # MERGE new leads with existing (don't overwrite!)
+            new_leads = [lead.model_dump() for lead in output.leads]
+            state.leads = self._merge_leads(state.leads, new_leads)
+
+            # Update other state
+            state.hot_leads = len([l for l in state.leads if l.get('intent_score', 0) >= 80])
+            state.warm_leads = len([l for l in state.leads if 60 <= l.get('intent_score', 0) < 80])
+
+            # Merge platforms and strategies
+            for platform in output.platforms_searched:
+                if platform not in state.platforms_searched:
+                    state.platforms_searched.append(platform)
+            for strategy in output.strategies_used:
+                if strategy not in state.strategies_used:
+                    state.strategies_used.append(strategy)
 
             # Log results
             self.logger.log_tool_result(
                 "OrchestratorCrew",
-                f"Found {output.total_leads} leads from {output.platforms_searched}",
-                count=output.total_leads,
+                f"Found {len(new_leads)} new leads (total: {len(state.leads)}) from {output.platforms_searched}",
+                count=len(new_leads),
                 success=True
             )
 
-            # Log each lead found
-            for lead_data in state.leads:
+            # Log each new lead found
+            for lead_data in new_leads:
                 self.logger.log_lead_found(lead_data)
 
-            self.emit_event("agent_completed", f"Found {output.total_leads} leads")
+            self.emit_event("agent_completed", f"Found {len(new_leads)} new leads (total: {len(state.leads)})")
             self.emit_event("thought", output.summary)
 
             self.logger.log_phase("Orchestrator Agent Execution", status="completed")
-            return state
+            return True
 
         except Exception as e:
             state.error = str(e)
             self.logger.log_error("orchestrator_error", str(e))
             self.emit_event("error", f"Orchestrator Agent failed: {str(e)}")
-            return state
+            return False
 
-    @router(run_orchestrator)
-    def check_results(self, state: ProspectingState):
-        """Route based on result quality."""
-        if state.error:
-            if state.retries < 2:
-                return "retry"
+    @listen(initialize)
+    def run_orchestrator_with_retries(self, state: ProspectingState):
+        """
+        Run the Orchestrator Agent with built-in retry logic.
+
+        Handles retries internally to avoid flow routing issues.
+        """
+        max_retries = 2
+        strategies = ["auto", "intent_signals", "company_triggers"]
+
+        while state.retries <= max_retries:
+            # Execute orchestrator
+            success = self._execute_orchestrator(state)
+
+            if not success:
+                # Error occurred
+                if state.retries < max_retries:
+                    state.retries += 1
+                    self.emit_event("thought", f"Retry {state.retries} due to error...")
+                    self.logger.log_retry(
+                        reason=f"Error: {state.error}",
+                        new_strategy=strategies[min(state.retries, len(strategies)-1)]
+                    )
+                    state.error = ""  # Clear error for retry
+                    continue
+                else:
+                    # Max retries reached with error
+                    return "failed"
+
+            # Check if we have enough leads
+            qualified_count = len([l for l in state.leads if l.get('intent_score', 0) >= 60])
+            target_half = state.target_leads * 0.5
+
+            self.emit_event("thought", f"Progress: {qualified_count} qualified leads (target: {state.target_leads}, need {int(target_half)})")
+
+            if qualified_count >= target_half:
+                return "success"
+
+            # Not enough leads - retry if we can
+            if state.retries < max_retries:
+                state.retries += 1
+                old_strategy = state.current_strategy or "auto"
+
+                # Rotate strategy
+                if state.retries < len(strategies):
+                    state.current_strategy = strategies[state.retries]
+                else:
+                    state.current_strategy = strategies[-1]
+
+                self.emit_event("thought", f"Retry {state.retries}: Only {qualified_count} qualified leads found")
+                self.emit_event("thought", f"Switching strategy from {old_strategy} to {state.current_strategy}")
+
+                self.logger.log_retry(
+                    reason=f"Only {qualified_count} qualified leads found (target: {state.target_leads})",
+                    new_strategy=f"Switching from {old_strategy} to {state.current_strategy}"
+                )
             else:
-                return "failed"
+                # Max retries reached
+                return "partial"
 
-        qualified_count = len([l for l in state.leads if l.get('intent_score', 0) >= 60])
-        target_half = state.target_leads * 0.5
+        return "partial"
 
-        if qualified_count >= target_half:
-            return "success"
-        elif state.retries < 2:
-            return "retry"
-        else:
-            return "partial"
-
-    @listen("retry")
-    def retry_with_new_strategy(self, state: ProspectingState):
-        """Retry with alternative strategy if results are insufficient."""
-        state.retries += 1
-        current_qualified = len([l for l in state.leads if l.get('intent_score', 0) >= 60])
-
-        self.emit_event("thought", f"Retry {state.retries}: Only {current_qualified} qualified leads found")
-
-        # Switch strategy based on what was used
-        old_strategy = state.current_strategy or "auto"
-        if "intent_signals" in state.strategies_used:
-            state.current_strategy = "company_triggers"
-            self.emit_event("thought", "Switching to company trigger approach")
-        else:
-            state.current_strategy = "intent_signals"
-            self.emit_event("thought", "Switching to intent signals approach")
-
-        # Log the retry
-        self.logger.log_retry(
-            reason=f"Only {current_qualified} qualified leads found (target: {state.target_leads})",
-            new_strategy=f"Switching from {old_strategy} to {state.current_strategy}"
-        )
-
-        # Re-run orchestrator
-        return self.run_orchestrator(state)
+    @router(run_orchestrator_with_retries)
+    def route_to_finalize(self, result: str):
+        """Route to appropriate finalization based on result."""
+        return result
 
     @listen("success")
-    def finalize_success(self, state: ProspectingState):
+    def finalize_success(self, _route_result):
         """Complete with full results and export logs/leads."""
+        state = self.state  # Use self.state instead of parameter
         self.logger.log_phase("Finalization")
 
         qualified_leads = [l for l in state.leads if l.get('intent_score', 0) >= 60]
@@ -297,8 +343,9 @@ class ProspectingFlowV2(Flow[ProspectingState]):
         return state
 
     @listen("partial")
-    def finalize_partial(self, state: ProspectingState):
+    def finalize_partial(self, _route_result):
         """Complete with partial results after retries exhausted."""
+        state = self.state  # Use self.state instead of parameter
         self.logger.log_phase("Finalization (Partial)")
 
         qualified_leads = [l for l in state.leads if l.get('intent_score', 0) >= 60]
@@ -341,8 +388,9 @@ class ProspectingFlowV2(Flow[ProspectingState]):
         return state
 
     @listen("failed")
-    def finalize_failed(self, state: ProspectingState):
+    def finalize_failed(self, _route_result):
         """Handle complete failure."""
+        state = self.state  # Use self.state instead of parameter
         self.logger.log_phase("Finalization (Failed)")
 
         state.status = ProspectingStatus.FAILED
