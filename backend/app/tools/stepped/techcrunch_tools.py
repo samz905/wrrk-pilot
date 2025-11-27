@@ -3,6 +3,8 @@ TechCrunch Stepped Tools - Funding signals from TechCrunch.
 
 Uses CrewAI ScrapeWebsiteTool to extract funding articles.
 Better than Crunchbase: no auth required, always fresh data.
+
+Architecture: Each tool does ONE thing. Agent decides what to call next.
 """
 import os
 import json
@@ -11,12 +13,6 @@ from crewai.tools import BaseTool
 from pydantic import BaseModel, Field
 from openai import OpenAI
 from crewai_tools import ScrapeWebsiteTool
-
-# Import LinkedIn company search for reliable URL lookup
-import sys
-from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from apify_linkedin_company_search import LinkedInCompanyBatchSearchTool
 
 
 # === Structured Output Models ===
@@ -45,11 +41,6 @@ class SelectedCompany(BaseModel):
 class SelectedCompaniesList(BaseModel):
     """List of selected companies."""
     selected: List[SelectedCompany]
-
-
-class LinkedInLookup(BaseModel):
-    """LinkedIn URL lookup result."""
-    linkedin_url: Optional[str] = None
 
 
 class DecisionMaker(BaseModel):
@@ -249,113 +240,68 @@ class TechCrunchSelectArticlesTool(BaseTool):
 
 class TechCrunchExtractCompaniesTool(BaseTool):
     """
-    Enrich selected companies with LinkedIn URLs.
+    Extract company details from selected articles.
+    Does NOT call LinkedIn - agent must call linkedin_company_batch_search separately.
     """
 
     name: str = "techcrunch_extract_companies"
     description: str = """
-    Enrich selected companies with LinkedIn company URLs.
+    Extract company details from selected funding articles.
 
-    Takes the selected articles (with company name and funding) and finds their LinkedIn URLs.
+    Returns structured company data (name, funding, description).
+    Does NOT include LinkedIn URLs - you must call linkedin_company_batch_search next.
 
     Parameters:
     - articles: Selected articles from techcrunch_select_articles
     - query: Product description for context
 
-    Returns company list ready for LinkedIn employee search.
+    Returns company list. Next: call linkedin_company_batch_search to get LinkedIn URLs.
     """
     args_schema: Type[BaseModel] = TechCrunchExtractCompaniesInput
 
     def _run(self, articles: List[dict], query: str) -> str:
-        """Enrich companies with LinkedIn URLs using actual LinkedIn search."""
+        """Extract company details from articles. Agent calls LinkedIn search separately."""
         if not articles:
             return json.dumps({
                 "companies": [],
                 "count": 0,
-                "recommendation": "No articles to extract from."
+                "done": "No articles to extract from",
+                "next": "Try techcrunch_fetch first"
             })
 
-        print(f"\n[TECHCRUNCH_EXTRACT] Enriching {len(articles)} companies with LinkedIn URLs")
+        print(f"\n[TECHCRUNCH_EXTRACT] Extracting {len(articles)} companies")
 
-        # Build list for batch search
-        companies_to_search = []
-        for article in articles[:5]:  # Limit to 5
-            company_name = article.get("company", "")
-            if company_name:
-                companies_to_search.append({
-                    "name": company_name,
-                    "context": article.get("title", "recently funded company")
-                })
-
-        # Use batch LinkedIn search for efficiency
-        linkedin_search = LinkedInCompanyBatchSearchTool()
-        search_result = linkedin_search._run(companies=companies_to_search)
-        search_data = json.loads(search_result)
-
-        # Build URL lookup map
-        url_map = {}
-        for match in search_data.get("matches", []):
-            if match.get("linkedin_url"):
-                url_map[match["company_name"]] = {
-                    "url": match["linkedin_url"],
-                    "matched_name": match.get("matched_name"),
-                    "confidence": match.get("confidence")
-                }
-
-        # Build companies list with LinkedIn URLs
+        # Build companies list (NO LinkedIn lookup - agent does that)
         companies = []
-        for article in articles[:5]:
+        for article in articles[:5]:  # Limit to 5
             company_name = article.get("company", "")
             if not company_name:
                 continue
-
-            linkedin_info = url_map.get(company_name, {})
-            linkedin_url = linkedin_info.get("url")
 
             companies.append({
                 "name": company_name,
                 "funding": article.get("funding", "recently funded"),
                 "description": article.get("title", ""),
-                "linkedin_url": linkedin_url,
-                "linkedin_matched_name": linkedin_info.get("matched_name"),
-                "linkedin_confidence": linkedin_info.get("confidence"),
+                "relevance": article.get("relevance", ""),
                 "date": article.get("date", "")
             })
+            print(f"[TECHCRUNCH_EXTRACT] Extracted: {company_name} ({article.get('funding', '?')})")
 
-            confidence = linkedin_info.get("confidence", "none")
-            print(f"[TECHCRUNCH_EXTRACT] {company_name}: {linkedin_url or 'Not found'} ({confidence})")
+        print(f"[TECHCRUNCH_EXTRACT] Done. Extracted {len(companies)} companies")
 
-        found_count = len([c for c in companies if c.get("linkedin_url")])
-        print(f"[TECHCRUNCH_EXTRACT] Enriched {found_count}/{len(companies)} companies with LinkedIn URLs")
+        # Format companies for linkedin_company_batch_search input
+        companies_for_linkedin = [
+            {"name": c["name"], "context": c.get("description", "recently funded company")}
+            for c in companies
+        ]
 
         return json.dumps({
             "companies": companies,
+            "companies_for_linkedin": companies_for_linkedin,
             "count": len(companies),
-            "found_linkedin": found_count,
-            "recommendation": "Use linkedin_employees_search for each company (use linkedin_url). Then use techcrunch_select_decision_makers."
+            "done": f"Extracted {len(companies)} funded companies from TechCrunch",
+            "next": "Call linkedin_company_batch_search with companies_for_linkedin to get company LinkedIn URLs. Then linkedin_employees_search for each company. Then techcrunch_select_decision_makers."
         })
-
-    def _find_linkedin_url(self, company_name: str) -> Optional[str]:
-        """Find LinkedIn company URL using structured outputs."""
-        try:
-            client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-            response = client.beta.chat.completions.parse(
-                model="gpt-4o-mini",
-                messages=[
-                    {"role": "system", "content": "You help find LinkedIn company page URLs. Return the most likely LinkedIn company URL."},
-                    {"role": "user", "content": f"What's the LinkedIn company page URL for '{company_name}'?"}
-                ],
-                response_format=LinkedInLookup,
-                temperature=0.2
-            )
-
-            result = response.choices[0].message.parsed
-            return result.linkedin_url
-
-        except Exception as e:
-            print(f"[TECHCRUNCH_EXTRACT] LinkedIn lookup error for {company_name}: {e}")
-            return None
 
 
 class TechCrunchSelectDecisionMakersTool(BaseTool):
@@ -447,7 +393,9 @@ class TechCrunchSelectDecisionMakersTool(BaseTool):
             return json.dumps({
                 "leads": leads,
                 "count": len(leads),
-                "recommendation": "Leads ready for use. These are warm leads from recently funded companies."
+                "done": f"Selected {len(leads)} decision makers from funded companies",
+                "warning": "APPLY filter_sellers BEFORE using these leads! Some may be self-promoters.",
+                "next": "Run filter_sellers on these leads to remove any sellers/promoters. Then leads are ready for outreach."
             })
 
         except Exception as e:

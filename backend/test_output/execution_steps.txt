@@ -1,35 +1,189 @@
 ORCHESTRATOR EXECUTION LOG
-Generated: 2025-11-26T21:57:26.616888
+Generated: 2025-11-27T12:16:40.223464
 ======================================================================
 
-[21:57:26] Query: project management software for startups
-[21:57:26] Target: 20 leads
-[21:57:26] --------------------------------------------------
-[21:57:26] Starting orchestrator...
-[21:57:26] ==================================================
-[21:57:26] [THOUGHT] Initializing intelligent prospecting flow v2...
-[21:57:26] [THOUGHT] Product: project management software for startups
-[21:57:26] [THOUGHT] Target: 20 high-quality leads
-[21:57:26] [THOUGHT] Using single Orchestrator Agent with full tool suite
-[21:57:27] [AGENT] Started: Orchestrator Agent analyzing query...
-[21:57:27] [THOUGHT] Strategy: Agent will decide
-[22:09:10] [AGENT] Completed: Found 6 new leads (total: 4)
-[22:09:10] [THOUGHT] The prospecting session identified 6 high-intent buyer leads for project management software for startups. The leads were sourced from Reddit and TechCrunch, with a focus on decision-makers at recently funded companies and individuals expressing a need for project management solutions. The leads include founders and CEOs with decision-making authority, ensuring a high level of intent and relevance.
-[22:09:10] [THOUGHT] Progress: 4 qualified leads (target: 20, need 10)
-[22:09:10] [THOUGHT] Retry 1: Only 4 qualified leads found
-[22:09:10] [THOUGHT] Switching strategy from auto to intent_signals
-[22:09:10] [AGENT] Started: Orchestrator Agent analyzing query...
-[22:09:10] [THOUGHT] Strategy: intent_signals
-[22:16:05] [AGENT] Completed: Found 9 new leads (total: 12)
-[22:16:05] [THOUGHT] Successfully identified 10 qualified leads for project management software for startups. The leads were sourced from Reddit discussions and TechCrunch articles, focusing on individuals and companies with a high likelihood of needing project management solutions. The process involved filtering out sellers and identifying decision-makers at recently funded companies, ensuring all leads show genuine buying intent.
-[22:16:05] [THOUGHT] Progress: 12 qualified leads (target: 20, need 10)
-[22:16:05] [COMPLETED] Leads found: {'total_leads': 12, 'hot_leads': 3, 'warm_leads': 9, 'platforms': ['reddit', 'techcrunch'], 'strategies': ['Reddit strategy', 'TechCrunch strategy'], 'exports': {'json': 'C:\\Users\\samZ9\\Downloads\\Code\\wrrk-pilot\\backend\\test_output\\leads_20251126-221605.json', 'csv': 'C:\\Users\\samZ9\\Downloads\\Code\\wrrk-pilot\\backend\\test_output\\leads_20251126-221605.csv', 'log': 'C:\\Users\\samZ9\\Downloads\\Code\\wrrk-pilot\\backend\\test_output\\agent_run_log_20251126-221605.json'}}
-[22:16:05] [THOUGHT] Success! Found 12 qualified leads
-[22:16:05] ==================================================
-[22:16:05] FINAL RESULTS:
-[22:16:05]   Status: ProspectingStatus.COMPLETED
-[22:16:05]   Total leads: 12
-[22:16:05]   Hot leads: 3
-[22:16:05]   Warm leads: 9
-[22:16:05]   Strategies: ['Reddit strategy', 'TechCrunch strategy']
-[22:16:05]   CSV: C:\Users\samZ9\Downloads\Code\wrrk-pilot\backend\test_output\leads.csv
+[12:16:40] Query: project management software for startups
+[12:16:40] Target: 10 leads
+[12:16:40] --------------------------------------------------
+[12:16:40] Starting orchestrator...
+[12:16:40] ==================================================
+[12:16:40] [THOUGHT] Initializing intelligent prospecting flow v2...
+[12:16:40] [THOUGHT] Product: project management software for startups
+[12:16:40] [THOUGHT] Target: 10 high-quality leads
+[12:16:40] [THOUGHT] Using single Orchestrator Agent with full tool suite
+[12:16:40] [AGENT] Started: Orchestrator Agent analyzing query...
+[12:16:40] [THOUGHT] Strategy: Agent will decide
+[12:33:17] [ERROR] Orchestrator Agent failed: Task 'Find high-intent BUYER leads for: project management software for startups
+Target: 10 qualified leads
+ICP: {'titles': ['Founder', 'CEO', 'CTO', 'Head of Product', 'VP Engineering'], 'company_size': '1-500 employees', 'industries': ['SaaS', 'Technology', 'AI/ML', 'Developer Tools']}
+
+================================================================================
+MANDATORY: YOU MUST USE BOTH REDDIT AND TECHCRUNCH
+================================================================================
+
+REQUIRED EXECUTION ORDER:
+1. First, run Reddit strategy to get ~50% of leads
+2. Then, run TechCrunch strategy to get the other ~50%
+3. DO NOT skip TechCrunch! Recently funded companies = CONFIRMED BUDGET
+
+================================================================================
+STEPPED WORKFLOW - You have stepped tools that let you REASON after each step
+================================================================================
+
+You have stepped tools. Review results after EACH tool call. Adapt as needed.
+If results are poor, try different query or skip to next strategy.
+
+STEP 1: ANALYZE & PLAN
+----------------------
+- What product category is this?
+- Who are likely competitors?
+- For 10 leads, plan: Reddit (~50%) + TechCrunch (~50%)
+- YOU MUST USE BOTH PLATFORMS - this is required!
+
+STEP 2: REDDIT STRATEGY
+-----------------------
+a) reddit_search(query) -> Review quality
+   - Quality HIGH? -> Continue to reddit_score
+   - Quality LOW? -> Try different query (e.g., "frustrated with [competitor]")
+   - Still LOW after 2 tries? -> Skip to TechCrunch strategy
+
+b) reddit_score(posts) -> Review scores
+   - Many posts >= 50? -> Continue to reddit_extract
+   - Few high scores? -> May get weak leads, adjust expectations
+
+c) reddit_extract(posts) -> Get raw leads
+   - Returns leads but WARNING: may include sellers!
+
+d) filter_sellers(leads) -> CRITICAL! Remove promoters
+   - Only BUYER leads remain
+
+STEP 3: TECHCRUNCH STRATEGY
+---------------------------
+a) techcrunch_fetch() -> Get recent funding articles
+   - TechCrunch has fresh funding news daily
+   - Recently funded = CONFIRMED BUDGET
+
+b) techcrunch_select_articles(articles) -> Select relevant ones
+   - Pick articles for startups in your target industry
+   - Look for Series A/B/C rounds
+
+c) techcrunch_extract_companies(articles) -> Get company list
+   - Extracts company name, funding amount, description
+   - Returns companies_for_linkedin ready for next step
+
+d) linkedin_company_batch_search(companies_for_linkedin) -> Get LinkedIn URLs
+   - Finds each company's LinkedIn page
+   - Required before searching for employees
+
+e) linkedin_employees_search(company_url) -> Get employees for each company
+   - Search each company for decision makers
+
+f) techcrunch_select_decision_makers(employees) -> Pick the right contacts
+   - Find Founders, CEOs, CTOs at funded companies
+   - These are HIGH INTENT leads (have budget!)
+
+g) filter_sellers(leads) -> Remove any promoters
+   - TechCrunch leads may include self-promoters too
+
+STEP 4: REVIEW & ADAPT
+----------------------
+After each strategy, ask yourself:
+- Do I have enough leads?
+- Are the leads high quality?
+- Should I retry with different query?
+
+STEP 5: FINAL AGGREGATION
+-------------------------
+- Combine leads from all strategies
+- Run filter_sellers ONE MORE TIME on all leads (safety check)
+- Score and rank by intent
+- Return top 10
+
+================================================================================
+CRITICAL: BUYER vs SELLER - THE MOST IMPORTANT RULE
+================================================================================
+
+ONLY include BUYERS. FILTER OUT SELLERS.
+
+SELLER signals (REMOVE these leads):
+- "I built X", "We launched Y", "My startup"
+- "Check out", "Introducing", "Just launched"
+- Promoting their own product
+- "We developed", "I created", "My tool"
+
+BUYER signals (KEEP these leads):
+- "Looking for", "Need help with", "Recommendations?"
+- "Frustrated with", "Alternative to", "Issues with"
+- Asking questions, seeking solutions
+- Complaining about current tools
+
+EXAMPLE:
+- Andy Roberts: "I built UIBrush for designers" = SELLER = REMOVE (score 0)
+- John Smith: "Looking for AI design tool, Figma is too slow" = BUYER = KEEP
+
+Always use filter_sellers before finalizing leads!
+STEP 1: ANALYZE & PLAN
+- Product category: Project management software for startups.
+- Likely competitors: Asana, Trello, Jira, Monday.com.
+- Plan for 10 leads: 5 from Reddit and 5 from TechCrunch.
+
+STEP 2: REDDIT STRATEGY
+- a) reddit_search(query):
+  - Use query 'looking for project management software for startups'.
+  - Set limit to 50, time_filter to 'month'.
+  - Review quality: If HIGH, proceed to reddit_score; if LOW, try query 'frustrated with Asana'.
+  - If still LOW after 2 tries, move to TechCrunch strategy.
+
+- b) reddit_score(posts):
+  - Review scores: If many posts >= 50, proceed to reddit_extract.
+  - If few high scores, adjust expectations for weak leads.
+
+- c) reddit_extract(posts):
+  - Extract raw leads from high-quality posts.
+  - WARNING: May include sellers.
+
+- d) filter_sellers(leads):
+  - Remove promoters, ensuring only BUYER leads remain.
+
+STEP 3: TECHCRUNCH STRATEGY
+- a) techcrunch_fetch():
+  - Fetch recent funding articles from TechCrunch.
+
+- b) techcrunch_select_articles(articles):
+  - Select articles relevant to SaaS, Technology, AI/ML, Developer Tools.
+  - Focus on Series A/B/C rounds.
+
+- c) techcrunch_extract_companies(articles):
+  - Extract company details (name, funding, description).
+
+- d) linkedin_company_batch_search(companies_for_linkedin):
+  - Get LinkedIn URLs for each company.
+
+- e) linkedin_employees_search(company_url):
+  - Search for decision makers (Founders, CEOs, CTOs).
+
+- f) techcrunch_select_decision_makers(employees):
+  - Select decision makers at funded companies.
+
+- g) filter_sellers(leads):
+  - Remove any promoters from TechCrunch leads.
+
+STEP 4: REVIEW & ADAPT
+- After each strategy, assess if you have enough high-quality leads.
+- Retry with different queries if necessary.
+
+STEP 5: FINAL AGGREGATION
+- Combine leads from Reddit and TechCrunch.
+- Run filter_sellers one more time on all leads for a safety check.
+- Score and rank by intent, ensuring intent score >= 60.
+- Return top 10 qualified leads with buying intent, source platform, URL, and scoring reasoning.' execution timed out after 900 seconds. Consider increasing max_execution_time or optimizing the task.
+[12:33:17] [THOUGHT] Retry 1 due to error...
+[12:33:17] [AGENT] Started: Orchestrator Agent analyzing query...
+[12:33:17] [THOUGHT] Strategy: Agent will decide
+[12:44:20] [AGENT] Completed: Found 4 new leads (total: 2)
+[12:44:20] [THOUGHT] The prospecting task resulted in 4 high-quality leads with strong buying intent for project management software. The leads were sourced from Reddit and TechCrunch, focusing on individuals with decision-making authority in relevant startups.
+[12:44:20] [THOUGHT] Progress: 2 qualified leads (target: 10, need 5)
+[12:44:20] [THOUGHT] Retry 2: Only 2 qualified leads found
+[12:44:20] [THOUGHT] Switching strategy from auto to company_triggers
+[12:44:20] [AGENT] Started: Orchestrator Agent analyzing query...
+[12:44:20] [THOUGHT] Strategy: company_triggers

@@ -39,7 +39,9 @@ orchestrator:
 
     STEP 2 - TECHCRUNCH STRATEGY (run this after Reddit):
       techcrunch_fetch -> techcrunch_select_articles -> techcrunch_extract_companies
-      -> linkedin_employees_search -> techcrunch_select_decision_makers
+      -> linkedin_company_batch_search (get company LinkedIn URLs)
+      -> linkedin_employees_batch_search (PARALLEL - all companies at once!)
+      -> techcrunch_select_decision_makers -> filter_sellers
       Get leads from recently funded companies = CONFIRMED BUDGET!
 
     DO NOT stop after Reddit! TechCrunch leads are HIGH VALUE because:
@@ -62,8 +64,9 @@ orchestrator:
 
     3. THEN EXECUTE TECHCRUNCH STRATEGY (DO NOT SKIP!):
        - techcrunch_fetch -> techcrunch_select_articles -> techcrunch_extract_companies
-       - Use linkedin_employees_search for each company
-       - techcrunch_select_decision_makers -> Get the right people
+       - linkedin_company_batch_search (to get company LinkedIn URLs)
+       - linkedin_employees_batch_search (PARALLEL - pass all companies at once!)
+       - techcrunch_select_decision_makers -> filter_sellers
        - Get ~50% of your leads from funded companies
 
     4. FILTER sellers -> Use filter_sellers on ALL leads

@@ -2,6 +2,7 @@
 import os
 import json
 from typing import Type, List, Dict, Any, Optional
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from crewai.tools import BaseTool
 from pydantic import BaseModel, Field
 from apify_client import ApifyClient
@@ -348,6 +349,121 @@ Return a JSON object with an "employees" array containing the relevant employees
             return "🟡"
         else:
             return "🔵"
+
+
+# === BATCH EMPLOYEES SEARCH (PARALLEL) ===
+
+class LinkedInEmployeesBatchSearchInput(BaseModel):
+    """Input schema for batch LinkedIn employees search."""
+    companies: List[Dict] = Field(
+        ...,
+        description="List of companies with 'url' and 'name' keys"
+    )
+    query: str = Field(
+        ...,
+        description="Search context for finding relevant employees (e.g., 'Founder, CEO, CTO')"
+    )
+    max_employees_per_company: int = Field(
+        default=10,
+        description="Maximum employees to fetch per company"
+    )
+
+
+class LinkedInEmployeesBatchSearchTool(BaseTool):
+    """
+    Find decision makers at MULTIPLE companies in PARALLEL.
+
+    This is much faster than calling linkedin_employees_search multiple times
+    because it processes all companies concurrently.
+    """
+
+    name: str = "linkedin_employees_batch_search"
+    description: str = """
+    Find decision makers at MULTIPLE companies in PARALLEL.
+
+    MUCH FASTER than calling linkedin_employees_search multiple times!
+    Processes all companies concurrently (~2 min total vs ~2 min per company).
+
+    Input parameters:
+    - companies: List of dicts with 'url' and 'name' keys
+      Example: [{"url": "https://linkedin.com/company/acme/", "name": "Acme Corp"}]
+    - query: Search context (e.g., "Founder, CEO, CTO, Head of Product")
+    - max_employees_per_company: Max employees per company (default: 10)
+
+    Returns employees_by_company dict ready for techcrunch_select_decision_makers.
+
+    USE THIS instead of calling linkedin_employees_search in a loop!
+    """
+    args_schema: Type[BaseModel] = LinkedInEmployeesBatchSearchInput
+
+    def _run(
+        self,
+        companies: List[Dict],
+        query: str,
+        max_employees_per_company: int = 10
+    ) -> str:
+        """Execute parallel LinkedIn employees search for multiple companies."""
+        apify_token = os.getenv("APIFY_API_TOKEN")
+        if not apify_token:
+            return json.dumps({"employees_by_company": {}, "error": "APIFY_API_TOKEN not found"})
+
+        print(f"\n[LINKEDIN_BATCH_EMPLOYEES] Searching {len(companies)} companies in PARALLEL...")
+
+        # Use the single-company tool for actual fetching
+        single_tool = LinkedInEmployeesSearchTool()
+
+        employees_by_company = {}
+        errors = []
+
+        def fetch_company(company: Dict) -> tuple:
+            """Fetch employees for a single company (runs in thread)."""
+            url = company.get('url', '')
+            name = company.get('name', 'Unknown')
+
+            if not url:
+                return name, [], f"No URL for {name}"
+
+            try:
+                result_json = single_tool._run(
+                    company_url=url,
+                    query=query,
+                    max_employees=max_employees_per_company,
+                    return_json=True
+                )
+                result = json.loads(result_json)
+                employees = result.get('employees', [])
+                return name, employees, None
+            except Exception as e:
+                return name, [], str(e)
+
+        # Run all fetches in parallel
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            futures = {executor.submit(fetch_company, c): c for c in companies}
+
+            for future in as_completed(futures):
+                company = futures[future]
+                try:
+                    name, employees, error = future.result()
+                    if error:
+                        errors.append(f"{name}: {error}")
+                        print(f"[LINKEDIN_BATCH_EMPLOYEES] Error for {name}: {error}")
+                    else:
+                        employees_by_company[name] = employees
+                        print(f"[LINKEDIN_BATCH_EMPLOYEES] Got {len(employees)} employees from {name}")
+                except Exception as e:
+                    errors.append(f"{company.get('name', 'Unknown')}: {str(e)}")
+
+        total_employees = sum(len(emps) for emps in employees_by_company.values())
+        print(f"[LINKEDIN_BATCH_EMPLOYEES] Done. {total_employees} employees from {len(employees_by_company)} companies")
+
+        return json.dumps({
+            "employees_by_company": employees_by_company,
+            "total_employees": total_employees,
+            "companies_searched": len(employees_by_company),
+            "errors": errors if errors else None,
+            "done": f"Found {total_employees} employees across {len(employees_by_company)} companies",
+            "next": "Call techcrunch_select_decision_makers with employees_by_company to pick the right contacts"
+        })
 
 
 # Test function

@@ -1,27 +1,25 @@
 """
 Tools for Sales Prospecting.
 
-This module provides atomic tools that wrap various APIs for:
-- LinkedIn (posts, profiles, employees, comments) - Apify
+ACTIVE TOOLS (used by orchestrator):
+- LinkedIn (employees, profile detail, company search) - Apify
 - Reddit (search and lead extraction) - Apify
 - Twitter/X (search) - Apify
-- Google (SERP and website scraping) - CrewAI native tools
+- Google/Web (SERP and website scraping) - CrewAI native tools
 - Crunchbase (company research) - Apify
 
-And processing tools for:
-- Fuzzy matching (deduplication)
-- Domain extraction
-- ICP matching
-- Lead scoring
+LEGACY TOOLS (moved to /backend/legacy/):
+- apify_linkedin.py, apify_linkedin_posts.py, apify_linkedin_leads.py
+- linkedin_comprehensive.py
+- fuzzy_matcher.py, domain_extractor.py, icp_matcher.py, lead_scorer.py
+- composite/ folder (intent_signal_hunter, decision_maker_finder, company_trigger_scanner)
 """
 
-# LinkedIn Tools (Apify)
-from .apify_linkedin_posts import ApifyLinkedInPostsSearchTool
-from .apify_linkedin_leads import LinkedInLeadExtractionTool
-from .apify_linkedin_employees import LinkedInEmployeesSearchTool
+# LinkedIn Tools (Apify) - ACTIVE
+from .apify_linkedin_employees import LinkedInEmployeesSearchTool, LinkedInEmployeesBatchSearchTool
 from .apify_linkedin_post_comments import LinkedInPostCommentsTool
-from .apify_linkedin import ApifyLinkedInSearchTool
 from .apify_linkedin_profile_detail import ApifyLinkedInProfileDetailTool
+from .apify_linkedin_company_search import LinkedInCompanySearchTool, LinkedInCompanyBatchSearchTool
 
 # Reddit Tools (Apify)
 from .apify_reddit import ApifyRedditSearchTool, RedditLeadExtractionTool
@@ -35,21 +33,15 @@ from crewai_tools import SerperDevTool, ScrapeWebsiteTool
 # Crunchbase Tools (Apify)
 from .apify_crunchbase import ApifyCrunchbaseTool
 
-# Processing Tools
-from .fuzzy_matcher import FuzzyMatcherTool
-from .domain_extractor import DomainExtractorTool
-from .icp_matcher import ICPMatcherTool
-from .lead_scorer import LeadScorerTool
-
-# All atomic tools
+# All atomic tools (used by orchestrator)
 ATOMIC_TOOLS = [
     # LinkedIn
-    ApifyLinkedInPostsSearchTool,
-    LinkedInLeadExtractionTool,
     LinkedInEmployeesSearchTool,
+    LinkedInEmployeesBatchSearchTool,  # PARALLEL employee search
     LinkedInPostCommentsTool,
-    ApifyLinkedInSearchTool,
     ApifyLinkedInProfileDetailTool,
+    LinkedInCompanySearchTool,
+    LinkedInCompanyBatchSearchTool,
     # Reddit
     ApifyRedditSearchTool,
     RedditLeadExtractionTool,
@@ -62,22 +54,14 @@ ATOMIC_TOOLS = [
     ApifyCrunchbaseTool,
 ]
 
-# Processing tools
-PROCESSING_TOOLS = [
-    FuzzyMatcherTool,
-    DomainExtractorTool,
-    ICPMatcherTool,
-    LeadScorerTool,
-]
-
 __all__ = [
     # LinkedIn
-    "ApifyLinkedInPostsSearchTool",
-    "LinkedInLeadExtractionTool",
     "LinkedInEmployeesSearchTool",
+    "LinkedInEmployeesBatchSearchTool",
     "LinkedInPostCommentsTool",
-    "ApifyLinkedInSearchTool",
     "ApifyLinkedInProfileDetailTool",
+    "LinkedInCompanySearchTool",
+    "LinkedInCompanyBatchSearchTool",
     # Reddit
     "ApifyRedditSearchTool",
     "RedditLeadExtractionTool",
@@ -88,12 +72,6 @@ __all__ = [
     "ScrapeWebsiteTool",
     # Crunchbase
     "ApifyCrunchbaseTool",
-    # Processing
-    "FuzzyMatcherTool",
-    "DomainExtractorTool",
-    "ICPMatcherTool",
-    "LeadScorerTool",
     # Tool lists
     "ATOMIC_TOOLS",
-    "PROCESSING_TOOLS",
 ]

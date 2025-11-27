@@ -54,12 +54,25 @@ prospect_leads:
        - Pick articles for startups in your target industry
        - Look for Series A/B/C rounds
 
-    c) techcrunch_extract_companies(articles) -> Get company info
-       - Extract company name, funding amount, industry
+    c) techcrunch_extract_companies(articles) -> Get company list
+       - Extracts company name, funding amount, description
+       - Returns companies_for_linkedin ready for next step
 
-    d) techcrunch_select_decision_makers(companies) -> Find contacts
+    d) linkedin_company_batch_search(companies_for_linkedin) -> Get LinkedIn URLs
+       - Finds each company's LinkedIn page
+       - Returns companies with URLs for employee search
+
+    e) linkedin_employees_batch_search(companies, query) -> Get employees PARALLEL!
+       - Pass ALL companies at once (not one by one!)
+       - Searches all companies in parallel (~2 min total vs ~2 min EACH)
+       - Returns employees_by_company ready for next step
+
+    f) techcrunch_select_decision_makers(employees) -> Pick the right contacts
        - Find Founders, CEOs, CTOs at funded companies
        - These are HIGH INTENT leads (have budget!)
+
+    g) filter_sellers(leads) -> Remove any promoters
+       - TechCrunch leads may include self-promoters too
 
     STEP 4: REVIEW & ADAPT
     ----------------------

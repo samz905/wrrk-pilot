@@ -1,8 +1,18 @@
-"""Stepped tools for agent reasoning at each checkpoint."""
+"""
+Stepped tools for agent reasoning at each checkpoint.
+
+ACTIVE TOOLS:
+- Reddit: search -> score -> extract
+- TechCrunch: fetch -> select_articles -> extract_companies -> select_decision_makers
+- FilterSellers: reusable seller/buyer filter
+
+LEGACY TOOLS (moved to /backend/legacy/tools/stepped/):
+- g2_tools.py (G2 strategy discontinued)
+- upwork_tools.py (Upwork strategy discontinued)
+"""
 
 from .filter_sellers import FilterSellersTool
 from .reddit_tools import RedditSearchSteppedTool, RedditScoreTool, RedditExtractTool
-from .g2_tools import IdentifyCompetitorTool, G2FetchReviewsTool, ExtractReviewersTool
 from .techcrunch_tools import (
     TechCrunchFetchTool,
     TechCrunchSelectArticlesTool,
@@ -18,11 +28,6 @@ __all__ = [
     "RedditSearchSteppedTool",
     "RedditScoreTool",
     "RedditExtractTool",
-
-    # G2 stepped tools
-    "IdentifyCompetitorTool",
-    "G2FetchReviewsTool",
-    "ExtractReviewersTool",
 
     # TechCrunch stepped tools (funding signals)
     "TechCrunchFetchTool",

@@ -2,6 +2,7 @@
 import os
 import json
 from typing import Type, List, Dict, Optional
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from crewai.tools import BaseTool
 from pydantic import BaseModel, Field
 from apify_client import ApifyClient
@@ -227,7 +228,7 @@ class LinkedInCompanyBatchSearchTool(BaseTool):
     args_schema: Type[BaseModel] = LinkedInCompanyBatchSearchInput
 
     def _run(self, companies: List[Dict]) -> str:
-        """Search for multiple companies on LinkedIn."""
+        """Search for multiple companies on LinkedIn IN PARALLEL."""
         if not companies:
             return json.dumps({"matches": [], "count": 0})
 
@@ -235,42 +236,53 @@ class LinkedInCompanyBatchSearchTool(BaseTool):
         if not apify_token:
             return json.dumps({"matches": [], "error": "APIFY_API_TOKEN not found"})
 
-        print(f"\n[LINKEDIN_BATCH] Searching for {len(companies)} companies...")
+        print(f"\n[LINKEDIN_BATCH] Searching for {len(companies)} companies in PARALLEL...")
 
-        # Step 1: Search LinkedIn for each company
+        # Step 1: Search LinkedIn for each company IN PARALLEL
         all_candidates = {}
-        client = ApifyClient(apify_token)
 
-        for company in companies:
+        def search_single_company(company: Dict) -> tuple:
+            """Search for a single company (runs in thread)."""
             name = company.get("name", "")
             if not name:
-                continue
-
-            print(f"[LINKEDIN_BATCH] Searching: {name}")
+                return None, None, None
 
             try:
-                run_input = {
-                    "keyword": name,
-                    "limit": 5
-                }
+                client = ApifyClient(apify_token)  # Each thread gets own client
+                run_input = {"keyword": name, "limit": 5}
                 run = client.actor("apimaestro/linkedin-companies-search-scraper").call(run_input=run_input)
 
                 results = []
                 for item in client.dataset(run["defaultDatasetId"]).iterate_items():
                     results.append(item)
 
-                all_candidates[name] = {
-                    "context": company.get("context", ""),
-                    "candidates": results
-                }
                 print(f"[LINKEDIN_BATCH] Found {len(results)} candidates for {name}")
+                return name, company.get("context", ""), results
 
             except Exception as e:
                 print(f"[LINKEDIN_BATCH] Error searching {name}: {e}")
-                all_candidates[name] = {"context": "", "candidates": [], "error": str(e)}
+                return name, "", None  # None indicates error
 
-        # Step 2: Batch LLM selection for all companies
+        # Run all searches in parallel
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            futures = [executor.submit(search_single_company, c) for c in companies]
+
+            for future in as_completed(futures):
+                try:
+                    name, context, results = future.result()
+                    if name is None:
+                        continue
+                    if results is None:
+                        all_candidates[name] = {"context": context, "candidates": [], "error": "Search failed"}
+                    else:
+                        all_candidates[name] = {"context": context, "candidates": results}
+                except Exception as e:
+                    print(f"[LINKEDIN_BATCH] Thread error: {e}")
+
+        # Step 2: Batch LLM selection for all companies (single call)
         matches = self._batch_select_matches(all_candidates)
+
+        print(f"[LINKEDIN_BATCH] Matched {len([m for m in matches if m.get('linkedin_url')])} companies")
 
         return json.dumps({
             "matches": matches,

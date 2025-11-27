@@ -53,7 +53,7 @@ from tools.apify_twitter import ApifyTwitterSearchTool
 from tools.apify_crunchbase import ApifyCrunchbaseTool
 
 # Enrichment-only tools (LinkedIn)
-from tools.apify_linkedin_employees import LinkedInEmployeesSearchTool
+from tools.apify_linkedin_employees import LinkedInEmployeesSearchTool, LinkedInEmployeesBatchSearchTool
 from tools.apify_linkedin_profile_detail import ApifyLinkedInProfileDetailTool
 from tools.apify_linkedin_post_comments import LinkedInPostCommentsTool
 from tools.apify_linkedin_company_search import LinkedInCompanySearchTool, LinkedInCompanyBatchSearchTool
@@ -173,7 +173,8 @@ class OrchestratorCrew:
                 # LinkedIn - for enrichment ONLY (use after finding leads)
                 LinkedInCompanySearchTool(),    # Find company LinkedIn URL by name
                 LinkedInCompanyBatchSearchTool(), # Batch search for multiple companies
-                LinkedInEmployeesSearchTool(),  # Find decision makers at companies
+                LinkedInEmployeesSearchTool(),  # Find decision makers at ONE company
+                LinkedInEmployeesBatchSearchTool(), # Find decision makers at MULTIPLE companies (PARALLEL - use this!)
                 ApifyLinkedInProfileDetailTool(),
 
                 # Google/Web tools - for creative exploration
