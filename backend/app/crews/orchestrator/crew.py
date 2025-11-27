@@ -15,27 +15,48 @@ from typing import List, Optional
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 from crewai import LLM
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from enum import Enum
 
 # Import tools
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-# Atomic tools
-from tools.apify_linkedin_posts import ApifyLinkedInPostsSearchTool
+# === STEPPED TOOLS (Agent reasons after each step) ===
+# Reddit stepped tools
+from tools.stepped.reddit_tools import (
+    RedditSearchSteppedTool,
+    RedditScoreTool,
+    RedditExtractTool
+)
+
+# TechCrunch stepped tools (funding signals)
+from tools.stepped.techcrunch_tools import (
+    TechCrunchFetchTool,
+    TechCrunchSelectArticlesTool,
+    TechCrunchExtractCompaniesTool,
+    TechCrunchSelectDecisionMakersTool
+)
+
+# Seller filter (reusable utility)
+from tools.stepped.filter_sellers import FilterSellersTool
+
+# === ATOMIC TOOLS (for creative exploration) ===
+# Google/Web tools (CrewAI native - Serper for search, ScrapeWebsite for content)
+from crewai_tools import SerperDevTool, ScrapeWebsiteTool
+
+# Search-based tools (keep for backup/creative use)
+from tools.apify_reddit import ApifyRedditSearchTool
+from tools.apify_twitter import ApifyTwitterSearchTool
+
+# Funding signals
+from tools.apify_crunchbase import ApifyCrunchbaseTool
+
+# Enrichment-only tools (LinkedIn)
 from tools.apify_linkedin_employees import LinkedInEmployeesSearchTool
 from tools.apify_linkedin_profile_detail import ApifyLinkedInProfileDetailTool
 from tools.apify_linkedin_post_comments import LinkedInPostCommentsTool
-from tools.apify_reddit import ApifyRedditSearchTool
-from tools.apify_twitter import ApifyTwitterSearchTool
-from tools.apify_google_serp import ApifyGoogleSERPTool
-from tools.apify_crunchbase import ApifyCrunchbaseTool
-
-# Composite tools
-from tools.composite.intent_signal_hunter import IntentSignalHunterTool
-from tools.composite.company_trigger_scanner import CompanyTriggerScannerTool
-from tools.composite.decision_maker_finder import DecisionMakerFinderTool
+from tools.apify_linkedin_company_search import LinkedInCompanySearchTool, LinkedInCompanyBatchSearchTool
 
 
 # Pydantic models for structured output
@@ -64,6 +85,21 @@ class Lead(BaseModel):
     # Scoring
     priority: LeadPriority = Field(description="Lead priority: hot, warm, or cold")
     scoring_reasoning: str = Field(description="Why this lead scores this way")
+
+    @field_validator('priority', mode='before')
+    @classmethod
+    def normalize_priority(cls, v):
+        """Normalize LLM priority responses to valid enum values."""
+        if isinstance(v, str):
+            v = v.lower().strip()
+            # Map common LLM variations to valid enum values
+            mapping = {
+                'medium': 'warm',
+                'high': 'hot',
+                'low': 'cold',
+            }
+            v = mapping.get(v, v)
+        return v
 
 
 class ProspectingOutput(BaseModel):
@@ -104,25 +140,48 @@ class OrchestratorCrew:
     @agent
     def orchestrator(self) -> Agent:
         """
-        Create the orchestrator agent with all tools and agentic capabilities.
+        Create the orchestrator agent with stepped tools for reasoning at each checkpoint.
+
+        STEPPED TOOLS (primary - agent reasons after each):
+        - Reddit: search -> score -> extract -> filter_sellers
+        - TechCrunch: fetch -> select -> extract -> decision_makers
+
+        ATOMIC TOOLS (secondary - for creative exploration):
+        - Direct crawling, search, enrichment
         """
         return Agent(
             config=self.agents_config['orchestrator'],
             tools=[
-                # Composite tools (preferred - handle parallelism internally)
-                IntentSignalHunterTool(),
-                CompanyTriggerScannerTool(),
-                DecisionMakerFinderTool(),
+                # === STEPPED TOOLS (Primary - Agent reasons after each) ===
 
-                # Atomic tools (for fine-grained control when needed)
-                ApifyLinkedInPostsSearchTool(),
-                LinkedInEmployeesSearchTool(),
+                # REDDIT STRATEGY: search -> score -> extract
+                RedditSearchSteppedTool(),   # Step 1: Search, review quality
+                RedditScoreTool(),           # Step 2: Score, review results
+                RedditExtractTool(),         # Step 3: Extract leads
+
+                # TECHCRUNCH STRATEGY: fetch -> select -> extract -> decision makers
+                TechCrunchFetchTool(),           # Step 1: Get funding articles
+                TechCrunchSelectArticlesTool(),  # Step 2: Select relevant articles
+                TechCrunchExtractCompaniesTool(), # Step 3: Extract company info
+                TechCrunchSelectDecisionMakersTool(), # Step 4: Pick decision makers
+
+                # SELLER FILTER (Reusable utility - ALWAYS use before finalizing)
+                FilterSellersTool(),
+
+                # === ATOMIC TOOLS (Secondary - For creative exploration) ===
+
+                # LinkedIn - for enrichment ONLY (use after finding leads)
+                LinkedInCompanySearchTool(),    # Find company LinkedIn URL by name
+                LinkedInCompanyBatchSearchTool(), # Batch search for multiple companies
+                LinkedInEmployeesSearchTool(),  # Find decision makers at companies
                 ApifyLinkedInProfileDetailTool(),
-                LinkedInPostCommentsTool(),
-                ApifyRedditSearchTool(),
+
+                # Google/Web tools - for creative exploration
+                SerperDevTool(),        # SERP search (HackerNews, forums, etc.)
+                ScrapeWebsiteTool(),    # Extract content from URLs
+
+                # Search tools - backup/creative use
                 ApifyTwitterSearchTool(),
-                ApifyGoogleSERPTool(),
-                ApifyCrunchbaseTool(),
             ],
             llm=self.llm,
             verbose=True,

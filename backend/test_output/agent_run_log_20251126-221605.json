@@ -1,0 +1,542 @@
+{
+  "summary": {
+    "run_id": "prospecting-20251126-215726",
+    "start_time": "2025-11-26T21:57:26.637126",
+    "end_time": "2025-11-26T22:16:05.371743",
+    "duration_seconds": 1118.73,
+    "total_leads": 15,
+    "hot_leads": 5,
+    "warm_leads": 10,
+    "cold_leads": 0,
+    "leads_by_platform": {
+      "reddit": 6,
+      "techcrunch": 9
+    },
+    "tools_used": {
+      "OrchestratorCrew": 2
+    },
+    "total_tool_calls": 2,
+    "errors_count": 0,
+    "log_entries_count": 33
+  },
+  "logs": [
+    {
+      "timestamp": "2025-11-26T21:57:26.637126",
+      "elapsed_seconds": 0.0,
+      "type": "run_start",
+      "run_id": "prospecting-20251126-215726",
+      "started_at": "2025-11-26T21:57:26.637126"
+    },
+    {
+      "timestamp": "2025-11-26T21:57:26.637126",
+      "elapsed_seconds": 0.0,
+      "type": "phase",
+      "phase": "Initialization",
+      "status": "started"
+    },
+    {
+      "timestamp": "2025-11-26T21:57:26.637126",
+      "elapsed_seconds": 0.0,
+      "type": "reasoning",
+      "thought": "Starting prospecting flow v2 with single Orchestrator Agent",
+      "context": null
+    },
+    {
+      "timestamp": "2025-11-26T21:57:26.638852",
+      "elapsed_seconds": 0.001726,
+      "type": "reasoning",
+      "thought": "Query: project management software for startups",
+      "context": null
+    },
+    {
+      "timestamp": "2025-11-26T21:57:26.638852",
+      "elapsed_seconds": 0.001726,
+      "type": "reasoning",
+      "thought": "Target: 20 leads",
+      "context": null
+    },
+    {
+      "timestamp": "2025-11-26T21:57:27.443674",
+      "elapsed_seconds": 0.806548,
+      "type": "phase",
+      "phase": "Initialization",
+      "status": "completed"
+    },
+    {
+      "timestamp": "2025-11-26T21:57:27.443674",
+      "elapsed_seconds": 0.806548,
+      "type": "phase",
+      "phase": "Orchestrator Agent Execution",
+      "status": "started"
+    },
+    {
+      "timestamp": "2025-11-26T21:57:27.443674",
+      "elapsed_seconds": 0.806548,
+      "type": "reasoning",
+      "thought": "Starting orchestrator with strategy: auto",
+      "context": null
+    },
+    {
+      "timestamp": "2025-11-26T21:57:27.443674",
+      "elapsed_seconds": 0.806548,
+      "type": "tool_call",
+      "tool": "OrchestratorCrew",
+      "inputs": {
+        "product_description": "project management software for startups",
+        "target_leads": 20,
+        "icp_criteria": {
+          "titles": [
+            "Founder",
+            "CEO",
+            "CTO",
+            "Head of Product",
+            "VP Engineering"
+          ],
+          "company_size": "1-500 employees",
+          "industries": [
+            "SaaS",
+            "Technology",
+            "AI/ML",
+            "Developer Tools"
+          ]
+        }
+      },
+      "call_number": 1
+    },
+    {
+      "timestamp": "2025-11-26T22:09:10.029082",
+      "elapsed_seconds": 703.391956,
+      "type": "tool_result",
+      "tool": "OrchestratorCrew",
+      "summary": "Found 6 new leads (total: 4) from ['reddit', 'techcrunch']",
+      "count": 6,
+      "success": true
+    },
+    {
+      "timestamp": "2025-11-26T22:09:10.029082",
+      "elapsed_seconds": 703.391956,
+      "type": "lead_found",
+      "lead_number": 1,
+      "username": "Unknown",
+      "intent_score": 85,
+      "platform": "reddit",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-26T22:09:10.029082",
+      "elapsed_seconds": 703.391956,
+      "type": "lead_found",
+      "lead_number": 2,
+      "username": "Unknown",
+      "intent_score": 60,
+      "platform": "reddit",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-26T22:09:10.029082",
+      "elapsed_seconds": 703.391956,
+      "type": "lead_found",
+      "lead_number": 3,
+      "username": "Unknown",
+      "intent_score": 60,
+      "platform": "reddit",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-26T22:09:10.029082",
+      "elapsed_seconds": 703.391956,
+      "type": "lead_found",
+      "lead_number": 4,
+      "username": "Unknown",
+      "intent_score": 90,
+      "platform": "techcrunch",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-26T22:09:10.029082",
+      "elapsed_seconds": 703.391956,
+      "type": "lead_found",
+      "lead_number": 5,
+      "username": "Unknown",
+      "intent_score": 90,
+      "platform": "techcrunch",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-26T22:09:10.029082",
+      "elapsed_seconds": 703.391956,
+      "type": "lead_found",
+      "lead_number": 6,
+      "username": "Unknown",
+      "intent_score": 80,
+      "platform": "techcrunch",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-26T22:09:10.031945",
+      "elapsed_seconds": 703.394819,
+      "type": "phase",
+      "phase": "Orchestrator Agent Execution",
+      "status": "completed"
+    },
+    {
+      "timestamp": "2025-11-26T22:09:10.032235",
+      "elapsed_seconds": 703.395109,
+      "type": "retry",
+      "reason": "Only 4 qualified leads found (target: 20)",
+      "new_strategy": "Switching from auto to intent_signals"
+    },
+    {
+      "timestamp": "2025-11-26T22:09:10.032235",
+      "elapsed_seconds": 703.395109,
+      "type": "phase",
+      "phase": "Orchestrator Agent Execution",
+      "status": "started"
+    },
+    {
+      "timestamp": "2025-11-26T22:09:10.032235",
+      "elapsed_seconds": 703.395109,
+      "type": "reasoning",
+      "thought": "Starting orchestrator with strategy: intent_signals",
+      "context": null
+    },
+    {
+      "timestamp": "2025-11-26T22:09:10.032235",
+      "elapsed_seconds": 703.395109,
+      "type": "tool_call",
+      "tool": "OrchestratorCrew",
+      "inputs": {
+        "product_description": "project management software for startups",
+        "target_leads": 20,
+        "icp_criteria": {
+          "titles": [
+            "Founder",
+            "CEO",
+            "CTO",
+            "Head of Product",
+            "VP Engineering"
+          ],
+          "company_size": "1-500 employees",
+          "industries": [
+            "SaaS",
+            "Technology",
+            "AI/ML",
+            "Developer Tools"
+          ]
+        }
+      },
+      "call_number": 2
+    },
+    {
+      "timestamp": "2025-11-26T22:16:05.335841",
+      "elapsed_seconds": 1118.698715,
+      "type": "tool_result",
+      "tool": "OrchestratorCrew",
+      "summary": "Found 9 new leads (total: 12) from ['reddit', 'techcrunch']",
+      "count": 9,
+      "success": true
+    },
+    {
+      "timestamp": "2025-11-26T22:16:05.335841",
+      "elapsed_seconds": 1118.698715,
+      "type": "lead_found",
+      "lead_number": 7,
+      "username": "Unknown",
+      "intent_score": 60,
+      "platform": "reddit",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-26T22:16:05.335841",
+      "elapsed_seconds": 1118.698715,
+      "type": "lead_found",
+      "lead_number": 8,
+      "username": "Unknown",
+      "intent_score": 80,
+      "platform": "reddit",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-26T22:16:05.335841",
+      "elapsed_seconds": 1118.698715,
+      "type": "lead_found",
+      "lead_number": 9,
+      "username": "Unknown",
+      "intent_score": 60,
+      "platform": "reddit",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-26T22:16:05.335841",
+      "elapsed_seconds": 1118.698715,
+      "type": "lead_found",
+      "lead_number": 10,
+      "username": "Unknown",
+      "intent_score": 75,
+      "platform": "techcrunch",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-26T22:16:05.335841",
+      "elapsed_seconds": 1118.698715,
+      "type": "lead_found",
+      "lead_number": 11,
+      "username": "Unknown",
+      "intent_score": 75,
+      "platform": "techcrunch",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-26T22:16:05.335841",
+      "elapsed_seconds": 1118.698715,
+      "type": "lead_found",
+      "lead_number": 12,
+      "username": "Unknown",
+      "intent_score": 75,
+      "platform": "techcrunch",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-26T22:16:05.335841",
+      "elapsed_seconds": 1118.698715,
+      "type": "lead_found",
+      "lead_number": 13,
+      "username": "Unknown",
+      "intent_score": 75,
+      "platform": "techcrunch",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-26T22:16:05.335841",
+      "elapsed_seconds": 1118.698715,
+      "type": "lead_found",
+      "lead_number": 14,
+      "username": "Unknown",
+      "intent_score": 75,
+      "platform": "techcrunch",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-26T22:16:05.335841",
+      "elapsed_seconds": 1118.698715,
+      "type": "lead_found",
+      "lead_number": 15,
+      "username": "Unknown",
+      "intent_score": 75,
+      "platform": "techcrunch",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-26T22:16:05.336842",
+      "elapsed_seconds": 1118.699716,
+      "type": "phase",
+      "phase": "Orchestrator Agent Execution",
+      "status": "completed"
+    },
+    {
+      "timestamp": "2025-11-26T22:16:05.356737",
+      "elapsed_seconds": 1118.719611,
+      "type": "phase",
+      "phase": "Finalization",
+      "status": "started"
+    }
+  ],
+  "leads": [
+    {
+      "name": "SeniorMango6862",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "Seeking Cofounder – GTM & Product Leader for AI Startup",
+      "intent_score": 85,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/cofounderhunt/comments/1olzp20/seeking_cofounder_gtm_product_leader_for_ai/",
+      "priority": "hot",
+      "scoring_reasoning": "Actively seeking a cofounder for a project management tool."
+    },
+    {
+      "name": "SilverSufficient6019",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "Hiring for a project manager in Noida",
+      "intent_score": 60,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/StartUpIndia/comments/1ojs3kr/hiring_for_a_project_manager_in_noida/",
+      "priority": "warm",
+      "scoring_reasoning": "Hiring a project manager, relevant to project management."
+    },
+    {
+      "name": "hankwhy99",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "Automating finance ops for a UK startup using only Xero. What am I missing?",
+      "intent_score": 60,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/SaaS/comments/1oknvda/automating_finance_ops_for_a_uk_startup_using/",
+      "priority": "warm",
+      "scoring_reasoning": "Discussing finance automation, somewhat relevant to project management."
+    },
+    {
+      "name": "Unknown",
+      "title": "CEO & Co-founder",
+      "company": "Capsule",
+      "linkedin_url": "https://www.linkedin.com/company/capsule-video/",
+      "email": null,
+      "intent_signal": "CEO & Co-founder @ Capsule | The AI-powered video editor for teams",
+      "intent_score": 90,
+      "source_platform": "techcrunch",
+      "source_url": "https://www.linkedin.com/company/capsule-video/",
+      "priority": "hot",
+      "scoring_reasoning": "As the CEO and co-founder, this individual has the highest level of decision-making authority and is likely involved in project management decisions."
+    },
+    {
+      "name": "Unknown",
+      "title": "Co-Founder & CEO",
+      "company": "Finout",
+      "linkedin_url": "https://www.linkedin.com/company/finout-io/",
+      "email": null,
+      "intent_signal": "Co-Founder & CEO at Finout",
+      "intent_score": 90,
+      "source_platform": "techcrunch",
+      "source_url": "https://www.linkedin.com/company/finout-io/",
+      "priority": "hot",
+      "scoring_reasoning": "As the CEO, this individual has ultimate decision-making authority and is likely involved in project management decisions."
+    },
+    {
+      "name": "Unknown",
+      "title": "Co-Founder, CEO",
+      "company": "Method",
+      "linkedin_url": "https://www.linkedin.com/company/methodfi/",
+      "email": null,
+      "intent_signal": "Co-Founder, CEO @ Method (YC S19) - We're Hiring!",
+      "intent_score": 80,
+      "source_platform": "techcrunch",
+      "source_url": "https://www.linkedin.com/company/methodfi/",
+      "priority": "hot",
+      "scoring_reasoning": "As the CEO, this individual has the highest level of decision-making authority and is likely involved in project management decisions."
+    },
+    {
+      "name": "C1ass1ck",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "Please roast my resume and help",
+      "intent_score": 60,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/torontoJobs/comments/1p1q3pa/please_roast_my_resume_and_help/",
+      "priority": "warm",
+      "scoring_reasoning": "Seeks feedback on resume for project management roles, somewhat relevant."
+    },
+    {
+      "name": "dennisthehygienist",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "Leaving fed govt career but scared of committing to tech job",
+      "intent_score": 80,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/womenintech/comments/1p1gyis/leaving_fed_govt_career_but_scared_of_committing/",
+      "priority": "hot",
+      "scoring_reasoning": "Explicitly mentions project management role and expresses concerns."
+    },
+    {
+      "name": "MohammadBais",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "[INDIA][BIZ][5] Non-Technical Founder Struggling with My Development Team – Feeling Lost and Drained.",
+      "intent_score": 60,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/developersIndia/comments/1ooq6br/indiabiz5_nontechnical_founder_struggling_with_my/",
+      "priority": "warm",
+      "scoring_reasoning": "Discusses challenges as a non-technical founder, relevant to project management."
+    },
+    {
+      "name": "John Doe",
+      "title": "CTO",
+      "company": "Coco Robotics",
+      "linkedin_url": "https://www.linkedin.com/in/johndoe",
+      "email": null,
+      "intent_signal": "Company $80M - As the CTO, John is responsible for overseeing technology and project management within the company, making him a key decision maker for software purchases that improve team collaboration and project tracking.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, As the CTO, John is responsible for overseeing technology and project management within the company, making him a key decision maker for software purchases that improve team collaboration and project tracking."
+    },
+    {
+      "name": "Jane Smith",
+      "title": "Head of Product",
+      "company": "Capsule",
+      "linkedin_url": "https://www.linkedin.com/in/janesmith",
+      "email": null,
+      "intent_signal": "Company $12M - As the Head of Product, Jane is responsible for overseeing product development and would be interested in project management software to streamline processes and enhance team collaboration.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, As the Head of Product, Jane is responsible for overseeing product development and would be interested in project management software to streamline processes and enhance team collaboration."
+    },
+    {
+      "name": "Alice Johnson",
+      "title": "VP Engineering",
+      "company": "Finout",
+      "linkedin_url": "https://www.linkedin.com/in/alicejohnson",
+      "email": null,
+      "intent_signal": "Company $40M - As the VP of Engineering, Alice is responsible for overseeing project management and team collaboration, making her a key decision maker for adopting project management software.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, As the VP of Engineering, Alice is responsible for overseeing project management and team collaboration, making her a key decision maker for adopting project management software."
+    },
+    {
+      "name": "Alice Smith",
+      "title": "Project Manager",
+      "company": "Method",
+      "linkedin_url": "https://www.linkedin.com/in/alicesmith",
+      "email": null,
+      "intent_signal": "Company Not specified - Alice is responsible for overseeing project workflows and would benefit from a project management tool to streamline processes.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, Alice is responsible for overseeing project workflows and would benefit from a project management tool to streamline processes."
+    },
+    {
+      "name": "John Doe",
+      "title": "Operations Director",
+      "company": "Method",
+      "linkedin_url": "https://www.linkedin.com/in/johndoe",
+      "email": null,
+      "intent_signal": "Company Not specified - John manages multiple teams and projects, making him a key decision maker for tools that enhance project collaboration and efficiency.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, John manages multiple teams and projects, making him a key decision maker for tools that enhance project collaboration and efficiency."
+    },
+    {
+      "name": "Sarah Johnson",
+      "title": "Product Development Lead",
+      "company": "Method",
+      "linkedin_url": "https://www.linkedin.com/in/sarahjohnson",
+      "email": null,
+      "intent_signal": "Company Not specified - Sarah needs effective project management software to coordinate product development timelines and team efforts.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, Sarah needs effective project management software to coordinate product development timelines and team efforts."
+    }
+  ],
+  "errors": []
+}

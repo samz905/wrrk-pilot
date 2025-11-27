@@ -9,7 +9,10 @@ from apify_client import ApifyClient
 class ApifyWebsiteCrawlerInput(BaseModel):
     """Input schema for website content crawler."""
     urls: List[str] = Field(..., description="List of URLs to crawl and extract content from")
-    max_pages: int = Field(default=5, description="Maximum number of pages to crawl (1-10)")
+    max_pages: int = Field(default=5, description="Maximum number of pages to crawl (1-20)")
+    follow_links: bool = Field(default=False, description="Follow links from the page to crawl more content")
+    link_pattern: str = Field(default=None, description="Glob pattern for links to follow (e.g., '/jobs/~*' for Upwork)")
+    max_depth: int = Field(default=1, description="How many levels of links to follow (1-3)")
 
 
 class ApifyWebsiteCrawlerTool(BaseTool):
@@ -30,33 +33,39 @@ class ApifyWebsiteCrawlerTool(BaseTool):
 
     name: str = "Website Content Crawler"
     description: str = """
-    Crawl websites to extract clean article content for analysis.
+    Navigate directly to URLs and extract content. Essential for G2 and Upwork!
 
-    Use this to:
-    - Read full articles about company problems
-    - Extract detailed pain point discussions
-    - Find specific quotes and examples
-    - Analyze industry reports and case studies
+    USE FOR DIRECT NAVIGATION (NOT search):
+    - G2 Reviews: https://www.g2.com/products/[competitor]/reviews?filters%5Bcomment_answer_values%5D=&order=lowest_rated&utf8=%E2%9C%93#reviews
+    - Upwork Jobs: https://www.upwork.com/freelance-jobs/[category]/
+    - Any URL you need to visit directly
+
+    DON'T USE Google search for G2 or Upwork - navigate directly with this tool!
 
     Input parameters:
-    - urls: List of URLs to crawl (e.g., from Google SERP results)
-    - max_pages: Maximum pages to crawl (default: 5, max: 10)
+    - urls: List of URLs to crawl directly
+    - max_pages: Maximum pages to crawl (default: 5, max: 20)
+    - follow_links: Set True to follow links on the page (for Upwork job listings)
+    - link_pattern: Glob pattern for links to follow (e.g., '/jobs/~*' for Upwork)
+    - max_depth: How many levels deep to follow (default: 1)
 
-    Returns for each URL:
-    - Clean markdown content
-    - Title
-    - URL
-    - Content length
+    EXAMPLE: Upwork job extraction
+    urls=["https://www.upwork.com/freelance-jobs/ui-design/"]
+    follow_links=True
+    link_pattern="/jobs/~*"
+    → Crawls the listing page, then follows links to individual job pages
 
-    Note: This extracts actual article text, removing ads and navigation.
-    Perfect for analyzing detailed discussions about problems and solutions.
+    Returns: Clean markdown content with title and URL for each page.
     """
     args_schema: Type[BaseModel] = ApifyWebsiteCrawlerInput
 
     def _run(
         self,
         urls: List[str],
-        max_pages: int = 5
+        max_pages: int = 5,
+        follow_links: bool = False,
+        link_pattern: str = None,
+        max_depth: int = 1
     ) -> str:
         """Execute website crawling and return formatted content."""
 
@@ -67,12 +76,15 @@ class ApifyWebsiteCrawlerTool(BaseTool):
         if not urls:
             return "Error: No URLs provided to crawl"
 
-        # Limit URLs to max_pages
-        urls_to_crawl = urls[:min(max_pages, 10)]
+        # Limit URLs and depth
+        urls_to_crawl = urls[:min(max_pages, 20)]
+        max_depth = min(max_depth, 3)  # Cap depth at 3
 
         print(f"\n[INFO] Crawling {len(urls_to_crawl)} URLs for content...")
         for url in urls_to_crawl:
             print(f"  - {url}")
+        if follow_links:
+            print(f"[INFO] Following links: depth={max_depth}, pattern={link_pattern}")
 
         # Initialize Apify client
         client = ApifyClient(apify_token)
@@ -82,8 +94,8 @@ class ApifyWebsiteCrawlerTool(BaseTool):
 
         run_input = {
             "startUrls": start_urls,
-            "maxCrawlDepth": 0,  # Don't follow links
-            "maxCrawlPages": len(urls_to_crawl),
+            "maxCrawlDepth": max_depth if follow_links else 0,
+            "maxCrawlPages": max_pages,
             "saveMarkdown": True,
             "htmlTransformer": "readableText",
             "readableTextCharThreshold": 100,
@@ -92,6 +104,11 @@ class ApifyWebsiteCrawlerTool(BaseTool):
             "proxyConfiguration": {"useApifyProxy": True},
             "maxConcurrency": 5  # Crawl multiple pages in parallel
         }
+
+        # Add link pattern filter if provided (for following specific links)
+        if follow_links and link_pattern:
+            run_input["linkSelector"] = f"a[href*='{link_pattern.replace('*', '')}']"
+            run_input["pseudoUrls"] = [{"purl": f"https://[.*]{link_pattern}"}]
 
         try:
             # Run the actor

@@ -1,130 +1,127 @@
 prospect_leads:
   description: |
-    Find high-intent leads for the product described below.
+    Find high-intent BUYER leads for: {product_description}
+    Target: {target_leads} qualified leads
+    ICP: {icp_criteria}
 
-    PRODUCT: {product_description}
-    TARGET: {target_leads} qualified leads with intent score >= 60
-    ICP CRITERIA: {icp_criteria}
+    ================================================================================
+    MANDATORY: YOU MUST USE BOTH REDDIT AND TECHCRUNCH
+    ================================================================================
 
-    == EXECUTION STRATEGY ==
+    REQUIRED EXECUTION ORDER:
+    1. First, run Reddit strategy to get ~50% of leads
+    2. Then, run TechCrunch strategy to get the other ~50%
+    3. DO NOT skip TechCrunch! Recently funded companies = CONFIRMED BUDGET
 
-    STEP 1: ANALYZE THE QUERY
-    - Identify the product type (B2B SaaS, developer tool, enterprise, SMB)
-    - Determine the best target personas (job titles, seniority)
-    - List the most likely pain points and keywords
+    ================================================================================
+    STEPPED WORKFLOW - You have stepped tools that let you REASON after each step
+    ================================================================================
 
-    STEP 2: CHOOSE INITIAL APPROACH
-    - Intent signals: Find people actively discussing problems/seeking solutions
-    - Company triggers: Find companies with buying signals (funding, hiring, growth)
-    - Hybrid: Combine both approaches
+    You have stepped tools. Review results after EACH tool call. Adapt as needed.
+    If results are poor, try different query or skip to next strategy.
 
-    STEP 3: EXECUTE SEARCHES
-    Use the Intent Signal Hunter tool to search across platforms:
-    - LinkedIn: Professional discussions, complaints, recommendations
-    - Reddit: Honest user discussions, tool comparisons
-    - Twitter: Real-time frustrations, help requests
+    STEP 1: ANALYZE & PLAN
+    ----------------------
+    - What product category is this?
+    - Who are likely competitors?
+    - For {target_leads} leads, plan: Reddit (~50%) + TechCrunch (~50%)
+    - YOU MUST USE BOTH PLATFORMS - this is required!
 
-    STEP 4: REFLECT AND ADAPT
-    After each tool call, REFLECT on results:
+    STEP 2: REDDIT STRATEGY
+    -----------------------
+    a) reddit_search(query) -> Review quality
+       - Quality HIGH? -> Continue to reddit_score
+       - Quality LOW? -> Try different query (e.g., "frustrated with [competitor]")
+       - Still LOW after 2 tries? -> Skip to TechCrunch strategy
 
-    QUANTITY CHECK:
-    - Got 0 results? Try different keywords or different platform
-    - Got < 5 results? Broaden the search or try synonyms
-    - Got > 20 results? Good, proceed to next step
+    b) reddit_score(posts) -> Review scores
+       - Many posts >= 50? -> Continue to reddit_extract
+       - Few high scores? -> May get weak leads, adjust expectations
 
-    QUALITY CHECK:
-    - Are results relevant to the query?
-    - Do people show genuine buying intent?
-    - Are these the right job titles?
+    c) reddit_extract(posts) -> Get raw leads
+       - Returns leads but WARNING: may include sellers!
 
-    ADAPT if needed:
-    - "These LinkedIn results are mostly sellers, let me try Reddit"
-    - "Query 'CRM software' is too broad, let me try 'Salesforce alternative'"
-    - "Not finding intent signals, switching to company trigger approach"
+    d) filter_sellers(leads) -> CRITICAL! Remove promoters
+       - Only BUYER leads remain
 
-    STEP 5: ENRICH HIGH-VALUE LEADS
-    For leads with intent_score >= 70:
-    - Use Decision Maker Finder to get detailed profile data
-    - Look for email and phone if available
+    STEP 3: TECHCRUNCH STRATEGY
+    ---------------------------
+    a) techcrunch_fetch() -> Get recent funding articles
+       - TechCrunch has fresh funding news daily
+       - Recently funded = CONFIRMED BUDGET
 
-    STEP 6: SCORE AND FILTER
-    Use Lead Scorer tool or manually score each lead:
-    - Intent strength: 35%
-    - Title/seniority match: 25%
-    - Company fit: 20%
-    - Platform multiplicity: 10%
-    - Contact completeness: 10%
+    b) techcrunch_select_articles(articles) -> Select relevant ones
+       - Pick articles for startups in your target industry
+       - Look for Series A/B/C rounds
 
-    == EXAMPLE SCENARIOS ==
+    c) techcrunch_extract_companies(articles) -> Get company info
+       - Extract company name, funding amount, industry
 
-    EXAMPLE 1: Design Agent for Founders
-    Query: "Find leads for our AI design agent that helps startups ship UI faster"
+    d) techcrunch_select_decision_makers(companies) -> Find contacts
+       - Find Founders, CEOs, CTOs at funded companies
+       - These are HIGH INTENT leads (have budget!)
 
-    Reasoning:
-    1. Product: AI design tool for startups
-    2. Target: Founders, Head of Product, Design leads
-    3. Best signals: Design bottleneck discussions
+    STEP 4: REVIEW & ADAPT
+    ----------------------
+    After each strategy, ask yourself:
+    - Do I have enough leads?
+    - Are the leads high quality?
+    - Should I retry with different query?
 
-    Approach: Intent signals on LinkedIn + Reddit
-    - LinkedIn query: "frustrated with design" "hiring designers" "design bottleneck"
-    - Reddit query: "design agency recommendations" in r/startups, r/SaaS
+    STEP 5: FINAL AGGREGATION
+    -------------------------
+    - Combine leads from all strategies
+    - Run filter_sellers ONE MORE TIME on all leads (safety check)
+    - Score and rank by intent
+    - Return top {target_leads}
 
-    Results: 12 qualified leads from LinkedIn posts + 6 from Reddit discussions
+    ================================================================================
+    CRITICAL: BUYER vs SELLER - THE MOST IMPORTANT RULE
+    ================================================================================
 
-    EXAMPLE 2: CRM Competitor Displacement
-    Query: "Find sales leaders frustrated with Salesforce pricing"
+    ONLY include BUYERS. FILTER OUT SELLERS.
 
-    Reasoning:
-    1. Product: CRM (competitor to Salesforce)
-    2. Target: VP Sales, RevOps, CRO
-    3. Best signals: Salesforce complaints, pricing discussions
+    SELLER signals (REMOVE these leads):
+    - "I built X", "We launched Y", "My startup"
+    - "Check out", "Introducing", "Just launched"
+    - Promoting their own product
+    - "We developed", "I created", "My tool"
 
-    Approach: Intent signals first, then company triggers
-    - LinkedIn: "switching from Salesforce" "CRM migration"
-    - Reddit: "Salesforce pricing" in r/sales, r/salesforce
-    - Google: "companies hiring Salesforce Admin" (budget signal)
+    BUYER signals (KEEP these leads):
+    - "Looking for", "Need help with", "Recommendations?"
+    - "Frustrated with", "Alternative to", "Issues with"
+    - Asking questions, seeking solutions
+    - Complaining about current tools
 
-    Results: 28 qualified leads combining complaint signals + decision makers
+    EXAMPLE:
+    - Andy Roberts: "I built UIBrush for designers" = SELLER = REMOVE (score 0)
+    - John Smith: "Looking for AI design tool, Figma is too slow" = BUYER = KEEP
 
-    EXAMPLE 3: Code Review Tool
-    Query: "Find engineering managers who need faster code review"
+    Always use filter_sellers before finalizing leads!
 
-    Reasoning:
-    1. Product: Code review tool
-    2. Target: Engineering Manager, VP Eng, Director of Eng
-    3. Best signals: PR bottleneck, code review discussions
+  expected_output: |
+    {target_leads} qualified BUYER leads with:
+    - Clear buying intent (NOT selling!)
+    - Source platform and URL
+    - Intent score >= 60
+    - Reasoning for each score
 
-    Approach: Reddit + Twitter first (dev communities), then LinkedIn enrichment
-    - Reddit: "code review bottleneck" "PR review time" in r/programming
-    - Twitter: "code review" "PR backlog"
-    - LinkedIn: Engineering Managers at mid-size tech companies
+    Strategy execution summary:
+    - Tools called and decisions made at each step
+    - Leads per strategy (Reddit, TechCrunch)
+    - Sellers filtered (with names)
+    - Quality assessment
 
-    Results: 23 qualified leads from community discussions + company searches
-
-    == OUTPUT FORMAT ==
-
-    Return a structured list of leads with:
+    Lead format:
     - name: Full name
     - title: Job title
     - company: Company name
-    - linkedin_url: LinkedIn profile URL (if available)
-    - intent_signal: Quote showing buying intent
-    - intent_score: 0-100 score
-    - source_platform: Where found (linkedin, reddit, twitter, etc.)
-    - source_url: Original post/discussion URL
-    - priority: "hot" (>=80), "warm" (60-79), or "cold" (<60)
-    - scoring_reasoning: Why this lead scores this way
+    - linkedin_url: If available
+    - intent_signal: Quote showing BUYING intent
+    - intent_score: 0-100
+    - source_platform: reddit or techcrunch
+    - source_url: Original URL
+    - priority: hot (>=80), warm (60-79), cold (<60)
+    - scoring_reasoning: Why this score
 
-  expected_output: |
-    A list of {target_leads} qualified leads in structured format with:
-    - Minimum intent score of 60
-    - Clear intent signals (quotes showing buying interest)
-    - Source tracking (platform, URL)
-    - Priority classification (hot/warm/cold)
-
-    Include a summary with:
-    - Total leads found
-    - Breakdown by priority
-    - Platforms searched
-    - Strategies used
   agent: orchestrator

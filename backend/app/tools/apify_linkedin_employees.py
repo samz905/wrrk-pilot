@@ -13,6 +13,7 @@ class LinkedInEmployeesSearchInput(BaseModel):
     company_url: str = Field(..., description="LinkedIn company URL (e.g., 'https://www.linkedin.com/company/google/')")
     query: str = Field(..., description="Search context for finding relevant employees (e.g., 'engineering managers')")
     max_employees: int = Field(default=50, description="Maximum employees to fetch (max 100)")
+    return_json: bool = Field(default=False, description="If True, return JSON instead of formatted text (for tool chaining)")
 
 
 class LinkedInEmployeesSearchTool(BaseTool):
@@ -46,7 +47,8 @@ class LinkedInEmployeesSearchTool(BaseTool):
         self,
         company_url: str,
         query: str,
-        max_employees: int = 50
+        max_employees: int = 50,
+        return_json: bool = False
     ) -> str:
         """
         Execute LinkedIn employees search workflow.
@@ -55,12 +57,15 @@ class LinkedInEmployeesSearchTool(BaseTool):
             company_url: LinkedIn company URL
             query: Search context for filtering employees
             max_employees: Maximum employees to fetch
+            return_json: If True, return JSON instead of formatted text
 
         Returns:
-            Formatted string with decision makers
+            Formatted string or JSON with decision makers
         """
         apify_token = os.getenv("APIFY_API_TOKEN")
         if not apify_token:
+            if return_json:
+                return json.dumps({"employees": [], "error": "APIFY_API_TOKEN not found"})
             return "Error: APIFY_API_TOKEN not found in environment"
 
         print(f"\n[INFO] LinkedIn Decision Makers Search")
@@ -77,6 +82,8 @@ class LinkedInEmployeesSearchTool(BaseTool):
             )
 
             if not employees:
+                if return_json:
+                    return json.dumps({"employees": [], "count": 0, "company_url": company_url})
                 return f"No employees found at company: {company_url}"
 
             print(f"[INFO] Fetched {len(employees)} employees from company")
@@ -84,7 +91,14 @@ class LinkedInEmployeesSearchTool(BaseTool):
             # STEP 2: Score and filter employees by relevance to query
             scored_employees = self._score_employees(query, employees)
 
-            # STEP 3: Format and return results
+            # STEP 3: Return results (JSON or formatted text)
+            if return_json:
+                return json.dumps({
+                    "employees": scored_employees,
+                    "count": len(scored_employees),
+                    "company_url": company_url,
+                    "query": query
+                })
             return self._format_results(scored_employees, query, company_url)
 
         except Exception as e:
@@ -92,6 +106,8 @@ class LinkedInEmployeesSearchTool(BaseTool):
             print(f"[ERROR] {error_msg}")
             import traceback
             traceback.print_exc()
+            if return_json:
+                return json.dumps({"employees": [], "error": str(e)})
             return error_msg
 
     def _fetch_company_employees(

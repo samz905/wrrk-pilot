@@ -138,7 +138,7 @@ class AgentLogger:
             "lead_number": len(self.leads_found),
             "username": lead.get("username", "Unknown"),
             "intent_score": lead.get("intent_score", 0),
-            "platform": lead.get("platform", "unknown"),
+            "platform": lead.get("source_platform", lead.get("platform", "unknown")),
             "user_type": lead.get("user_type", "unknown")
         })
 
@@ -192,7 +192,7 @@ class AgentLogger:
         # Count by platform
         platforms = {}
         for lead in self.leads_found:
-            platform = lead.get("platform", "unknown")
+            platform = lead.get("source_platform", lead.get("platform", "unknown"))
             platforms[platform] = platforms.get(platform, 0) + 1
 
         return {

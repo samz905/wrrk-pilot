@@ -28,25 +28,25 @@ class ApifyGoogleSERPTool(BaseTool):
 
     name: str = "Google SERP Search"
     description: str = """
-    Search Google to find articles, blog posts, and discussions about companies
-    experiencing problems or looking for solutions.
+    Search Google. Works well with site: operator for forums and news sites.
 
-    Use this to discover:
-    - Industry articles about common pain points
-    - Blog posts where companies share their struggles
-    - Forum discussions about tool limitations
-    - Case studies about switching from competitors
+    GOOD USE CASES:
+    - site:news.ycombinator.com "[topic]" → HackerNews discussions
+    - site:indiehackers.com "[topic]" → Founder discussions
+    - site:indeed.com "hiring" [role] → Companies with budget
+    - General web searches for blog posts, articles, forums
+
+    DON'T USE FOR G2 OR UPWORK - navigate directly with Website Content Crawler instead!
 
     Input parameters:
-    - query: Search keywords (e.g., "companies frustrated with Salesforce")
+    - query: Search keywords with optional site: operator
     - max_results: Number of results to return (default: 10)
     - country: Country for search location (default: "US")
 
     Returns for each result:
     - Title of the page
     - URL to visit
-    - Description snippet showing relevance
-    - Position in search results
+    - Description snippet
     """
     args_schema: Type[BaseModel] = ApifyGoogleSERPInput
 

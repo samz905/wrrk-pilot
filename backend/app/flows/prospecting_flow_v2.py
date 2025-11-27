@@ -11,11 +11,14 @@ NEW APPROACH (1 agent, ~5-8 min):
 Query → Orchestrator Agent (reasons, executes, adapts, retries) → Qualified Leads
 """
 import os
+import io
+import re
 from datetime import datetime
 from typing import List, Dict, Any, Callable, Optional
 from pydantic import BaseModel, Field
 from crewai.flow.flow import Flow, listen, start, router
 from enum import Enum
+from contextlib import redirect_stdout
 
 # Import orchestrator crew
 import sys
@@ -25,6 +28,52 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from crews.orchestrator.crew import OrchestratorCrew, ProspectingOutput, Lead, LeadPriority
 from utils.agent_logger import AgentLogger
 from utils.lead_exporter import export_leads_json, export_leads_csv, format_leads_table
+
+
+class ReasoningCapture:
+    """Capture and format agent reasoning from CrewAI verbose output."""
+
+    def __init__(self):
+        self.reasoning_lines: List[str] = []
+        self.tool_calls: List[Dict] = []
+
+    def parse_output(self, output: str) -> None:
+        """Parse CrewAI verbose output to extract reasoning."""
+        lines = output.split('\n')
+
+        for line in lines:
+            # Skip empty lines and ANSI escape codes
+            clean_line = re.sub(r'\x1b\[[0-9;]*m', '', line).strip()
+            if not clean_line:
+                continue
+
+            # Capture planning/reasoning
+            if 'Planning' in clean_line or 'plan' in clean_line.lower():
+                self.reasoning_lines.append(f"[PLANNING] {clean_line}")
+            elif '[INFO]' in clean_line:
+                # Tool usage info
+                self.reasoning_lines.append(f"[ACTION] {clean_line.replace('[INFO]', '').strip()}")
+            elif '[OK]' in clean_line:
+                self.reasoning_lines.append(f"[RESULT] {clean_line.replace('[OK]', '').strip()}")
+            elif 'Searching' in clean_line or 'Reddit' in clean_line or 'Google' in clean_line:
+                self.reasoning_lines.append(f"[SEARCH] {clean_line}")
+            elif 'Found' in clean_line:
+                self.reasoning_lines.append(f"[FOUND] {clean_line}")
+
+    def get_formatted_log(self) -> str:
+        """Return formatted reasoning log as readable text."""
+        output = []
+        output.append("=" * 80)
+        output.append("AGENT REASONING TRACE")
+        output.append("=" * 80)
+        output.append("")
+
+        for line in self.reasoning_lines:
+            output.append(line)
+
+        output.append("")
+        output.append("=" * 80)
+        return "\n".join(output)
 
 
 class ProspectingStatus(str, Enum):
@@ -96,6 +145,8 @@ class ProspectingFlowV2(Flow[ProspectingState]):
         self.output_dir = output_dir
         self.orchestrator_crew = None
         self.logger = None
+        self.reasoning_capture = ReasoningCapture()
+        self.raw_output_capture = []  # Capture all stdout for reasoning trace
 
     def emit_event(self, event_type: str, data: Any):
         """Emit event for SSE streaming."""
@@ -159,6 +210,58 @@ class ProspectingFlowV2(Flow[ProspectingState]):
 
         return merged
 
+    def _build_reasoning_trace(self, state: ProspectingState, leads: List[Dict]) -> str:
+        """Build a human-readable reasoning trace for review."""
+        lines = []
+        lines.append("=" * 80)
+        lines.append("PROSPECTING AGENT - EXECUTION TRACE")
+        lines.append("=" * 80)
+        lines.append("")
+        lines.append(f"Query: {state.product_description}")
+        lines.append(f"Target: {state.target_leads} leads")
+        lines.append(f"ICP: {state.icp_criteria}")
+        lines.append("")
+
+        # Add captured reasoning from agent
+        lines.append("-" * 80)
+        lines.append("AGENT REASONING & ACTIONS")
+        lines.append("-" * 80)
+        for line in self.reasoning_capture.reasoning_lines:
+            lines.append(line)
+
+        lines.append("")
+        lines.append("-" * 80)
+        lines.append("RESULTS SUMMARY")
+        lines.append("-" * 80)
+        lines.append(f"Platforms searched: {', '.join(state.platforms_searched)}")
+        lines.append(f"Strategies used: {', '.join(state.strategies_used)}")
+        lines.append(f"Total leads found: {len(leads)}")
+        lines.append(f"Hot leads (score >= 80): {len([l for l in leads if l.get('intent_score', 0) >= 80])}")
+        lines.append(f"Warm leads (score 60-79): {len([l for l in leads if 60 <= l.get('intent_score', 0) < 80])}")
+        lines.append("")
+
+        # Add lead details
+        lines.append("-" * 80)
+        lines.append("LEADS FOUND")
+        lines.append("-" * 80)
+        for i, lead in enumerate(leads, 1):
+            lines.append("")
+            lines.append(f"Lead #{i}: {lead.get('name', 'Unknown')}")
+            lines.append(f"  Title: {lead.get('title', 'N/A')}")
+            lines.append(f"  Company: {lead.get('company', 'N/A')}")
+            lines.append(f"  Platform: {lead.get('source_platform', 'unknown')}")
+            lines.append(f"  Score: {lead.get('intent_score', 0)} ({lead.get('priority', 'unknown').upper()})")
+            lines.append(f"  Intent Signal: {lead.get('intent_signal', 'N/A')}")
+            lines.append(f"  Scoring Reasoning: {lead.get('scoring_reasoning', 'N/A')}")
+            lines.append(f"  Source: {lead.get('source_url', 'N/A')}")
+
+        lines.append("")
+        lines.append("=" * 80)
+        lines.append("END OF TRACE")
+        lines.append("=" * 80)
+
+        return "\n".join(lines)
+
     def _execute_orchestrator(self, state: ProspectingState) -> bool:
         """Execute the orchestrator crew once. Returns True on success."""
         self.logger.log_phase("Orchestrator Agent Execution")
@@ -173,12 +276,41 @@ class ProspectingFlowV2(Flow[ProspectingState]):
         })
 
         try:
-            # Execute orchestrator crew
-            result = self.orchestrator_crew.crew().kickoff(inputs={
-                "product_description": state.product_description,
-                "target_leads": state.target_leads,
-                "icp_criteria": state.icp_criteria
-            })
+            # Capture stdout during execution to get reasoning trace
+            import sys
+            from io import StringIO
+
+            class TeeOutput:
+                """Capture output while still printing to console."""
+                def __init__(self, original):
+                    self.original = original
+                    self.captured = StringIO()
+
+                def write(self, text):
+                    self.original.write(text)
+                    self.captured.write(text)
+
+                def flush(self):
+                    self.original.flush()
+
+            # Capture stdout
+            tee = TeeOutput(sys.stdout)
+            old_stdout = sys.stdout
+            sys.stdout = tee
+
+            try:
+                # Execute orchestrator crew
+                result = self.orchestrator_crew.crew().kickoff(inputs={
+                    "product_description": state.product_description,
+                    "target_leads": state.target_leads,
+                    "icp_criteria": state.icp_criteria
+                })
+            finally:
+                # Restore stdout and capture the output
+                sys.stdout = old_stdout
+                captured_output = tee.captured.getvalue()
+                self.raw_output_capture.append(captured_output)
+                self.reasoning_capture.parse_output(captured_output)
 
             # Parse structured output
             output: ProspectingOutput = result.pydantic
@@ -309,6 +441,7 @@ class ProspectingFlowV2(Flow[ProspectingState]):
         json_path = os.path.join(self.output_dir, f"leads_{timestamp}.json")
         csv_path = os.path.join(self.output_dir, f"leads_{timestamp}.csv")
         log_path = os.path.join(self.output_dir, f"agent_run_log_{timestamp}.json")
+        reasoning_path = os.path.join(self.output_dir, f"agent_reasoning_{timestamp}.txt")
 
         export_leads_json(state.leads, json_path, metadata={
             "query": state.product_description,
@@ -324,6 +457,12 @@ class ProspectingFlowV2(Flow[ProspectingState]):
         # Export agent log
         self.logger.print_summary()
         self.logger.export_log(log_path)
+
+        # Export reasoning trace to readable txt file
+        reasoning_content = self._build_reasoning_trace(state, qualified_leads)
+        with open(reasoning_path, 'w', encoding='utf-8') as f:
+            f.write(reasoning_content)
+        print(f"\n[EXPORT] Reasoning trace saved to {reasoning_path}")
 
         self.emit_event("completed", {
             "total_leads": len(qualified_leads),
@@ -357,6 +496,7 @@ class ProspectingFlowV2(Flow[ProspectingState]):
         json_path = os.path.join(self.output_dir, f"leads_partial_{timestamp}.json")
         csv_path = os.path.join(self.output_dir, f"leads_partial_{timestamp}.csv")
         log_path = os.path.join(self.output_dir, f"agent_run_log_{timestamp}.json")
+        reasoning_path = os.path.join(self.output_dir, f"agent_reasoning_{timestamp}.txt")
 
         export_leads_json(state.leads, json_path, metadata={
             "query": state.product_description,
@@ -372,6 +512,12 @@ class ProspectingFlowV2(Flow[ProspectingState]):
         # Export agent log
         self.logger.print_summary()
         self.logger.export_log(log_path)
+
+        # Export reasoning trace
+        reasoning_content = self._build_reasoning_trace(state, qualified_leads)
+        with open(reasoning_path, 'w', encoding='utf-8') as f:
+            f.write(reasoning_content)
+        print(f"\n[EXPORT] Reasoning trace saved to {reasoning_path}")
 
         self.emit_event("completed", {
             "total_leads": len(qualified_leads),

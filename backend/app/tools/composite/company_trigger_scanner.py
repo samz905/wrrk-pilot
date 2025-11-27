@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from apify_google_serp import ApifyGoogleSERPTool
+from crewai_tools import SerperDevTool
 from apify_crunchbase import ApifyCrunchbaseTool
 
 
@@ -98,11 +98,22 @@ class CompanyTriggerScannerTool(BaseTool):
         print(f"[INFO] Trigger queries: {json.dumps(queries, indent=2)}")
 
         # Create tool instances on demand
-        google_tool = ApifyGoogleSERPTool()
+        google_tool = SerperDevTool(n_results=max_results)
         crunchbase_tool = ApifyCrunchbaseTool()
 
         def search_google(query, max_res):
-            return google_tool._run(query=query, max_results=max_res)
+            # SerperDevTool returns dict with 'organic' results
+            result = google_tool.run(search_query=query)
+            # Format result for display
+            if isinstance(result, dict) and 'organic' in result:
+                formatted = [f"=== GOOGLE SEARCH RESULTS ===\nQuery: '{query}'\nFound: {len(result['organic'])} results\n"]
+                for item in result['organic'][:max_res]:
+                    formatted.append(f"--- Result #{item.get('position', 'N/A')} ---")
+                    formatted.append(f"Title: {item.get('title', 'No title')}")
+                    formatted.append(f"URL: {item.get('link', 'No URL')}")
+                    formatted.append(f"Snippet: {item.get('snippet', 'No description')}\n")
+                return "\n".join(formatted)
+            return str(result)
 
         def search_crunchbase(query, max_res):
             return crunchbase_tool._run(keyword=query, limit=max_res)

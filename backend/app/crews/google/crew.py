@@ -1,15 +1,8 @@
 """Google prospecting crew."""
 import os
-from pathlib import Path
-from crewai import Agent, Crew, Process, Task
+from crewai import Agent, Crew, Process, Task, LLM
 from crewai.project import CrewBase, agent, crew, task
-from crewai import LLM
-
-# Import Google tools
-import sys
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-from tools.apify_google_serp import ApifyGoogleSERPTool
-from tools.apify_website_crawler import ApifyWebsiteCrawlerTool
+from crewai_tools import SerperDevTool, ScrapeWebsiteTool
 
 
 @CrewBase
@@ -29,12 +22,12 @@ class GoogleProspectingCrew:
 
     @agent
     def google_research_agent(self) -> Agent:
-        """Create Google research agent with SERP and crawler tools."""
+        """Create Google research agent with SERP and scraper tools."""
         return Agent(
             config=self.agents_config['google_researcher'],
             tools=[
-                ApifyGoogleSERPTool(),          # Find news/articles about companies
-                ApifyWebsiteCrawlerTool()       # Extract full article content
+                SerperDevTool(),       # SERP search - find news/articles about companies
+                ScrapeWebsiteTool()    # Extract full article content from URLs
             ],
             llm=self.llm,
             verbose=True,
