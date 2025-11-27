@@ -9,6 +9,9 @@ from pydantic import BaseModel, Field
 from apify_client import ApifyClient
 from openai import OpenAI
 
+# Centralized config for models
+from app.core.config import settings
+
 
 class ApifyRedditSearchInput(BaseModel):
     """Input schema for Reddit search."""
@@ -495,7 +498,7 @@ Return ONLY JSON (no markdown):
             }
 
             response = client.chat.completions.create(
-                model="gpt-4o-mini",
+                model=settings.TOOL_MODEL,
                 messages=[
                     {"role": "system", "content": "You are an expert at classifying online comments to identify potential buyers vs sellers/promoters."},
                     {"role": "user", "content": prompt}
@@ -798,7 +801,7 @@ If NO users show buying intent, return an empty array: []
             client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
             response = client.chat.completions.create(
-                model="gpt-4o-mini",
+                model=settings.TOOL_MODEL,
                 messages=[
                     {"role": "system", "content": "You are an expert at identifying buying signals in online discussions. Extract only users with genuine purchase intent. Return valid JSON arrays only."},
                     {"role": "user", "content": prompt}
@@ -966,7 +969,7 @@ Return ONLY JSON (no markdown):
             }
 
             response = client.chat.completions.create(
-                model="gpt-4o-mini",
+                model=settings.TOOL_MODEL,
                 messages=[
                     {"role": "system", "content": "You are an expert at identifying buying signals in online discussions. Extract only users with genuine purchase intent. Focus on PROBLEM_RELATERS who show they have the problem."},
                     {"role": "user", "content": prompt}
@@ -1266,7 +1269,7 @@ Return ONLY a JSON array with {len(posts)} objects (no markdown, no code blocks)
             }
 
             response = client.chat.completions.create(
-                model="gpt-4o-mini",
+                model=settings.TOOL_MODEL,
                 messages=[
                     {"role": "system", "content": "You are an expert at analyzing online discussions for buyer intent and relevance."},
                     {"role": "user", "content": prompt}
@@ -1352,7 +1355,7 @@ Return ONLY a JSON object (no markdown, no code blocks):
             client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
             response = client.chat.completions.create(
-                model="gpt-4o-mini",
+                model=settings.TOOL_MODEL,
                 messages=[
                     {"role": "system", "content": "You are an expert at analyzing online discussions for buyer intent. Return only valid JSON."},
                     {"role": "user", "content": prompt}

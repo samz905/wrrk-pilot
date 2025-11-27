@@ -1,0 +1,6 @@
+name,username,title,company,intent_score,priority,buying_signal,fit_reasoning,platform,user_type,is_problem_relater,email,phone,linkedin_url,url,source_url,source_title,source_subreddit
+Serval,,Company,Serval,75,warm,,,,,,,,,,https://techcrunch.com/article/serval-raises-47m-ai-agents-it-service-management,,
+Coco Robotics,,Company,Coco Robotics,80,hot,,,,,,,,,,https://techcrunch.com/article/coco-robotics-raises-80m,,
+Substack,,Company,Substack,65,warm,,,,,,,,,,https://techcrunch.com/article/substack-raises-100m,,
+Finout,,Company,Finout,70,warm,,,,,,,,,,https://techcrunch.com/article/finout-raises-40m,,
+Intangible,,Company,Intangible,68,warm,,,,,,,,,,https://techcrunch.com/article/intangible-raises-4m,,

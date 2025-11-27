@@ -37,11 +37,12 @@ The system uses a **single intelligent Orchestrator Agent** that:
 │              ProspectingFlowV2 (Event-Driven)           │
 │  └─ OrchestratorCrew                                    │
 │     └─ Single Orchestrator Agent (GPT-4o)               │
-│        ├─ Reddit Strategy    (50% of leads)             │
+│        ├─ Reddit Strategy                               │
 │        │  └─ search → score → extract → filter_sellers  │
-│        └─ TechCrunch Strategy (50% of leads)            │
+│        └─ TechCrunch Strategy                           │
 │           └─ fetch → select → extract → linkedin_batch  │
 │              → employees → decision_makers → filter     │
+│        └─ Own Creative Strategies                       │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -332,7 +333,7 @@ class ClassificationsList(BaseModel):
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 response = client.beta.chat.completions.parse(
-    model="gpt-4o-mini",
+    model="gpt-5-nano",
     messages=[
         {"role": "system", "content": "Classify leads as buyer or seller"},
         {"role": "user", "content": f"Classify: {leads}"}
@@ -369,7 +370,7 @@ json_schema = {
 }
 
 response = client.chat.completions.create(
-    model="gpt-4o-mini",
+    model="gpt-5-nano",
     messages=[...],
     response_format={"type": "json_schema", "json_schema": json_schema}
 )

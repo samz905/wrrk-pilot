@@ -84,7 +84,7 @@ class IdentifyCompetitorTool(BaseTool):
             client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
             response = client.beta.chat.completions.parse(
-                model="gpt-4o-mini",
+                model="gpt-5-nano",
                 messages=[
                     {"role": "system", "content": "You identify competitor products. Return the G2-friendly product slug (lowercase, hyphens)."},
                     {"role": "user", "content": f"What's the main competitor for: {query}"}
@@ -196,7 +196,7 @@ class ExtractReviewersTool(BaseTool):
             client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
             response = client.beta.chat.completions.parse(
-                model="gpt-4o-mini",
+                model="gpt-5-nano",
                 messages=[
                     {"role": "system", "content": "Extract reviewer info from G2 reviews. These are frustrated users seeking alternatives."},
                     {"role": "user", "content": f"Extract reviewers frustrated with {competitor} from:\n\n{content[:8000]}"}

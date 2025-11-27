@@ -14,6 +14,9 @@ from pydantic import BaseModel, Field
 from openai import OpenAI
 from crewai_tools import ScrapeWebsiteTool
 
+# Centralized config for models
+from app.core.config import settings
+
 
 # === Structured Output Models ===
 
@@ -23,6 +26,7 @@ class FundingArticle(BaseModel):
     company: str
     funding: str
     date: Optional[str] = None
+    url: Optional[str] = None  # TechCrunch article URL
 
 
 class FundingArticlesList(BaseModel):
@@ -36,6 +40,7 @@ class SelectedCompany(BaseModel):
     funding: str
     title: str
     relevance: str
+    url: Optional[str] = None  # TechCrunch article URL
 
 
 class SelectedCompaniesList(BaseModel):
@@ -125,10 +130,16 @@ class TechCrunchFetchTool(BaseTool):
             articles = self._extract_articles_with_llm(content)
             print(f"[TECHCRUNCH_FETCH] Found {len(articles)} funding articles")
 
+            # Add source URL to each article (TechCrunch funding page)
+            for article in articles:
+                if not article.get("url"):
+                    article["url"] = url
+
             return json.dumps({
                 "articles": articles,
                 "count": len(articles),
                 "page": page,
+                "source_url": url,  # TechCrunch funding page URL
                 "has_more": len(articles) >= 10,
                 "recommendation": f"Proceed to techcrunch_select_articles with query. If more leads needed later, call techcrunch_fetch with page={page + 1}"
             })
@@ -149,10 +160,10 @@ class TechCrunchFetchTool(BaseTool):
             client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
             response = client.beta.chat.completions.parse(
-                model="gpt-4o-mini",
+                model=settings.TOOL_MODEL,
                 messages=[
-                    {"role": "system", "content": "Extract funding article information from TechCrunch page content. Look for patterns like 'Company raises $XM' or 'Company secures funding'."},
-                    {"role": "user", "content": f"Extract all funding articles from this TechCrunch page:\n\n{content[:12000]}"}
+                    {"role": "system", "content": "Extract funding article information from TechCrunch page content. Look for patterns like 'Company raises $XM' or 'Company secures funding'. If you can find article URLs, include them."},
+                    {"role": "user", "content": f"Extract all funding articles from this TechCrunch page. Include article URLs if visible:\n\n{content[:12000]}"}
                 ],
                 response_format=FundingArticlesList,
                 temperature=0.2
@@ -207,7 +218,7 @@ class TechCrunchSelectArticlesTool(BaseTool):
             ])
 
             response = client.beta.chat.completions.parse(
-                model="gpt-4o-mini",
+                model=settings.TOOL_MODEL,
                 messages=[
                     {"role": "system", "content": "You select recently funded companies relevant to a product query. Pick companies that would be good prospects for the product."},
                     {"role": "user", "content": f"Product: {query}\n\nSelect up to {limit} recently funded companies that might need this product:\n\n{articles_text}"}
@@ -218,6 +229,13 @@ class TechCrunchSelectArticlesTool(BaseTool):
 
             result = response.choices[0].message.parsed
             selected = [s.model_dump() for s in result.selected[:limit]]
+
+            # Preserve URLs from original articles
+            article_url_map = {a.get("company", ""): a.get("url", "") for a in articles}
+            for s in selected:
+                if not s.get("url"):
+                    s["url"] = article_url_map.get(s.get("company", ""), "https://techcrunch.com/tag/funding/")
+
             print(f"[TECHCRUNCH_SELECT] Selected {len(selected)} relevant articles")
 
             return json.dumps({
@@ -283,7 +301,8 @@ class TechCrunchExtractCompaniesTool(BaseTool):
                 "funding": article.get("funding", "recently funded"),
                 "description": article.get("title", ""),
                 "relevance": article.get("relevance", ""),
-                "date": article.get("date", "")
+                "date": article.get("date", ""),
+                "article_url": article.get("url", "https://techcrunch.com/tag/funding/")  # Preserve TechCrunch URL
             })
             print(f"[TECHCRUNCH_EXTRACT] Extracted: {company_name} ({article.get('funding', '?')})")
 
@@ -354,7 +373,7 @@ class TechCrunchSelectDecisionMakersTool(BaseTool):
                 context = company_context_map.get(company_name, {})
                 funding = context.get("funding", "recently funded")
                 description = context.get("description", "")
-                article_url = context.get("article_url", "")
+                article_url = context.get("article_url", "") or "https://techcrunch.com/tag/funding/"  # Fallback URL
 
                 # Format employees for LLM
                 emp_text = "\n".join([
@@ -363,7 +382,7 @@ class TechCrunchSelectDecisionMakersTool(BaseTool):
                 ])
 
                 response = client.beta.chat.completions.parse(
-                    model="gpt-4o-mini",
+                    model=settings.TOOL_MODEL,
                     messages=[
                         {"role": "system", "content": "You identify the best decision makers to contact for a product. Select 1-3 people who would actually buy/use the product."},
                         {"role": "user", "content": f"Product: {query}\n\nCompany: {company_name}\nFunding: {funding}\nDoes: {description}\n\nEmployees:\n{emp_text}\n\nSelect 1-3 people who would buy this product."}

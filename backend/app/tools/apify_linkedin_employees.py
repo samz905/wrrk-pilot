@@ -8,6 +8,9 @@ from pydantic import BaseModel, Field
 from apify_client import ApifyClient
 from openai import OpenAI
 
+# Centralized config for models
+from app.core.config import settings
+
 
 class LinkedInEmployeesSearchInput(BaseModel):
     """Input schema for LinkedIn employees search."""
@@ -253,7 +256,7 @@ Return a JSON object with an "employees" array containing the relevant employees
             }
 
             response = client.chat.completions.create(
-                model="gpt-4o-mini",
+                model=settings.TOOL_MODEL,
                 messages=[
                     {"role": "system", "content": "You are an expert at identifying decision makers in organizations. Score employees by their relevance to the search context."},
                     {"role": "user", "content": prompt}

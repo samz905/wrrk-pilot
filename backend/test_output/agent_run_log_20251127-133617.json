@@ -1,0 +1,515 @@
+{
+  "summary": {
+    "run_id": "prospecting-20251127-132141",
+    "start_time": "2025-11-27T13:21:41.362289",
+    "end_time": "2025-11-27T13:36:17.750203",
+    "duration_seconds": 876.39,
+    "total_leads": 14,
+    "hot_leads": 0,
+    "warm_leads": 14,
+    "cold_leads": 0,
+    "leads_by_platform": {
+      "techcrunch": 14
+    },
+    "tools_used": {
+      "OrchestratorCrew": 2
+    },
+    "total_tool_calls": 2,
+    "errors_count": 1,
+    "log_entries_count": 31
+  },
+  "logs": [
+    {
+      "timestamp": "2025-11-27T13:21:41.362289",
+      "elapsed_seconds": 0.0,
+      "type": "run_start",
+      "run_id": "prospecting-20251127-132141",
+      "started_at": "2025-11-27T13:21:41.362289"
+    },
+    {
+      "timestamp": "2025-11-27T13:21:41.362289",
+      "elapsed_seconds": 0.0,
+      "type": "phase",
+      "phase": "Initialization",
+      "status": "started"
+    },
+    {
+      "timestamp": "2025-11-27T13:21:41.362289",
+      "elapsed_seconds": 0.0,
+      "type": "reasoning",
+      "thought": "Starting prospecting flow v2 with single Orchestrator Agent",
+      "context": null
+    },
+    {
+      "timestamp": "2025-11-27T13:21:41.363172",
+      "elapsed_seconds": 0.000883,
+      "type": "reasoning",
+      "thought": "Query: project management software for startups",
+      "context": null
+    },
+    {
+      "timestamp": "2025-11-27T13:21:41.363172",
+      "elapsed_seconds": 0.000883,
+      "type": "reasoning",
+      "thought": "Target: 10 leads",
+      "context": null
+    },
+    {
+      "timestamp": "2025-11-27T13:21:41.757541",
+      "elapsed_seconds": 0.395252,
+      "type": "phase",
+      "phase": "Initialization",
+      "status": "completed"
+    },
+    {
+      "timestamp": "2025-11-27T13:21:41.757541",
+      "elapsed_seconds": 0.395252,
+      "type": "phase",
+      "phase": "Orchestrator Agent Execution",
+      "status": "started"
+    },
+    {
+      "timestamp": "2025-11-27T13:21:41.757541",
+      "elapsed_seconds": 0.395252,
+      "type": "reasoning",
+      "thought": "Starting orchestrator with strategy: auto",
+      "context": null
+    },
+    {
+      "timestamp": "2025-11-27T13:21:41.757541",
+      "elapsed_seconds": 0.395252,
+      "type": "tool_call",
+      "tool": "OrchestratorCrew",
+      "inputs": {
+        "product_description": "project management software for startups",
+        "target_leads": 10,
+        "icp_criteria": {
+          "titles": [
+            "Founder",
+            "CEO",
+            "CTO",
+            "Head of Product",
+            "VP Engineering"
+          ],
+          "company_size": "1-500 employees",
+          "industries": [
+            "SaaS",
+            "Technology",
+            "AI/ML",
+            "Developer Tools"
+          ]
+        }
+      },
+      "call_number": 1
+    },
+    {
+      "timestamp": "2025-11-27T13:31:25.629760",
+      "elapsed_seconds": 584.267471,
+      "type": "orchestrator_error",
+      "message": "14 validation errors for ProspectingOutput\nleads.0.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.1.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.2.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.3.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.4.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.5.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.6.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.7.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.8.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.9.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.10.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.11.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.12.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.13.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type",
+      "details": null
+    },
+    {
+      "timestamp": "2025-11-27T13:31:25.629760",
+      "elapsed_seconds": 584.267471,
+      "type": "retry",
+      "reason": "Error: 14 validation errors for ProspectingOutput\nleads.0.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.1.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.2.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.3.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.4.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.5.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.6.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.7.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.8.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.9.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.10.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.11.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.12.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.13.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type",
+      "new_strategy": "intent_signals"
+    },
+    {
+      "timestamp": "2025-11-27T13:31:25.629760",
+      "elapsed_seconds": 584.267471,
+      "type": "phase",
+      "phase": "Orchestrator Agent Execution",
+      "status": "started"
+    },
+    {
+      "timestamp": "2025-11-27T13:31:25.629760",
+      "elapsed_seconds": 584.267471,
+      "type": "reasoning",
+      "thought": "Starting orchestrator with strategy: auto",
+      "context": null
+    },
+    {
+      "timestamp": "2025-11-27T13:31:25.629760",
+      "elapsed_seconds": 584.267471,
+      "type": "tool_call",
+      "tool": "OrchestratorCrew",
+      "inputs": {
+        "product_description": "project management software for startups",
+        "target_leads": 10,
+        "icp_criteria": {
+          "titles": [
+            "Founder",
+            "CEO",
+            "CTO",
+            "Head of Product",
+            "VP Engineering"
+          ],
+          "company_size": "1-500 employees",
+          "industries": [
+            "SaaS",
+            "Technology",
+            "AI/ML",
+            "Developer Tools"
+          ]
+        }
+      },
+      "call_number": 2
+    },
+    {
+      "timestamp": "2025-11-27T13:36:17.732310",
+      "elapsed_seconds": 876.370021,
+      "type": "tool_result",
+      "tool": "OrchestratorCrew",
+      "summary": "Found 14 new leads (total: 14) from ['reddit', 'techcrunch']",
+      "count": 14,
+      "success": true
+    },
+    {
+      "timestamp": "2025-11-27T13:36:17.732310",
+      "elapsed_seconds": 876.370021,
+      "type": "lead_found",
+      "lead_number": 1,
+      "username": "Unknown",
+      "intent_score": 75,
+      "platform": "techcrunch",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T13:36:17.732310",
+      "elapsed_seconds": 876.370021,
+      "type": "lead_found",
+      "lead_number": 2,
+      "username": "Unknown",
+      "intent_score": 75,
+      "platform": "techcrunch",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T13:36:17.732310",
+      "elapsed_seconds": 876.370021,
+      "type": "lead_found",
+      "lead_number": 3,
+      "username": "Unknown",
+      "intent_score": 75,
+      "platform": "techcrunch",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T13:36:17.732310",
+      "elapsed_seconds": 876.370021,
+      "type": "lead_found",
+      "lead_number": 4,
+      "username": "Unknown",
+      "intent_score": 75,
+      "platform": "techcrunch",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T13:36:17.732310",
+      "elapsed_seconds": 876.370021,
+      "type": "lead_found",
+      "lead_number": 5,
+      "username": "Unknown",
+      "intent_score": 75,
+      "platform": "techcrunch",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T13:36:17.732310",
+      "elapsed_seconds": 876.370021,
+      "type": "lead_found",
+      "lead_number": 6,
+      "username": "Unknown",
+      "intent_score": 75,
+      "platform": "techcrunch",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T13:36:17.733315",
+      "elapsed_seconds": 876.371026,
+      "type": "lead_found",
+      "lead_number": 7,
+      "username": "Unknown",
+      "intent_score": 75,
+      "platform": "techcrunch",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T13:36:17.733315",
+      "elapsed_seconds": 876.371026,
+      "type": "lead_found",
+      "lead_number": 8,
+      "username": "Unknown",
+      "intent_score": 75,
+      "platform": "techcrunch",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T13:36:17.733315",
+      "elapsed_seconds": 876.371026,
+      "type": "lead_found",
+      "lead_number": 9,
+      "username": "Unknown",
+      "intent_score": 75,
+      "platform": "techcrunch",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T13:36:17.733315",
+      "elapsed_seconds": 876.371026,
+      "type": "lead_found",
+      "lead_number": 10,
+      "username": "Unknown",
+      "intent_score": 75,
+      "platform": "techcrunch",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T13:36:17.733315",
+      "elapsed_seconds": 876.371026,
+      "type": "lead_found",
+      "lead_number": 11,
+      "username": "Unknown",
+      "intent_score": 75,
+      "platform": "techcrunch",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T13:36:17.733315",
+      "elapsed_seconds": 876.371026,
+      "type": "lead_found",
+      "lead_number": 12,
+      "username": "Unknown",
+      "intent_score": 75,
+      "platform": "techcrunch",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T13:36:17.733315",
+      "elapsed_seconds": 876.371026,
+      "type": "lead_found",
+      "lead_number": 13,
+      "username": "Unknown",
+      "intent_score": 75,
+      "platform": "techcrunch",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T13:36:17.733315",
+      "elapsed_seconds": 876.371026,
+      "type": "lead_found",
+      "lead_number": 14,
+      "username": "Unknown",
+      "intent_score": 75,
+      "platform": "techcrunch",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T13:36:17.734282",
+      "elapsed_seconds": 876.371993,
+      "type": "phase",
+      "phase": "Orchestrator Agent Execution",
+      "status": "completed"
+    },
+    {
+      "timestamp": "2025-11-27T13:36:17.735285",
+      "elapsed_seconds": 876.372996,
+      "type": "phase",
+      "phase": "Finalization",
+      "status": "started"
+    }
+  ],
+  "leads": [
+    {
+      "name": "Founder & CEO",
+      "title": "Founder & CEO at Serval",
+      "company": "Serval",
+      "linkedin_url": "",
+      "email": null,
+      "intent_signal": "Company $47M - As the CEO, they are likely to make decisions regarding tools that enhance productivity and project management for the startup.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, As the CEO, they are likely to make decisions regarding tools that enhance productivity and project management for the startup."
+    },
+    {
+      "name": "CTO",
+      "title": "CTO @ Serval",
+      "company": "Serval",
+      "linkedin_url": "",
+      "email": null,
+      "intent_signal": "Company $47M - The CTO would be responsible for overseeing the technology and tools used by the team, making them a key decision maker for project management software.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, The CTO would be responsible for overseeing the technology and tools used by the team, making them a key decision maker for project management software."
+    },
+    {
+      "name": "COO",
+      "title": "COO @ Serval",
+      "company": "Serval",
+      "linkedin_url": "",
+      "email": null,
+      "intent_signal": "Company $47M - The COO would be involved in operational efficiency and team management, making them a strong candidate for purchasing project management software.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, The COO would be involved in operational efficiency and team management, making them a strong candidate for purchasing project management software."
+    },
+    {
+      "name": "Co-Founder & CPO",
+      "title": "Co-Founder & CPO at Finout | Certified Cloud FinOps & FinOps For AI Practitioner",
+      "company": "Finout",
+      "linkedin_url": "",
+      "email": null,
+      "intent_signal": "Company $40M - As the Chief Product Officer, they would be directly involved in selecting tools that enhance project management and collaboration within the product development teams.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, As the Chief Product Officer, they would be directly involved in selecting tools that enhance project management and collaboration within the product development teams."
+    },
+    {
+      "name": "Director of Customer Success",
+      "title": "Director of Customer Success, Finout",
+      "company": "Finout",
+      "linkedin_url": "",
+      "email": null,
+      "intent_signal": "Company $40M - This role is crucial for ensuring that customer projects are managed effectively and would benefit from project management software to streamline processes and improve client satisfaction.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, This role is crucial for ensuring that customer projects are managed effectively and would benefit from project management software to streamline processes and improve client satisfaction."
+    },
+    {
+      "name": "VP Marketing",
+      "title": "VP Marketing at Finout",
+      "company": "Finout",
+      "linkedin_url": "",
+      "email": null,
+      "intent_signal": "Company $40M - The VP of Marketing would need project management software to coordinate marketing campaigns and initiatives, making them a key decision maker for purchasing such tools.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, The VP of Marketing would need project management software to coordinate marketing campaigns and initiatives, making them a key decision maker for purchasing such tools."
+    },
+    {
+      "name": "CEO/Founder",
+      "title": "CEO/Founder @ Intangible",
+      "company": "Intangible",
+      "linkedin_url": "",
+      "email": null,
+      "intent_signal": "Company $4M - As the CEO and founder, they are likely to be involved in decisions regarding tools that improve project management and efficiency for their startup.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, As the CEO and founder, they are likely to be involved in decisions regarding tools that improve project management and efficiency for their startup."
+    },
+    {
+      "name": "Staff Technical Program Manager",
+      "title": "Staff Technical Program Manager @ Intangible",
+      "company": "Intangible",
+      "linkedin_url": "",
+      "email": null,
+      "intent_signal": "Company $4M - As a Technical Program Manager, they would benefit from project management software to streamline workflows and manage projects effectively.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, As a Technical Program Manager, they would benefit from project management software to streamline workflows and manage projects effectively."
+    },
+    {
+      "name": "CEO & Co-founder",
+      "title": "CEO & Co-founder",
+      "company": "Capsule",
+      "linkedin_url": "",
+      "email": null,
+      "intent_signal": "Company $12M - As the CEO, they are likely to make purchasing decisions for tools that can enhance team productivity and project management.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, As the CEO, they are likely to make purchasing decisions for tools that can enhance team productivity and project management."
+    },
+    {
+      "name": "CTO & Co-founder",
+      "title": "CTO & Co-founder",
+      "company": "Capsule",
+      "linkedin_url": "",
+      "email": null,
+      "intent_signal": "Company $12M - The CTO would be interested in project management software to streamline development processes and improve team collaboration.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, The CTO would be interested in project management software to streamline development processes and improve team collaboration."
+    },
+    {
+      "name": "Lead Engineer",
+      "title": "Lead Engineer",
+      "company": "Capsule",
+      "linkedin_url": "",
+      "email": null,
+      "intent_signal": "Company $12M - The Lead Engineer would benefit from project management software to manage tasks, track progress, and collaborate effectively with the team.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, The Lead Engineer would benefit from project management software to manage tasks, track progress, and collaborate effectively with the team."
+    },
+    {
+      "name": "Co-founder/CTO @ Coco Delivery",
+      "title": "Co-founder/CTO",
+      "company": "Coco Robotics",
+      "linkedin_url": "",
+      "email": null,
+      "intent_signal": "Company $80M - As the CTO, they would be responsible for overseeing the technology and tools used by the team, making them a key decision maker for project management software.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, As the CTO, they would be responsible for overseeing the technology and tools used by the team, making them a key decision maker for project management software."
+    },
+    {
+      "name": "CBO & Board Member @ Coco Robotics",
+      "title": "CBO & Board Member",
+      "company": "Coco Robotics",
+      "linkedin_url": "",
+      "email": null,
+      "intent_signal": "Company $80M - The Chief Business Officer would be focused on the overall business strategy and operations, making them likely to invest in tools that enhance project management efficiency.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, The Chief Business Officer would be focused on the overall business strategy and operations, making them likely to invest in tools that enhance project management efficiency."
+    },
+    {
+      "name": "Sr. Engineering Manager @Coco",
+      "title": "Sr. Engineering Manager",
+      "company": "Coco Robotics",
+      "linkedin_url": "",
+      "email": null,
+      "intent_signal": "Company $80M - As a senior engineering manager, they would need effective project management tools to coordinate engineering projects and team collaboration.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, As a senior engineering manager, they would need effective project management tools to coordinate engineering projects and team collaboration."
+    }
+  ],
+  "errors": [
+    {
+      "type": "orchestrator_error",
+      "message": "14 validation errors for ProspectingOutput\nleads.0.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.1.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.2.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.3.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.4.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.5.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.6.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.7.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.8.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.9.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.10.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.11.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.12.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type\nleads.13.source_url\n  Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type",
+      "details": null
+    }
+  ]
+}

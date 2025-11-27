@@ -8,6 +8,9 @@ from pydantic import BaseModel, Field
 from apify_client import ApifyClient
 from openai import OpenAI
 
+# Centralized config for models
+from app.core.config import settings
+
 
 # === Structured Output Models ===
 
@@ -158,7 +161,7 @@ class LinkedInCompanySearchTool(BaseTool):
             client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
             response = client.beta.chat.completions.parse(
-                model="gpt-4o-mini",
+                model=settings.TOOL_MODEL,
                 messages=[
                     {"role": "system", "content": "You match company names to LinkedIn search results. Select the best match or indicate if no good match exists."},
                     {"role": "user", "content": f"""Find the best LinkedIn match for: "{company_name}"{context_str}
@@ -339,7 +342,7 @@ class LinkedInCompanyBatchSearchTool(BaseTool):
             client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
             response = client.beta.chat.completions.parse(
-                model="gpt-4o-mini",
+                model=settings.TOOL_MODEL,
                 messages=[
                     {"role": "system", "content": "You match company names to LinkedIn search results. For each company, select the best match or indicate no match."},
                     {"role": "user", "content": f"""Match each company to its best LinkedIn result:

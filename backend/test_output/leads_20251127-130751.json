@@ -1,0 +1,93 @@
+{
+  "metadata": {
+    "generated_at": "2025-11-27T13:07:51.541768",
+    "total_leads": 5,
+    "hot_leads": 1,
+    "warm_leads": 4,
+    "cold_leads": 0,
+    "leads_by_platform": {
+      "unknown": 5
+    },
+    "leads_by_user_type": {
+      "unknown": 5
+    },
+    "average_intent_score": 71.6,
+    "query": "project management software for startups",
+    "target_leads": 10,
+    "platforms_searched": [
+      "reddit",
+      "techcrunch"
+    ],
+    "strategies_used": [
+      "Reddit Strategy",
+      "TechCrunch Strategy"
+    ]
+  },
+  "leads": [
+    {
+      "name": "Serval",
+      "title": "Company",
+      "company": "Serval",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "High - As a startup in IT service management, Serval could benefit from project management software to streamline operations and enhance team collaboration.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "https://techcrunch.com/article/serval-raises-47m-ai-agents-it-service-management",
+      "priority": "warm",
+      "scoring_reasoning": "Serval has recently raised $47M and operates in IT service management, indicating a need for project management tools."
+    },
+    {
+      "name": "Coco Robotics",
+      "title": "Company",
+      "company": "Coco Robotics",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "High - With significant funding and a focus on robotics, Coco Robotics may need project management tools to coordinate complex projects and team efforts.",
+      "intent_score": 80,
+      "source_platform": "techcrunch",
+      "source_url": "https://techcrunch.com/article/coco-robotics-raises-80m",
+      "priority": "hot",
+      "scoring_reasoning": "Coco Robotics has raised $80M and requires coordination for complex projects, making project management software essential."
+    },
+    {
+      "name": "Substack",
+      "title": "Company",
+      "company": "Substack",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "Medium - As a growing platform for writers, Substack could utilize project management software to manage content production and team workflows.",
+      "intent_score": 65,
+      "source_platform": "techcrunch",
+      "source_url": "https://techcrunch.com/article/substack-raises-100m",
+      "priority": "warm",
+      "scoring_reasoning": "Substack's growth and focus on content production suggest a need for project management tools to manage workflows."
+    },
+    {
+      "name": "Finout",
+      "title": "Company",
+      "company": "Finout",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "Medium - Finout's focus on cloud services may require effective project management to handle client projects and service deployments.",
+      "intent_score": 70,
+      "source_platform": "techcrunch",
+      "source_url": "https://techcrunch.com/article/finout-raises-40m",
+      "priority": "warm",
+      "scoring_reasoning": "Finout's cloud services and client project management needs align with the use of project management software."
+    },
+    {
+      "name": "Intangible",
+      "title": "Company",
+      "company": "Intangible",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "Medium - Intangible, as a startup in the creative tech space, would benefit from project management software to manage development timelines and team collaboration.",
+      "intent_score": 68,
+      "source_platform": "techcrunch",
+      "source_url": "https://techcrunch.com/article/intangible-raises-4m",
+      "priority": "warm",
+      "scoring_reasoning": "Intangible's creative tech focus and development needs suggest a fit for project management tools."
+    }
+  ]
+}

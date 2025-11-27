@@ -273,7 +273,7 @@ Return a JSON object with a "leads" array."""
             }
 
             response = client.chat.completions.create(
-                model="gpt-4o-mini",
+                model="gpt-5-nano",
                 messages=[
                     {"role": "system", "content": "You are an expert at identifying leads from LinkedIn posts. Extract relevant people based on the search context."},
                     {"role": "user", "content": prompt}

@@ -18,6 +18,9 @@ from crewai import LLM
 from pydantic import BaseModel, Field, field_validator
 from enum import Enum
 
+# Centralized config for models
+from app.core.config import settings
+
 # Import tools
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -130,10 +133,10 @@ class OrchestratorCrew:
 
     def __init__(self):
         """Initialize the orchestrator crew with LLM configuration."""
-        # Use GPT-4o for better reasoning
+        # Use centralized config for model settings
         self.llm = LLM(
-            model="gpt-4o",
-            temperature=0.3,
+            model=settings.AGENT_MODEL,
+            temperature=settings.AGENT_TEMPERATURE,
             api_key=os.getenv("OPENAI_API_KEY")
         )
 
@@ -220,10 +223,8 @@ class OrchestratorCrew:
             tasks=self.tasks,
             process=Process.sequential,
             verbose=True,
-            max_rpm=10,
-            # Enable planning for complex tasks
-            planning=True,
-            planning_llm=self.llm
+            max_rpm=10
+            # Removed planning=True - was causing agent to "narrate" instead of execute tools
         )
 
 

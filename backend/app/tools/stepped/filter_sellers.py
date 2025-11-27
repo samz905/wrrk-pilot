@@ -10,6 +10,9 @@ from crewai.tools import BaseTool
 from pydantic import BaseModel, Field
 from openai import OpenAI
 
+# Centralized config for models
+from app.core.config import settings
+
 
 # === Structured Output Models ===
 
@@ -90,7 +93,7 @@ CLASSIFICATION:
 - SELLER: Someone PROMOTING their own product, announcing launches, self-promoting"""
 
             response = client.beta.chat.completions.parse(
-                model="gpt-4o-mini",
+                model=settings.TOOL_MODEL,
                 messages=[
                     {"role": "system", "content": "You identify buyers vs sellers in lead lists. Sellers promote their own products. Buyers look for solutions."},
                     {"role": "user", "content": prompt}

@@ -153,7 +153,7 @@ class UpworkSearchTool(BaseTool):
             client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
             response = client.beta.chat.completions.parse(
-                model="gpt-4o-mini",
+                model="gpt-5-nano",
                 messages=[
                     {"role": "system", "content": "Extract job postings from Upwork page content. Look for job titles, descriptions, budgets, and client info."},
                     {"role": "user", "content": f"Extract up to {max_jobs} job postings from this Upwork {category} page:\n\n{content[:15000]}"}
@@ -214,7 +214,7 @@ class UpworkScoreTool(BaseTool):
             ])
 
             response = client.beta.chat.completions.parse(
-                model="gpt-4o-mini",
+                model="gpt-5-nano",
                 messages=[
                     {"role": "system", "content": "Score job postings for relevance to a product. Higher scores for jobs that clearly need the product."},
                     {"role": "user", "content": f"Product: {query}\n\nScore each job's relevance (0-100) to this product:\n\n{jobs_text}"}

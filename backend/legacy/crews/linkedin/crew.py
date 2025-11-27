@@ -60,7 +60,7 @@ class LinkedInProspectingCrew:
     def __init__(self):
         """Initialize the crew with GPT-4o-mini configuration."""
         self.llm = LLM(
-            model="gpt-4o-mini",
+            model="gpt-5-nano",
             temperature=0.5,
             api_key=os.getenv("OPENAI_API_KEY")
         )
