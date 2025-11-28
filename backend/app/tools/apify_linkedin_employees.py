@@ -177,7 +177,7 @@ class LinkedInEmployeesSearchTool(BaseTool):
         """
         Score employees by relevance to the search query.
 
-        Uses LLM to analyze job titles and profiles to find decision makers.
+        Uses structured outputs for guaranteed valid JSON response.
 
         Args:
             query: Search context
@@ -219,123 +219,97 @@ Scoring:
 - 20-39: Weak match (tangentially related)
 - 0-19: No match (irrelevant role)
 
-Return only the TOP 20 most relevant employees (score >= 40).
+Return only the TOP 20 most relevant employees (score >= 40)."""
 
-Return a JSON object with an "employees" array containing objects with:
-- employee_number (int)
-- name (string)
-- title (string)
-- profile_url (string)
-- relevance_score (int 0-100)
-- fit_reasoning (string)
+        # JSON schema for structured output
+        json_schema = {
+            "name": "employee_scores",
+            "strict": True,
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "employees": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "employee_number": {"type": "integer"},
+                                "name": {"type": "string"},
+                                "title": {"type": "string"},
+                                "profile_url": {"type": "string"},
+                                "relevance_score": {"type": "integer"},
+                                "fit_reasoning": {"type": "string"}
+                            },
+                            "required": ["employee_number", "name", "title", "profile_url", "relevance_score", "fit_reasoning"],
+                            "additionalProperties": False
+                        }
+                    }
+                },
+                "required": ["employees"],
+                "additionalProperties": False
+            }
+        }
 
-Return ONLY valid JSON, no markdown or code blocks."""
+        try:
+            client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-        # Retry logic - try up to 3 times
-        max_retries = 3
-        last_error = None
-        result_text = ""
+            print(f"[INFO] Scoring {len(employees)} employees with structured output...")
 
-        for attempt in range(max_retries):
-            try:
-                client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+            response = client.chat.completions.create(
+                model=settings.TOOL_MODEL,
+                messages=[
+                    {"role": "system", "content": "You are an expert at identifying decision makers in organizations."},
+                    {"role": "user", "content": prompt}
+                ],
+                response_format={"type": "json_schema", "json_schema": json_schema},
+                max_completion_tokens=3000
+            )
 
-                print(f"[INFO] Scoring {len(employees)} employees (attempt {attempt + 1}/{max_retries})...")
+            result = json.loads(response.choices[0].message.content)
+            scored = result.get("employees", [])
 
-                # Note: gpt-5-nano has issues with response_format json_schema
-                # Using simple JSON request instead
-                response = client.chat.completions.create(
-                    model=settings.TOOL_MODEL,
-                    messages=[
-                        {"role": "system", "content": "You are an expert at identifying decision makers in organizations. Always respond with valid JSON only, no markdown or code blocks."},
-                        {"role": "user", "content": prompt}
-                    ],
-                    max_completion_tokens=3000
-                )
+            # Sort by relevance score
+            scored.sort(key=lambda x: x.get('relevance_score', 0), reverse=True)
 
-                result_text = response.choices[0].message.content
-                if not result_text or result_text.strip() == "":
-                    print(f"[WARNING] Empty response on attempt {attempt + 1}, retrying...")
-                    continue
+            print(f"[INFO] Scored and filtered to {len(scored)} relevant decision makers (structured)")
+            return scored
 
-                result_text = result_text.strip()
+        except Exception as e:
+            print(f"[ERROR] Structured employee scoring failed: {e}")
+            import traceback
+            traceback.print_exc()
 
-                # Clean up common formatting issues
-                if result_text.startswith("```json"):
-                    result_text = result_text[7:]
-                if result_text.startswith("```"):
-                    result_text = result_text[3:]
-                if result_text.endswith("```"):
-                    result_text = result_text[:-3]
-                result_text = result_text.strip()
+            # Fallback: score based on title keywords
+            print(f"[INFO] Using title-based fallback scoring...")
+            fallback_scored = []
+            decision_maker_keywords = ['founder', 'ceo', 'cto', 'coo', 'cfo', 'chief', 'president',
+                                       'vp', 'vice president', 'director', 'head of', 'manager', 'lead']
 
-                # Parse JSON
-                result = json.loads(result_text)
+            for i, emp in enumerate(employees, 1):
+                name = emp.get('name', emp.get('firstName', '') + ' ' + emp.get('lastName', '')).strip() or 'Unknown'
+                title = emp.get('headline', emp.get('title', emp.get('jobTitle', 'N/A'))).lower()
+                profile_url = emp.get('linkedinUrl', emp.get('profileUrl', emp.get('url', 'N/A')))
 
-                # Handle both formats: {"employees": [...]} or just [...]
-                if isinstance(result, dict) and "employees" in result:
-                    scored = result["employees"]
-                elif isinstance(result, list):
-                    scored = result
-                else:
-                    print(f"[WARNING] Unexpected JSON structure on attempt {attempt + 1}, retrying...")
-                    continue
+                # Calculate score based on keywords
+                score = 30  # Base score
+                for keyword in decision_maker_keywords:
+                    if keyword in title:
+                        score = min(score + 20, 90)
+                        break
 
-                if not isinstance(scored, list):
-                    print(f"[WARNING] Employees is not a list on attempt {attempt + 1}, retrying...")
-                    continue
+                if score >= 40:
+                    fallback_scored.append({
+                        "employee_number": i,
+                        "name": name,
+                        "title": emp.get('headline', emp.get('title', emp.get('jobTitle', 'N/A'))),
+                        "profile_url": profile_url,
+                        "relevance_score": score,
+                        "fit_reasoning": "[FALLBACK] Title contains decision-maker keywords"
+                    })
 
-                # Sort by relevance score
-                scored.sort(key=lambda x: x.get('relevance_score', 0), reverse=True)
-
-                print(f"[INFO] Scored and filtered to {len(scored)} relevant decision makers")
-                return scored
-
-            except json.JSONDecodeError as e:
-                last_error = e
-                print(f"[WARNING] JSON parse error on attempt {attempt + 1}: {e}")
-                print(f"[DEBUG] Raw response preview: {result_text[:300] if result_text else 'EMPTY'}")
-                continue
-
-            except Exception as e:
-                last_error = e
-                print(f"[WARNING] API error on attempt {attempt + 1}: {e}")
-                continue
-
-        # All retries exhausted - return fallback based on title keywords
-        print(f"[ERROR] All {max_retries} employee scoring attempts failed. Using title-based fallback...")
-        print(f"[DEBUG] Last error: {last_error}")
-
-        # Fallback: score based on title keywords
-        fallback_scored = []
-        decision_maker_keywords = ['founder', 'ceo', 'cto', 'coo', 'cfo', 'chief', 'president',
-                                   'vp', 'vice president', 'director', 'head of', 'manager', 'lead']
-
-        for i, emp in enumerate(employees, 1):
-            name = emp.get('name', emp.get('firstName', '') + ' ' + emp.get('lastName', '')).strip() or 'Unknown'
-            title = emp.get('headline', emp.get('title', emp.get('jobTitle', 'N/A'))).lower()
-            profile_url = emp.get('linkedinUrl', emp.get('profileUrl', emp.get('url', 'N/A')))
-
-            # Calculate score based on keywords
-            score = 30  # Base score
-            for keyword in decision_maker_keywords:
-                if keyword in title:
-                    score = min(score + 20, 90)
-                    break
-
-            if score >= 40:
-                fallback_scored.append({
-                    "employee_number": i,
-                    "name": name,
-                    "title": emp.get('headline', emp.get('title', emp.get('jobTitle', 'N/A'))),
-                    "profile_url": profile_url,
-                    "relevance_score": score,
-                    "fit_reasoning": f"[FALLBACK] Title contains decision-maker keywords"
-                })
-
-        fallback_scored.sort(key=lambda x: x.get('relevance_score', 0), reverse=True)
-        print(f"[INFO] Fallback scoring found {len(fallback_scored)} potential decision makers")
-        return fallback_scored[:20]  # Return top 20
+            fallback_scored.sort(key=lambda x: x.get('relevance_score', 0), reverse=True)
+            print(f"[INFO] Fallback scoring found {len(fallback_scored)} potential decision makers")
+            return fallback_scored[:20]
 
     def _format_results(
         self,

@@ -1,11 +1,12 @@
 """
-Orchestrator Crew - Multi-Task Sequential Architecture.
+Orchestrator Crew - Multi-Task Sequential Architecture (v3.4).
 
-This crew uses 4 focused agents with task chaining:
+This crew uses 5 focused agents with task chaining:
 1. strategy_planner -> Analyze query, create prospecting plan
 2. reddit_specialist -> Execute Reddit strategy
-3. techcrunch_specialist -> Execute TechCrunch strategy
-4. lead_aggregator -> Combine and filter final leads
+3. techcrunch_specialist -> Execute TechCrunch strategy (SERP-based)
+4. competitor_specialist -> Execute competitor displacement strategy
+5. lead_aggregator -> Combine and filter final leads
 
 Tasks pass data via context=[previous_task] for sequential execution.
 """
@@ -36,9 +37,17 @@ from tools.stepped.reddit_tools import (
 # TechCrunch stepped tools (funding signals)
 from tools.stepped.techcrunch_tools import (
     TechCrunchFetchTool,
+    TechCrunchFetchParallelTool,  # v3.4: Parallel page fetching
     TechCrunchSelectArticlesTool,
     TechCrunchExtractCompaniesTool,
-    TechCrunchSelectDecisionMakersTool
+    TechCrunchSelectDecisionMakersTool,
+    TechCrunchSerpDecisionMakersTool  # v3.4: SERP-based decision makers
+)
+
+# Competitor displacement tools (v3.4)
+from tools.stepped.competitor_tools import (
+    CompetitorIdentifyTool,
+    CompetitorScrapeTool
 )
 
 # Seller filter (reusable utility)
@@ -141,14 +150,23 @@ class TechCrunchLeads(BaseModel):
     workflow_trace: str = Field(description="Reasoning at each step")
 
 
+class CompetitorLeads(BaseModel):
+    """Output from Task 4: Competitor displacement prospecting."""
+    leads: List[Lead] = Field(description="Leads from competitor engagement")
+    count: int = Field(description="Number of leads found")
+    competitors_scraped: List[str] = Field(description="Competitor companies scraped")
+    workflow_trace: str = Field(description="Reasoning at each step")
+
+
 class ProspectingOutput(BaseModel):
-    """Output from Task 4: Final aggregated leads."""
+    """Output from Task 5: Final aggregated leads."""
     leads: List[Lead] = Field(description="List of qualified leads")
     total_leads: int = Field(description="Total number of leads found")
     hot_leads: int = Field(description="Number of hot leads (score >= 80)")
     warm_leads: int = Field(description="Number of warm leads (score 60-79)")
     reddit_leads_count: int = Field(default=0, description="Leads from Reddit")
     techcrunch_leads_count: int = Field(default=0, description="Leads from TechCrunch")
+    competitor_leads_count: int = Field(default=0, description="Leads from competitor displacement")
     sellers_removed: int = Field(default=0, description="Sellers filtered out")
     duplicates_removed: int = Field(default=0, description="Duplicates removed")
     platforms_searched: List[str] = Field(description="Platforms that were searched")
@@ -157,7 +175,7 @@ class ProspectingOutput(BaseModel):
 
 
 # =============================================================================
-# ORCHESTRATOR CREW - 4 Agents, 4 Tasks, Sequential Process
+# ORCHESTRATOR CREW - 5 Agents, 5 Tasks, Sequential Process (v3.4)
 # =============================================================================
 
 @CrewBase
@@ -221,17 +239,19 @@ class OrchestratorCrew:
 
     @agent
     def techcrunch_specialist(self) -> Agent:
-        """Agent 3: Execute TechCrunch workflow with LinkedIn enrichment."""
+        """Agent 3: Execute TechCrunch workflow with SERP-based decision makers."""
         return Agent(
             config=self.agents_config['techcrunch_specialist'],
             tools=[
-                # TechCrunch stepped tools
+                # TechCrunch stepped tools (v3.4)
                 TechCrunchFetchTool(),
+                TechCrunchFetchParallelTool(),  # Parallel page fetching
                 TechCrunchSelectArticlesTool(),
                 TechCrunchExtractCompaniesTool(),
                 TechCrunchSelectDecisionMakersTool(),
+                TechCrunchSerpDecisionMakersTool(),  # SERP-based decision makers (fast!)
 
-                # LinkedIn tools for company/employee search
+                # LinkedIn tools (backup/enrichment only)
                 LinkedInCompanySearchTool(),
                 LinkedInCompanyBatchSearchTool(),
                 LinkedInEmployeesSearchTool(),
@@ -248,8 +268,28 @@ class OrchestratorCrew:
         )
 
     @agent
+    def competitor_specialist(self) -> Agent:
+        """Agent 4: Execute competitor displacement strategy."""
+        return Agent(
+            config=self.agents_config['competitor_specialist'],
+            tools=[
+                # Competitor displacement tools (v3.4)
+                CompetitorIdentifyTool(),
+                CompetitorScrapeTool(),
+
+                # Seller filter
+                FilterSellersTool(),
+            ],
+            llm=self.llm,
+            verbose=True,
+            max_iter=20,
+            max_retry_limit=3,
+            memory=True
+        )
+
+    @agent
     def lead_aggregator(self) -> Agent:
-        """Agent 4: Combine, deduplicate, and rank final leads."""
+        """Agent 5: Combine, deduplicate, and rank final leads."""
         return Agent(
             config=self.agents_config['lead_aggregator'],
             tools=[
@@ -261,7 +301,7 @@ class OrchestratorCrew:
         )
 
     # =========================================================================
-    # TASKS - 4 chained tasks with context passing
+    # TASKS - 5 chained tasks with context passing (v3.4)
     # =========================================================================
 
     @task
@@ -294,14 +334,25 @@ class OrchestratorCrew:
         )
 
     @task
+    def competitor_prospecting(self) -> Task:
+        """Task 4: Execute competitor displacement strategy using plan from Task 1."""
+        return Task(
+            config=self.tasks_config['competitor_prospecting'],
+            agent=self.competitor_specialist(),
+            context=[self.plan_strategy()],  # Receives strategy plan
+            output_pydantic=CompetitorLeads
+        )
+
+    @task
     def aggregate_leads(self) -> Task:
-        """Task 4: Combine leads from Tasks 2 & 3 into final output."""
+        """Task 5: Combine leads from Tasks 2, 3 & 4 into final output."""
         return Task(
             config=self.tasks_config['aggregate_leads'],
             agent=self.lead_aggregator(),
             context=[
-                self.reddit_prospecting(),     # Receives Reddit leads
-                self.techcrunch_prospecting()  # Receives TechCrunch leads
+                self.reddit_prospecting(),       # Receives Reddit leads
+                self.techcrunch_prospecting(),   # Receives TechCrunch leads
+                self.competitor_prospecting()    # Receives competitor leads
             ],
             output_pydantic=ProspectingOutput
         )
@@ -309,7 +360,7 @@ class OrchestratorCrew:
     @crew
     def crew(self) -> Crew:
         """
-        Create the orchestrator crew with 4 agents and sequential tasks.
+        Create the orchestrator crew with 5 agents and sequential tasks.
         """
         return Crew(
             agents=self.agents,
@@ -378,6 +429,7 @@ if __name__ == "__main__":
     print(f"Warm leads: {result.warm_leads}")
     print(f"Reddit leads: {result.reddit_leads_count}")
     print(f"TechCrunch leads: {result.techcrunch_leads_count}")
+    print(f"Competitor leads: {result.competitor_leads_count}")
     print(f"Sellers removed: {result.sellers_removed}")
     print(f"Duplicates removed: {result.duplicates_removed}")
     print(f"Platforms: {result.platforms_searched}")

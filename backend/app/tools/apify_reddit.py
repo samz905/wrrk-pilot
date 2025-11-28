@@ -394,145 +394,9 @@ class ApifyRedditSearchTool(BaseTool):
         print(f"[INFO] Scoring complete: {len(all_scores)} posts scored")
         return all_scores
 
-    def _classify_commenters_batch(
-        self,
-        query: str,
-        comments: List[Dict]
-    ) -> Dict[str, str]:
-        """
-        Classify commenters in batch to identify PROBLEM_RELATERS vs SOLUTION_GIVERS.
-
-        PROBLEM_RELATERS are potential leads - they:
-        - Relate to the problem ("I have the same issue", "me too", "we're struggling")
-        - Show pain points or frustration
-        - Ask follow-up questions about the problem
-
-        SOLUTION_GIVERS are NOT leads - they:
-        - Recommend tools/products ("try X", "I recommend Y")
-        - Promote their own solutions
-        - Provide answers/solutions
-
-        Args:
-            query: Search query for context
-            comments: List of comment dicts with 'author' and 'text'
-
-        Returns:
-            Dict mapping username -> classification (PROBLEM_RELATER, SOLUTION_GIVER, IRRELEVANT)
-        """
-        if not comments:
-            return {}
-
-        # Build batch prompt with all comments (up to 50)
-        comments_batch = comments[:50]  # Limit to 50 per batch
-
-        comments_text = ""
-        for i, comment in enumerate(comments_batch, 1):
-            comments_text += f"\n---COMMENT {i}---\n"
-            comments_text += f"Author: u/{comment.get('author', 'Unknown')}\n"
-            comments_text += f"Text: {comment.get('text', '')[:300]}\n"
-
-        prompt = f"""Classify these {len(comments_batch)} Reddit comments for a discussion about: "{query}"
-
-{comments_text}
-
-CLASSIFICATION RULES:
-1. PROBLEM_RELATER (potential lead) - User shows they HAVE the problem:
-   - "I have the same issue"
-   - "We're struggling with this too"
-   - "+1", "Same here", "me too"
-   - Asks questions about the problem
-   - Shows frustration with current situation
-   - Describes their own pain points
-
-2. SOLUTION_GIVER (NOT a lead) - User provides solutions/recommendations:
-   - "Try X tool" or "I recommend Y"
-   - Links to products or tools
-   - Provides advice or answers
-   - Promotes their own product/service
-   - Already solved the problem
-
-3. IRRELEVANT - Comment doesn't relate to buying intent:
-   - Off-topic discussion
-   - General chatter
-   - Jokes or memes
-   - Meta comments
-
-For EACH comment, classify as: PROBLEM_RELATER, SOLUTION_GIVER, or IRRELEVANT
-
-Return ONLY JSON (no markdown):
-{{"classifications": [
-    {{"comment_index": 1, "classification": "PROBLEM_RELATER", "confidence": 85}},
-    {{"comment_index": 2, "classification": "SOLUTION_GIVER", "confidence": 90}},
-    ...
-]}}"""
-
-        try:
-            client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-            print(f"[INFO] Classifying {len(comments_batch)} commenters in batch...")
-
-            # JSON schema for structured output
-            json_schema = {
-                "name": "comment_classifications",
-                "strict": True,
-                "schema": {
-                    "type": "object",
-                    "properties": {
-                        "classifications": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "comment_index": {"type": "integer"},
-                                    "classification": {"type": "string"},
-                                    "confidence": {"type": "integer"}
-                                },
-                                "required": ["comment_index", "classification", "confidence"],
-                                "additionalProperties": False
-                            }
-                        }
-                    },
-                    "required": ["classifications"],
-                    "additionalProperties": False
-                }
-            }
-
-            response = client.chat.completions.create(
-                model=settings.TOOL_MODEL,
-                messages=[
-                    {"role": "system", "content": "You are an expert at classifying online comments to identify potential buyers vs sellers/promoters."},
-                    {"role": "user", "content": prompt}
-                ],
-                response_format={"type": "json_schema", "json_schema": json_schema},
-                max_completion_tokens=2000
-            )
-
-            result_text = response.choices[0].message.content.strip()
-            result = json.loads(result_text)
-            classifications = result.get("classifications", [])
-
-            # Build mapping of username -> classification
-            user_classifications = {}
-            for cls in classifications:
-                idx = cls.get("comment_index", 0) - 1  # Convert to 0-indexed
-                if 0 <= idx < len(comments_batch):
-                    username = comments_batch[idx].get("author", "Unknown")
-                    user_classifications[username] = cls.get("classification", "IRRELEVANT")
-
-            # Count classifications
-            problem_relaters = sum(1 for c in user_classifications.values() if c == "PROBLEM_RELATER")
-            solution_givers = sum(1 for c in user_classifications.values() if c == "SOLUTION_GIVER")
-
-            print(f"[INFO] Classified: {problem_relaters} problem_relaters, {solution_givers} solution_givers")
-
-            return user_classifications
-
-        except Exception as e:
-            print(f"[ERROR] Batch comment classification failed: {e}")
-            import traceback
-            traceback.print_exc()
-            # Return empty - all commenters will be considered
-            return {}
+    # NOTE: _classify_commenters_batch() removed in v3.3
+    # Reddit Relaxation: We now extract ALL engagers from problem-seeking posts
+    # instead of classifying commenters. filter_sellers runs at the end.
 
     def _run(
         self,
@@ -731,8 +595,7 @@ Return ONLY JSON (no markdown):
         """
         Extract individual users with buying intent from a single discussion.
 
-        Uses LLM to analyze the post and comments to identify users showing
-        buying signals (asking for recommendations, complaining about tools, etc.)
+        Uses structured outputs for guaranteed valid JSON response.
 
         Args:
             query: Search query for context
@@ -743,7 +606,6 @@ Return ONLY JSON (no markdown):
             List of lead dictionaries with user info and buying signals
         """
 
-        # Build prompt for LLM to extract leads
         prompt = f"""Analyze this Reddit discussion to extract individual users who show BUYING INTENT for: "{query}"
 
 DISCUSSION:
@@ -757,44 +619,46 @@ ORIGINAL POST by u/{post_data['author']}:
 COMMENTS:
 """
 
-        # Add comments to prompt
         for i, comment in enumerate(post_data.get('comments', [])[:20], 1):
             prompt += f"\n{i}. u/{comment['author']}: {comment['text'][:300]}\n"
 
-        prompt += f"""
+        prompt += """
 
 TASK: Extract users (post author OR commenters) who show BUYING INTENT:
 - Actively seeking recommendations or solutions
 - Complaining about current tools/solutions
 - Asking "what should I use?" or "any alternatives?"
 - Sharing specific pain points or problems
-- Comparing/evaluating options
 
-For EACH user with buying intent, return:
-1. username (without 'u/' prefix)
-2. buying_signal (exact quote showing their intent - keep it concise, max 100 chars)
-3. intent_score (0-100, how strong is their buying intent)
-4. fit_reasoning (2-3 sentences: why this user is a good lead, what problem they have, why they're likely to buy)
+For EACH user with buying intent, return their username, buying_signal (exact quote), intent_score (0-100), and fit_reasoning.
+If NO users show buying intent, return an empty leads array."""
 
-IMPORTANT:
-- Only include users who show GENUINE buying intent (not casual discussion)
-- Original poster counts as a lead if they show intent
-- Commenters who just agree but don't show intent should be excluded
-- Look for action-oriented language ("need", "looking for", "frustrated with")
-
-Return ONLY a JSON array (no markdown, no code blocks):
-[
-  {{
-    "username": "john_doe",
-    "buying_signal": "Does anyone know a better PM tool? Asana is too expensive",
-    "intent_score": 85,
-    "fit_reasoning": "User is actively seeking alternatives to Asana, specifically due to pricing concerns. Shows high purchase intent and clear pain point. Ready to evaluate new options immediately."
-  }},
-  ...
-]
-
-If NO users show buying intent, return an empty array: []
-"""
+        # JSON schema for structured output
+        json_schema = {
+            "name": "lead_extraction",
+            "strict": True,
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "leads": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "username": {"type": "string"},
+                                "buying_signal": {"type": "string"},
+                                "intent_score": {"type": "integer"},
+                                "fit_reasoning": {"type": "string"}
+                            },
+                            "required": ["username", "buying_signal", "intent_score", "fit_reasoning"],
+                            "additionalProperties": False
+                        }
+                    }
+                },
+                "required": ["leads"],
+                "additionalProperties": False
+            }
+        }
 
         try:
             client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -802,16 +666,15 @@ If NO users show buying intent, return an empty array: []
             response = client.chat.completions.create(
                 model=settings.TOOL_MODEL,
                 messages=[
-                    {"role": "system", "content": "You are an expert at identifying buying signals in online discussions. Extract only users with genuine purchase intent. Return valid JSON arrays only."},
+                    {"role": "system", "content": "You are an expert at identifying buying signals in online discussions. Extract only users with genuine purchase intent."},
                     {"role": "user", "content": prompt}
                 ],
+                response_format={"type": "json_schema", "json_schema": json_schema},
                 max_completion_tokens=1500
             )
 
-            result_text = response.choices[0].message.content.strip()
-            result_text = result_text.replace("```json", "").replace("```", "").strip()
-
-            leads_array = json.loads(result_text)
+            result = json.loads(response.choices[0].message.content)
+            leads_array = result.get("leads", [])
 
             # Enrich leads with context
             enriched_leads = []
@@ -830,13 +693,8 @@ If NO users show buying intent, return an empty array: []
                     }
                 })
 
-            print(f"[INFO] Extracted {len(enriched_leads)} leads from this discussion")
+            print(f"[INFO] Extracted {len(enriched_leads)} leads from this discussion (structured)")
             return enriched_leads
-
-        except json.JSONDecodeError as e:
-            print(f"[ERROR] Failed to parse lead extraction JSON: {e}")
-            print(f"[DEBUG] Raw response: {result_text[:500]}")
-            return []
 
         except Exception as e:
             print(f"[ERROR] Lead extraction failed for discussion: {e}")
@@ -850,174 +708,82 @@ If NO users show buying intent, return an empty array: []
         post_data: Dict
     ) -> List[Dict]:
         """
-        Extract individual users with buying intent from a single discussion (v2 - with commenter classification).
+        Extract ALL engagers from a problem-seeking discussion.
 
-        Uses batch classification to identify PROBLEM_RELATERS (potential leads) vs
-        SOLUTION_GIVERS (not leads). Only extracts leads from users who relate to the problem.
+        SIMPLIFIED VERSION (v3.3):
+        - No commenter classification (PROBLEM_RELATER vs SOLUTION_GIVER removed)
+        - Extracts OP + ALL commenters from qualifying posts
+        - Post must be problem-seeking (scored >= 50 in earlier step)
+        - filter_sellers runs at the end to remove obvious promoters
 
         Args:
-            query: Search query for context (e.g., "project management software")
+            query: Search query for context
             post_data: Post data including comments
 
         Returns:
-            List of lead dictionaries with user info and buying signals
+            List of lead dictionaries for ALL engagers
         """
+        leads = []
+        seen_usernames = set()
 
-        comments = post_data.get('comments', [])
+        post_title = post_data.get('title', 'Unknown discussion')
+        post_url = post_data.get('url', '')
+        subreddit = post_data.get('subreddit', 'Unknown')
+        post_score = post_data.get('score', 0)
 
-        # STEP 1: Classify all commenters (batch scoring)
-        user_classifications = {}
-        if comments:
-            user_classifications = self._classify_commenters_batch(query, comments)
+        # Use post's engagement as a proxy for intent score
+        # Higher engagement = more validated pain point
+        base_intent_score = min(70 + (post_score // 10), 85)  # 70-85 range
 
-        # Filter comments to only PROBLEM_RELATERS (exclude SOLUTION_GIVERS)
-        problem_relater_comments = []
-        for comment in comments[:20]:
-            username = comment.get('author', 'Unknown')
-            classification = user_classifications.get(username, 'UNKNOWN')
-            # Include PROBLEM_RELATERS and UNKNOWN (benefit of doubt)
-            if classification in ('PROBLEM_RELATER', 'UNKNOWN', 'IRRELEVANT'):
-                # Mark if they're a problem relater for higher scoring
-                comment_copy = comment.copy()
-                comment_copy['is_problem_relater'] = (classification == 'PROBLEM_RELATER')
-                problem_relater_comments.append(comment_copy)
-
-        excluded_count = len(comments[:20]) - len(problem_relater_comments)
-        if excluded_count > 0:
-            print(f"[INFO] Excluded {excluded_count} solution-givers from lead extraction")
-
-        # Build prompt for LLM to extract leads (only from problem relaters)
-        prompt = f"""Analyze this Reddit discussion to extract individual users who show BUYING INTENT for: "{query}"
-
-DISCUSSION:
-Title: {post_data['title']}
-Subreddit: r/{post_data['subreddit']}
-URL: {post_data['url']}
-
-ORIGINAL POST by u/{post_data['author']}:
-{post_data['text'][:600]}
-
-COMMENTS (pre-filtered to exclude solution-givers):
-"""
-
-        # Add only problem-relater comments to prompt
-        for i, comment in enumerate(problem_relater_comments, 1):
-            relater_tag = " [PROBLEM_RELATER]" if comment.get('is_problem_relater') else ""
-            prompt += f"\n{i}. u/{comment['author']}{relater_tag}: {comment['text'][:300]}\n"
-
-        prompt += f"""
-
-TASK: Extract users (post author OR commenters) who show BUYING INTENT:
-- PROBLEM_RELATERS: Users who relate to the problem, have the same issue, show frustration
-- Actively seeking recommendations or solutions
-- Complaining about current tools/solutions
-- Asking "what should I use?" or "any alternatives?"
-- Sharing specific pain points ("I struggle with...", "same here", "+1")
-
-EXCLUDE from leads:
-- Users recommending solutions (solution-givers already filtered)
-- Promoters of their own products
-- Users who have already solved their problem
-
-For EACH user with buying intent, return:
-1. username (without 'u/' prefix)
-2. buying_signal (exact quote showing their intent - keep it concise, max 100 chars)
-3. intent_score (0-100, how strong is their buying intent)
-4. fit_reasoning (2-3 sentences: why this user is a good lead, what problem they have, why they're likely to buy)
-5. user_type: "post_author" or "commenter"
-
-IMPORTANT:
-- Prioritize users tagged as [PROBLEM_RELATER] - they show they have the problem
-- "+1", "same here", "me too" comments indicate buying intent
-- Original poster counts as a lead if they show intent
-- Look for action-oriented language ("need", "looking for", "frustrated with")
-
-Return ONLY JSON (no markdown):
-"""
-
-        try:
-            client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-            # JSON schema for structured output (includes user_type for commenter classification)
-            json_schema = {
-                "name": "lead_extraction",
-                "strict": True,
-                "schema": {
-                    "type": "object",
-                    "properties": {
-                        "leads": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "username": {"type": "string"},
-                                    "buying_signal": {"type": "string"},
-                                    "intent_score": {"type": "integer"},
-                                    "fit_reasoning": {"type": "string"},
-                                    "user_type": {"type": "string"}
-                                },
-                                "required": ["username", "buying_signal", "intent_score", "fit_reasoning", "user_type"],
-                                "additionalProperties": False
-                            }
-                        }
-                    },
-                    "required": ["leads"],
-                    "additionalProperties": False
+        # Extract OP (Original Poster)
+        op_username = post_data.get('author', 'Unknown')
+        if op_username and op_username != '[deleted]' and op_username not in seen_usernames:
+            seen_usernames.add(op_username)
+            leads.append({
+                'username': op_username,
+                'url': f"https://reddit.com/u/{op_username}",
+                'buying_signal': post_title[:100],  # Use post title as signal
+                'intent_score': base_intent_score + 5,  # OP gets slight boost
+                'fit_reasoning': f"Posted in r/{subreddit} about: {post_title[:80]}",
+                'user_type': 'post_author',
+                'platform': 'reddit',
+                'source_post': {
+                    'title': post_title,
+                    'url': post_url,
+                    'subreddit': subreddit,
+                    'discussion_score': post_score
                 }
-            }
+            })
 
-            response = client.chat.completions.create(
-                model=settings.TOOL_MODEL,
-                messages=[
-                    {"role": "system", "content": "You are an expert at identifying buying signals in online discussions. Extract only users with genuine purchase intent. Focus on PROBLEM_RELATERS who show they have the problem."},
-                    {"role": "user", "content": prompt}
-                ],
-                response_format={"type": "json_schema", "json_schema": json_schema},
-                max_completion_tokens=1500
-            )
+        # Extract ALL commenters
+        comments = post_data.get('comments', [])
+        for comment in comments[:30]:  # Limit to 30 commenters per post
+            username = comment.get('author', 'Unknown')
+            comment_text = comment.get('text', '')[:100]
 
-            result_text = response.choices[0].message.content.strip()
-            result = json.loads(result_text)
-            leads_array = result.get("leads", [])
+            # Skip deleted users and duplicates
+            if not username or username == '[deleted]' or username in seen_usernames:
+                continue
 
-            # Enrich leads with context and classification info
-            enriched_leads = []
-            for lead in leads_array:
-                username = lead.get('username', 'Unknown')
-                # Check if this user was classified as a problem relater
-                classification = user_classifications.get(username, 'UNKNOWN')
-                is_problem_relater = classification == 'PROBLEM_RELATER'
+            seen_usernames.add(username)
+            leads.append({
+                'username': username,
+                'url': f"https://reddit.com/u/{username}",
+                'buying_signal': comment_text if comment_text else f"Engaged with: {post_title[:60]}",
+                'intent_score': base_intent_score,
+                'fit_reasoning': f"Commented on problem-seeking post in r/{subreddit}",
+                'user_type': 'commenter',
+                'platform': 'reddit',
+                'source_post': {
+                    'title': post_title,
+                    'url': post_url,
+                    'subreddit': subreddit,
+                    'discussion_score': post_score
+                }
+            })
 
-                enriched_leads.append({
-                    'username': username,
-                    'url': f"https://reddit.com/u/{username}",
-                    'buying_signal': lead.get('buying_signal', 'No signal captured'),
-                    'intent_score': lead.get('intent_score', 50),
-                    'fit_reasoning': lead.get('fit_reasoning', 'No reasoning provided'),
-                    'user_type': lead.get('user_type', 'unknown'),
-                    'is_problem_relater': is_problem_relater,
-                    'platform': 'reddit',
-                    'source_post': {
-                        'title': post_data['title'],
-                        'url': post_data['url'],
-                        'subreddit': post_data['subreddit'],
-                        'discussion_score': 0
-                    }
-                })
-
-            print(f"[INFO] Extracted {len(enriched_leads)} leads from this discussion (structured)")
-            return enriched_leads
-
-        except json.JSONDecodeError as e:
-            print(f"[ERROR] Failed to parse lead extraction JSON: {e}")
-            print(f"[DEBUG] Raw response: {result_text[:500]}")
-            return []
-
-        except Exception as e:
-            print(f"[ERROR] Lead extraction failed for discussion: {e}")
-            import traceback
-            traceback.print_exc()
-            return []
+        print(f"[INFO] Extracted {len(leads)} engagers from discussion (OP + {len(leads)-1} commenters)")
+        return leads
 
     def _format_lead_results(
         self,
@@ -1180,12 +946,12 @@ Return ONLY JSON (no markdown):
 
     def _batch_score_posts(self, query: str, posts: list) -> list:
         """
-        Score ALL posts in a SINGLE LLM API call for maximum efficiency.
+        Score ALL posts in a SINGLE LLM API call using structured outputs.
 
         Takes up to 50 posts and returns scores for all in one request.
         Returns list of dicts: [{"score": 85, "reasoning": "..."}, ...]
 
-        NOTE: Limited to 50 posts to avoid JSON truncation errors.
+        Uses gpt-4o-mini with json_schema for guaranteed valid JSON output.
         """
 
         if not posts:
@@ -1199,7 +965,6 @@ Return ONLY JSON (no markdown):
             posts_text += f"Subreddit: r/{post['subreddit']}\n"
             posts_text += f"Engagement: {post['score']} upvotes, {post['num_comments']} comments\n"
             if post['text'] and len(post['text'].strip()) > 0:
-                # Show first 300 chars of content
                 content_preview = post['text'][:300] + "..." if len(post['text']) > 300 else post['text']
                 posts_text += f"Content: {content_preview}\n"
 
@@ -1226,136 +991,106 @@ SCORING RUBRIC:
 - 20-39: Tangentially related or weak signal
 - 5-19: Off-topic or seller/promoter
 
-Return ONLY a JSON array with {len(posts)} objects (no markdown, no code blocks):
-[
-  {{"post_number": 1, "score": 85, "reasoning": "Explicitly asking for PM tool recommendations"}},
-  {{"post_number": 2, "score": 45, "reasoning": "Discusses project tracking but not seeking solutions"}},
-  ...
-]"""
+Return scores for all {len(posts)} posts."""
 
-        # Retry logic - try up to 3 times with different approaches
-        max_retries = 3
-        last_error = None
-        result_text = ""
+        # JSON schema for structured output
+        json_schema = {
+            "name": "post_scores",
+            "strict": True,
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "scores": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "post_number": {"type": "integer"},
+                                "score": {"type": "integer"},
+                                "reasoning": {"type": "string"}
+                            },
+                            "required": ["post_number", "score", "reasoning"],
+                            "additionalProperties": False
+                        }
+                    }
+                },
+                "required": ["scores"],
+                "additionalProperties": False
+            }
+        }
 
-        for attempt in range(max_retries):
-            try:
-                client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        try:
+            client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-                print(f"[INFO] Making batch API call for {len(posts)} posts (attempt {attempt + 1}/{max_retries})...")
+            print(f"[INFO] Batch scoring {len(posts)} posts with structured output...")
 
-                # Use simple JSON response format (works with gpt-5-nano)
-                # Note: gpt-5-nano does NOT support response_format with json_schema
-                response = client.chat.completions.create(
-                    model=settings.TOOL_MODEL,
-                    messages=[
-                        {"role": "system", "content": "You are an expert at analyzing online discussions for buyer intent and relevance. Always respond with valid JSON only, no markdown or code blocks."},
-                        {"role": "user", "content": prompt}
-                    ],
-                    max_completion_tokens=4000  # Increased for 50 posts
-                )
-
-                # Parse response
-                result_text = response.choices[0].message.content
-                if not result_text or result_text.strip() == "":
-                    print(f"[WARNING] Empty response on attempt {attempt + 1}, retrying...")
-                    continue
-
-                result_text = result_text.strip()
-
-                # Clean up common formatting issues
-                if result_text.startswith("```json"):
-                    result_text = result_text[7:]
-                if result_text.startswith("```"):
-                    result_text = result_text[3:]
-                if result_text.endswith("```"):
-                    result_text = result_text[:-3]
-                result_text = result_text.strip()
-
-                # Try to parse as array directly first (the expected format)
-                try:
-                    scores_array = json.loads(result_text)
-                    if isinstance(scores_array, dict) and "scores" in scores_array:
-                        scores_array = scores_array["scores"]
-                except json.JSONDecodeError:
-                    # Try to find JSON array in the response
-                    import re
-                    match = re.search(r'\[[\s\S]*\]', result_text)
-                    if match:
-                        scores_array = json.loads(match.group())
-                    else:
-                        raise json.JSONDecodeError("No valid JSON array found", result_text, 0)
-
-                if not isinstance(scores_array, list):
-                    print(f"[WARNING] Response is not an array on attempt {attempt + 1}, retrying...")
-                    continue
-
-                print(f"[INFO] Successfully scored {len(scores_array)} posts in 1 API call")
-
-                # Validate we got scores for all posts
-                if len(scores_array) != len(posts):
-                    print(f"[WARNING] Expected {len(posts)} scores but got {len(scores_array)}")
-                    # If we got most of them, pad with individual scoring for remaining
-                    if len(scores_array) >= len(posts) * 0.7:  # At least 70% success
-                        while len(scores_array) < len(posts):
-                            idx = len(scores_array)
-                            post = posts[idx]
-                            individual_score = self._fallback_intent_score(
-                                query, post.get('title', ''), post.get('text', ''),
-                                post.get('score', 0), post.get('num_comments', 0)
-                            )
-                            scores_array.append({
-                                "post_number": idx + 1,
-                                "score": individual_score[0],
-                                "reasoning": individual_score[1]
-                            })
-
-                return scores_array
-
-            except json.JSONDecodeError as e:
-                last_error = e
-                print(f"[WARNING] JSON parse error on attempt {attempt + 1}: {e}")
-                print(f"[DEBUG] Raw response preview: {result_text[:300] if result_text else 'EMPTY'}")
-                continue
-
-            except Exception as e:
-                last_error = e
-                print(f"[WARNING] API error on attempt {attempt + 1}: {e}")
-                continue
-
-        # All retries exhausted - use fallback scoring for each post individually
-        print(f"[ERROR] All {max_retries} batch scoring attempts failed. Using individual fallback scoring...")
-        print(f"[DEBUG] Last error: {last_error}")
-
-        fallback_scores = []
-        for i, post in enumerate(posts):
-            score, reasoning = self._fallback_intent_score(
-                query,
-                post.get('title', ''),
-                post.get('text', ''),
-                post.get('score', 0),
-                post.get('num_comments', 0)
+            response = client.chat.completions.create(
+                model=settings.TOOL_MODEL,
+                messages=[
+                    {"role": "system", "content": "You are an expert at analyzing online discussions for buyer intent and relevance."},
+                    {"role": "user", "content": prompt}
+                ],
+                response_format={"type": "json_schema", "json_schema": json_schema},
+                max_completion_tokens=4000
             )
-            fallback_scores.append({
-                "post_number": i + 1,
-                "score": score,
-                "reasoning": f"[FALLBACK] {reasoning}"
-            })
 
-        return fallback_scores
+            result = json.loads(response.choices[0].message.content)
+            scores_array = result.get("scores", [])
+
+            print(f"[INFO] Successfully scored {len(scores_array)} posts (structured output)")
+
+            # Validate we got scores for all posts
+            if len(scores_array) != len(posts):
+                print(f"[WARNING] Expected {len(posts)} scores but got {len(scores_array)}")
+                # Pad with fallback scoring for missing posts
+                while len(scores_array) < len(posts):
+                    idx = len(scores_array)
+                    post = posts[idx]
+                    individual_score = self._fallback_intent_score(
+                        query, post.get('title', ''), post.get('text', ''),
+                        post.get('score', 0), post.get('num_comments', 0)
+                    )
+                    scores_array.append({
+                        "post_number": idx + 1,
+                        "score": individual_score[0],
+                        "reasoning": individual_score[1]
+                    })
+
+            return scores_array
+
+        except Exception as e:
+            print(f"[ERROR] Structured batch scoring failed: {e}")
+            import traceback
+            traceback.print_exc()
+
+            # Fallback to keyword-based scoring
+            print(f"[INFO] Using fallback scoring for {len(posts)} posts...")
+            fallback_scores = []
+            for i, post in enumerate(posts):
+                score, reasoning = self._fallback_intent_score(
+                    query,
+                    post.get('title', ''),
+                    post.get('text', ''),
+                    post.get('score', 0),
+                    post.get('num_comments', 0)
+                )
+                fallback_scores.append({
+                    "post_number": i + 1,
+                    "score": score,
+                    "reasoning": f"[FALLBACK] {reasoning}"
+                })
+
+            return fallback_scores
 
     def _calculate_intent_score_llm(self, query: str, title: str, text: str, score: int, num_comments: int) -> Tuple[int, str]:
         """
         Use LLM reasoning to calculate intent signal strength (0-100) and explain why.
 
-        This leverages GPT-4o-mini's ability to understand context, detect subtle patterns,
-        and make nuanced judgments that keyword matching cannot achieve.
+        Uses structured outputs for guaranteed valid JSON response.
         """
 
-        # Truncate very long posts to stay within token limits
         post_text = text[:800] if len(text) > 800 else text
 
-        # Build prompt for LLM
         prompt = f"""Analyze this Reddit post to determine if it shows genuine interest or buying intent related to the search query.
 
 SEARCH QUERY: {query}
@@ -1366,49 +1101,42 @@ Content: {post_text}
 
 Engagement: {score} upvotes, {num_comments} comments
 
-ANALYSIS GUIDELINES:
-1. Relevance: Is this post actually about the search query topic? Or is it off-topic?
-2. Intent Type: Is the person:
-   - Actively seeking recommendations/solutions (HIGHEST INTENT)
-   - Complaining about current tools (HIGH INTENT)
-   - Comparing/evaluating alternatives (HIGH INTENT)
-   - Discussing a problem that needs solving (MEDIUM INTENT)
-   - Just sharing general thoughts (LOW INTENT)
-   - Promoting their own product (DISQUALIFY - score 5)
-   - Already solved their problem (LOW INTENT - score 10)
-
-3. Engagement Context: High upvotes/comments suggest community validation of the pain point
-
 SCORING RUBRIC:
 - 80-100: Explicit request for solution + highly relevant + strong engagement
 - 60-79: Clear pain point or complaint + relevant + decent engagement
 - 40-59: Problem discussion + somewhat relevant
 - 20-39: Tangentially related or weak signal
-- 5-19: Off-topic or seller/promoter
+- 5-19: Off-topic or seller/promoter"""
 
-Return ONLY a JSON object (no markdown, no code blocks):
-{{"score": <0-100>, "reasoning": "<1-2 sentence explanation>"}}"""
+        # JSON schema for structured output
+        json_schema = {
+            "name": "intent_score",
+            "strict": True,
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "score": {"type": "integer"},
+                    "reasoning": {"type": "string"}
+                },
+                "required": ["score", "reasoning"],
+                "additionalProperties": False
+            }
+        }
 
         try:
-            # Call GPT-4o-mini for intent analysis
             client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
             response = client.chat.completions.create(
                 model=settings.TOOL_MODEL,
                 messages=[
-                    {"role": "system", "content": "You are an expert at analyzing online discussions for buyer intent. Return only valid JSON."},
+                    {"role": "system", "content": "You are an expert at analyzing online discussions for buyer intent."},
                     {"role": "user", "content": prompt}
                 ],
+                response_format={"type": "json_schema", "json_schema": json_schema},
                 max_completion_tokens=150
             )
 
-            # Parse LLM response
-            result_text = response.choices[0].message.content.strip()
-
-            # Clean up common formatting issues
-            result_text = result_text.replace("```json", "").replace("```", "").strip()
-
-            result = json.loads(result_text)
+            result = json.loads(response.choices[0].message.content)
             intent_score = int(result.get("score", 50))
             reasoning = result.get("reasoning", "LLM analysis completed")
 
@@ -1416,7 +1144,6 @@ Return ONLY a JSON object (no markdown, no code blocks):
 
         except Exception as e:
             print(f"[WARNING] LLM intent scoring failed: {e}")
-            # Fallback to simple heuristic if LLM fails
             return self._fallback_intent_score(query, title, post_text, score, num_comments)
 
     def _fallback_intent_score(self, query: str, title: str, text: str, score: int, num_comments: int) -> Tuple[int, str]:

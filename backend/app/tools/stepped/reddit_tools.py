@@ -285,33 +285,38 @@ class RedditScoreTool(BaseTool):
 
 class RedditExtractTool(BaseTool):
     """
-    Step 3: Extract leads from scored Reddit posts.
+    Step 3: Extract ALL engagers from scored Reddit posts.
 
-    Takes high-quality posts and extracts author info as leads.
-    IMPORTANT: These leads still need seller filtering!
+    Takes high-quality (problem-seeking) posts and extracts OP + all commenters.
+    IMPORTANT: These leads still need seller filtering at the end!
+
+    v3.4 REDDIT RELAXATION:
+    - No commenter classification
+    - Extracts ALL engagers from problem-seeking posts
+    - filter_sellers runs at the end to remove promoters
     """
 
     name: str = "reddit_extract"
     description: str = """
-    Extract leads from scored Reddit posts. Call after reddit_score.
+    Extract ALL engagers (OP + commenters) from scored Reddit posts. Call after reddit_score.
 
-    Extracts author info as potential leads.
-    IMPORTANT: These leads still need seller filtering! Use filter_sellers tool next.
+    Extracts everyone who engaged with problem-seeking posts.
+    IMPORTANT: Run filter_sellers at the END to remove promoters!
 
     Parameters:
     - posts: High-quality posts from reddit_score (use high_quality_posts)
     - query: Original query for context
 
     Returns JSON with:
-    - leads: Array of extracted leads
+    - leads: Array of extracted leads (OP + all commenters)
     - count: Number of leads
-    - warning: Reminder to apply seller filter
+    - warning: Reminder to apply seller filter at the end
     """
     args_schema: Type[BaseModel] = RedditExtractInput
 
     def _run(self, posts: List[Dict], query: str = "") -> str:
         """
-        Extract leads from posts.
+        Extract ALL engagers from posts (OP + commenters).
         """
         if not posts:
             return json.dumps({
@@ -320,38 +325,78 @@ class RedditExtractTool(BaseTool):
                 "recommendation": "No posts to extract from. Run reddit_search and reddit_score first."
             })
 
-        print(f"\n[REDDIT_EXTRACT] Extracting leads from {len(posts)} posts...")
+        print(f"\n[REDDIT_EXTRACT] Extracting ALL engagers from {len(posts)} posts...")
 
-        leads = []
+        # Use existing Reddit tool for extraction
+        reddit_tool = ApifyRedditSearchTool()
+        all_leads = []
+        seen_usernames = set()
+
         for post in posts:
-            # Extract author as lead
+            post_score = post.get('intent_score', 50)
+            post_title = post.get('title', '')
+            post_url = post.get('url', '')
+            subreddit = post.get('subreddit', 'Unknown')
+
+            # Calculate base intent score from post engagement
+            engagement_score = post.get('score', 0)
+            base_intent_score = min(70 + (engagement_score // 10), 85)
+
+            # Extract OP (Original Poster)
             author = post.get('author', 'Unknown')
-            if author in ['Unknown', '[deleted]', 'AutoModerator']:
-                continue
+            if author not in ['Unknown', '[deleted]', 'AutoModerator'] and author not in seen_usernames:
+                seen_usernames.add(author)
+                all_leads.append({
+                    "name": author,
+                    "username": author,
+                    "title": "Reddit User",
+                    "company": "Not specified",
+                    "linkedin_url": None,
+                    "email": None,
+                    "intent_signal": post_title[:200],
+                    "intent_score": base_intent_score + 5,  # OP gets slight boost
+                    "source_platform": "reddit",
+                    "source_url": post_url,
+                    "priority": self._get_priority(base_intent_score + 5),
+                    "scoring_reasoning": f"Posted in r/{subreddit}: {post_title[:80]}",
+                    "user_type": "post_author"
+                })
 
-            lead = {
-                "name": author,
-                "username": author,
-                "title": "Founder",  # Default, can be enriched later
-                "company": "Not specified",
-                "linkedin_url": None,
-                "email": None,
-                "intent_signal": post.get('title', '')[:200],
-                "intent_score": post.get('intent_score', 50),
-                "source_platform": "reddit",
-                "source_url": post.get('url', ''),
-                "priority": self._get_priority(post.get('intent_score', 50)),
-                "scoring_reasoning": post.get('scoring_reasoning', 'Extracted from Reddit post')
-            }
-            leads.append(lead)
+            # Extract ALL commenters (if comments available)
+            comments = post.get('comments', [])
+            for comment in comments[:30]:  # Limit to 30 commenters per post
+                commenter = comment.get('author', 'Unknown')
+                comment_text = comment.get('text', '')[:100]
 
-        print(f"[REDDIT_EXTRACT] Extracted {len(leads)} leads")
+                if commenter in ['Unknown', '[deleted]', 'AutoModerator'] or commenter in seen_usernames:
+                    continue
+
+                seen_usernames.add(commenter)
+                all_leads.append({
+                    "name": commenter,
+                    "username": commenter,
+                    "title": "Reddit User",
+                    "company": "Not specified",
+                    "linkedin_url": None,
+                    "email": None,
+                    "intent_signal": comment_text if comment_text else f"Engaged with: {post_title[:60]}",
+                    "intent_score": base_intent_score,
+                    "source_platform": "reddit",
+                    "source_url": post_url,
+                    "priority": self._get_priority(base_intent_score),
+                    "scoring_reasoning": f"Commented on problem-seeking post in r/{subreddit}",
+                    "user_type": "commenter"
+                })
+
+        print(f"[REDDIT_EXTRACT] Extracted {len(all_leads)} total engagers")
 
         return json.dumps({
-            "leads": leads,
-            "count": len(leads),
-            "warning": "APPLY filter_sellers BEFORE using these leads! Sellers must be removed.",
-            "recommendation": f"Run filter_sellers on these {len(leads)} leads to remove promoters."
+            "leads": all_leads,
+            "count": len(all_leads),
+            "ops_count": sum(1 for l in all_leads if l.get('user_type') == 'post_author'),
+            "commenters_count": sum(1 for l in all_leads if l.get('user_type') == 'commenter'),
+            "warning": "Run filter_sellers at the END to remove promoters!",
+            "recommendation": f"Extracted {len(all_leads)} engagers. Apply filter_sellers before final output."
         }, indent=2)
 
     def _get_priority(self, score: int) -> str:

@@ -1,7 +1,7 @@
 # Technical Architecture Documentation
 
 > **Last Updated:** 2025-11-28
-> **Version:** 3.2 (Unified gpt-4o-mini Architecture)
+> **Version:** 3.4 (Reddit Relaxation + TechCrunch Scale + Competitor Displacement)
 
 This document serves as the canonical reference for the prospecting system architecture, patterns, and design decisions.
 
@@ -26,13 +26,14 @@ This document serves as the canonical reference for the prospecting system archi
 
 ## Architecture Overview
 
-### Current Architecture (v3)
+### Current Architecture (v3.4)
 
 The system uses a **Multi-Task Sequential Architecture** with:
-- 4 focused agents, each handling one specific task
+- 5 focused agents, each handling one specific task
 - Tasks chained via `context=[previous_task]` for data passing
 - Structured Pydantic outputs for each task
 - Each agent reasons independently within its domain
+- Final leads sorted by intent_score (warmest first)
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -42,29 +43,31 @@ The system uses a **Multi-Task Sequential Architecture** with:
 │     ┌─────────────────────────────────────────────────────────┐  │
 │     │  Task 1: plan_strategy                                   │  │
 │     │  Agent: strategy_planner                                 │  │
-│     │  Output: StrategyPlan (queries, focus, titles)           │  │
+│     │  Output: StrategyPlan (queries, focus, titles, competitors)│
 │     └────────────────────┬────────────────────────────────────┘  │
 │                          │ context                                │
-│           ┌──────────────┴──────────────┐                        │
-│           ▼                              ▼                        │
-│  ┌────────────────────┐     ┌─────────────────────────────┐      │
-│  │ Task 2: reddit     │     │ Task 3: techcrunch          │      │
-│  │ Agent: reddit_spec │     │ Agent: techcrunch_spec      │      │
-│  │ Output: RedditLeads│     │ Output: TechCrunchLeads     │      │
-│  │                    │     │                              │      │
-│  │ search → score →   │     │ fetch → select → extract →  │      │
-│  │ extract → filter   │     │ linkedin_batch → employees  │      │
-│  └─────────┬──────────┘     │ → decision_makers → filter  │      │
-│            │                 └────────────┬────────────────┘      │
-│            │ context                      │ context               │
-│            └──────────────┬───────────────┘                       │
-│                           ▼                                       │
+│        ┌─────────────────┼─────────────────┐                     │
+│        ▼                 ▼                 ▼                      │
+│  ┌───────────┐  ┌──────────────┐  ┌──────────────────┐           │
+│  │ Task 2:   │  │ Task 3:      │  │ Task 4:          │           │
+│  │ reddit    │  │ techcrunch   │  │ competitor       │           │
+│  │ (~33%)    │  │ (~33%)       │  │ (~33%)           │           │
+│  │           │  │              │  │                  │           │
+│  │ search →  │  │ fetch_par → │  │ identify →       │           │
+│  │ score →   │  │ select →     │  │ scrape_posts →   │           │
+│  │ extract → │  │ extract →    │  │ extract_engagers │           │
+│  │ filter    │  │ SERP_dm →    │  │ → filter         │           │
+│  └─────┬─────┘  │ filter       │  └────────┬─────────┘           │
+│        │        └──────┬───────┘           │                     │
+│        │ context       │ context           │ context             │
+│        └───────────────┼───────────────────┘                     │
+│                        ▼                                         │
 │     ┌─────────────────────────────────────────────────────────┐  │
-│     │  Task 4: aggregate_leads                                 │  │
+│     │  Task 5: aggregate_leads                                 │  │
 │     │  Agent: lead_aggregator                                  │  │
 │     │  Output: ProspectingOutput (final leads)                 │  │
 │     │                                                          │  │
-│     │  filter_sellers → deduplicate → rank → top N             │  │
+│     │  filter_sellers → deduplicate → SORT BY SCORE → top N    │  │
 │     └─────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -99,11 +102,15 @@ backend/
 │   │
 │   ├── tools/
 │   │   ├── stepped/               # Multi-step tools with agent reasoning
-│   │   │   ├── reddit_tools.py    # ACTIVE: search, score, extract
-│   │   │   ├── techcrunch_tools.py# ACTIVE: fetch, select, extract, decision_makers
+│   │   │   ├── reddit_tools.py    # ACTIVE: search, score, extract (relaxed v3.4)
+│   │   │   ├── techcrunch_tools.py# ACTIVE: fetch, fetch_parallel, select, extract, serp_dm
+│   │   │   ├── competitor_tools.py# ACTIVE v3.4: identify, scrape competitor posts
 │   │   │   ├── filter_sellers.py  # ACTIVE: LLM buyer/seller classification
 │   │   │   ├── g2_tools.py        # DISCONTINUED: G2 reviews
 │   │   │   └── upwork_tools.py    # DISCONTINUED: Upwork jobs
+│   │   │
+│   │   ├── serp_decision_makers.py# ACTIVE v3.4: SERP-based decision maker finder
+│   │   ├── apify_linkedin_company_posts.py  # ACTIVE v3.4: LinkedIn company posts
 │   │   │
 │   │   ├── composite/             # Parallel execution tools
 │   │   │   ├── intent_signal_hunter.py
@@ -171,7 +178,7 @@ class ProspectingState(BaseModel):
 
 ### 2. OrchestratorCrew (`crews/orchestrator/`)
 
-Multi-agent crew with 4 focused agents and task chaining:
+Multi-agent crew with 5 focused agents and task chaining:
 
 **Agents (`agents.yaml`):**
 
@@ -179,8 +186,9 @@ Multi-agent crew with 4 focused agents and task chaining:
 |-------|------|-------|
 | `strategy_planner` | Analyze product, create plan | None (reasoning only) |
 | `reddit_specialist` | Execute Reddit workflow | reddit_search, reddit_score, reddit_extract, filter_sellers |
-| `techcrunch_specialist` | Execute TechCrunch workflow | techcrunch_*, linkedin_*, filter_sellers |
-| `lead_aggregator` | Combine and filter leads | filter_sellers |
+| `techcrunch_specialist` | Execute TechCrunch workflow (SERP-based) | techcrunch_*, serp_decision_makers, linkedin_*, filter_sellers |
+| `competitor_specialist` | Execute competitor displacement | competitor_identify, competitor_scrape, filter_sellers |
+| `lead_aggregator` | Combine, filter, sort leads | filter_sellers |
 
 **Tasks (`tasks.yaml`):**
 
@@ -189,7 +197,8 @@ Multi-agent crew with 4 focused agents and task chaining:
 | `plan_strategy` | strategy_planner | (input) | `StrategyPlan` |
 | `reddit_prospecting` | reddit_specialist | plan_strategy | `RedditLeads` |
 | `techcrunch_prospecting` | techcrunch_specialist | plan_strategy | `TechCrunchLeads` |
-| `aggregate_leads` | lead_aggregator | reddit + techcrunch | `ProspectingOutput` |
+| `competitor_prospecting` | competitor_specialist | plan_strategy | `CompetitorLeads` |
+| `aggregate_leads` | lead_aggregator | reddit + techcrunch + competitor | `ProspectingOutput` |
 
 **Pydantic Output Models (`crew.py`):**
 ```python
@@ -213,13 +222,20 @@ class TechCrunchLeads(BaseModel):
     companies_found: List[str]
     workflow_trace: str
 
-class ProspectingOutput(BaseModel):
+class CompetitorLeads(BaseModel):  # v3.4
     leads: List[Lead]
+    count: int
+    competitors_scraped: List[str]
+    workflow_trace: str
+
+class ProspectingOutput(BaseModel):
+    leads: List[Lead]  # SORTED by intent_score (warmest first)
     total_leads: int
     hot_leads: int
     warm_leads: int
     reddit_leads_count: int
     techcrunch_leads_count: int
+    competitor_leads_count: int  # v3.4
     sellers_removed: int
     duplicates_removed: int
     platforms_searched: List[str]
@@ -342,26 +358,51 @@ class RedditExtractTool:
     # WARNING: Must run filter_sellers next!
 ```
 
-### TechCrunch Stepped Tools
+### TechCrunch Stepped Tools (v3.4 - SERP-based)
 
 ```python
-# Step 1: Fetch funding articles
-class TechCrunchFetchTool:
-    """Scrapes TechCrunch for funding announcements"""
+# Step 1: Fetch funding articles (parallel for speed)
+class TechCrunchFetchParallelTool:
+    """Fetches multiple TechCrunch pages in parallel"""
+    # pages=[1,2] fetches 2 pages concurrently
 
 # Step 2: Select relevant articles
 class TechCrunchSelectArticlesTool:
     """LLM selects articles matching query"""
 
-# Step 3: Extract companies (NO internal LinkedIn call!)
+# Step 3: Extract companies
 class TechCrunchExtractCompaniesTool:
-    """Returns companies WITHOUT LinkedIn URLs"""
-    # next: "Call linkedin_company_batch_search"
+    """Returns companies ready for decision maker search"""
 
-# Step 4: Select decision makers
-class TechCrunchSelectDecisionMakersTool:
-    """Picks founders/CEOs/CTOs from employee lists"""
-    # warning: "APPLY filter_sellers BEFORE using!"
+# Step 4: SERP-based decision makers (PREFERRED - FAST!)
+class TechCrunchSerpDecisionMakersTool:
+    """
+    Finds ALL founders via Google SERP (~30-60s total!)
+    Replaces slow LinkedIn employee search (was 6-8 min).
+    Searches: Founders, Co-founders, CEO + role-specific titles.
+    """
+    # next: "Call filter_sellers"
+
+# FALLBACK: linkedin_employees_batch_search (slow)
+```
+
+### Competitor Displacement Tools (v3.4)
+
+```python
+# Step 1: Identify competitor LinkedIn pages
+class CompetitorIdentifyTool:
+    """Converts competitor names to LinkedIn URLs"""
+    # Uses competitors from strategy plan
+
+# Step 2: Scrape competitor posts and extract engagers
+class CompetitorScrapeTool:
+    """
+    Uses harvestapi/linkedin-company-posts Apify actor.
+    Extracts commenters/likers from competitor posts.
+    These people are interested in this space!
+    """
+    # Returns leads with name, title, linkedin_url
+    # warning: "Apply filter_sellers before final output!"
 ```
 
 ### Filter Sellers Tool
@@ -478,6 +519,28 @@ result_text = result_text.replace("```json", "").replace("```", "").strip()
 result = json.loads(result_text)
 ```
 
+### Structured Output Standardization (v3.3)
+
+All LLM calls now use OpenAI's `response_format` with `json_schema` for guaranteed valid JSON:
+
+| File | Method | Schema Name |
+|------|--------|-------------|
+| `apify_reddit.py` | `_batch_score_posts` | `post_scores` |
+| `apify_reddit.py` | `_calculate_intent_score_llm` | `intent_score` |
+| `apify_reddit.py` | `_extract_leads_from_discussion` | `lead_extraction` |
+| `apify_linkedin_employees.py` | `_score_employees` | `employee_scores` |
+| `filter_sellers.py` | `_run` | `ClassificationsList` (Pydantic) |
+| `techcrunch_tools.py` | Multiple | Pydantic models |
+| `apify_linkedin_company_search.py` | Multiple | Pydantic models |
+
+**Note:** `_classify_commenters_batch` and complex `_extract_leads_from_discussion_v2` removed in v3.4 (Reddit Relaxation).
+
+**Benefits:**
+- No JSON parsing errors - OpenAI guarantees schema compliance
+- No retry logic needed for malformed JSON
+- No markdown cleanup (`\`\`\`json` stripping)
+- Simpler, cleaner code
+
 ### Structured Output Models Reference
 
 | Model | File | Purpose | Temperature |
@@ -488,9 +551,10 @@ result = json.loads(result_text)
 | `DecisionMakersList` | techcrunch_tools.py | Select decision makers | 0.3 |
 | `CompanyMatchList` | apify_linkedin_company_search.py | Match company to LinkedIn | 0.2 |
 | `PostScore` | apify_reddit.py | Score Reddit posts | 0.3 |
+| `employee_scores` | apify_linkedin_employees.py | Score decision makers | 0.2 |
 
 **Temperature Guidelines:**
-- **0.2**: Classification, matching (deterministic)
+- **0.2**: Classification, matching, scoring (deterministic)
 - **0.3**: Selection, extraction (some variation OK)
 
 ---
@@ -512,6 +576,7 @@ result = json.loads(result_text)
 | `M2FMdjRVeF1HPGFcc` | LinkedIn profile search |
 | `5QnEH5N71IK2mFLrP` | LinkedIn post search |
 | `apimaestro/linkedin-companies-search-scraper` | Company LinkedIn URL lookup |
+| `harvestapi/linkedin-company-posts` | Competitor posts + engagers (v3.4) |
 | `kaitoeasyapi/twitter-x-scraper` | Twitter/X search |
 
 ---
@@ -604,58 +669,54 @@ ProspectingFlowV2.initialize()
     ▼
 OrchestratorCrew.kickoff()
     │
-    ├─────────────────────────────────────────────┐
-    │         REDDIT STRATEGY (~50%)              │
-    │  ┌──────────────────────────────────────┐   │
-    │  │ reddit_search(query)                 │   │
-    │  │    ↓ Agent reviews quality           │   │
-    │  │ reddit_score(posts)                  │   │
-    │  │    ↓ Agent reviews scores            │   │
-    │  │ reddit_extract(posts)                │   │
-    │  │    ↓ WARNING: May include sellers!   │   │
-    │  │ filter_sellers(leads)                │   │
-    │  │    → BUYER leads only                │   │
-    │  └──────────────────────────────────────┘   │
-    │                                             │
-    ├─────────────────────────────────────────────┐
-    │       TECHCRUNCH STRATEGY (~50%)            │
-    │  ┌──────────────────────────────────────┐   │
-    │  │ techcrunch_fetch()                   │   │
-    │  │    ↓                                 │   │
-    │  │ techcrunch_select_articles()         │   │
-    │  │    ↓                                 │   │
-    │  │ techcrunch_extract_companies()       │   │
-    │  │    ↓ Returns companies (NO LinkedIn) │   │
-    │  │ linkedin_company_batch_search()      │   │
-    │  │    ↓ Agent gets LinkedIn URLs        │   │
-    │  │ linkedin_employees_search() [x N]    │   │
-    │  │    ↓                                 │   │
-    │  │ techcrunch_select_decision_makers()  │   │
-    │  │    ↓ WARNING: Apply filter!          │   │
-    │  │ filter_sellers(leads)                │   │
-    │  │    → BUYER leads only                │   │
-    │  └──────────────────────────────────────┘   │
-    │                                             │
-    ▼
-Merge + Final filter_sellers() + Score + Rank
+    ├────────────────────────────────────────────────────────────────────┐
+    │                                                                    │
+    │  ┌────────────────────┐ ┌───────────────────┐ ┌─────────────────┐ │
+    │  │  REDDIT (~33%)     │ │ TECHCRUNCH (~33%) │ │COMPETITOR (~33%)│ │
+    │  │                    │ │                   │ │                 │ │
+    │  │ reddit_search()    │ │ tc_fetch_parallel │ │ comp_identify() │ │
+    │  │    ↓               │ │    ↓              │ │    ↓            │ │
+    │  │ reddit_score()     │ │ tc_select_arts()  │ │ comp_scrape()   │ │
+    │  │    ↓               │ │    ↓              │ │ (LinkedIn posts)│ │
+    │  │ reddit_extract()   │ │ tc_extract_cos()  │ │    ↓            │ │
+    │  │ (ALL engagers)     │ │    ↓              │ │ extract_engagers│ │
+    │  │    ↓               │ │ SERP_dm() (FAST!) │ │    ↓            │ │
+    │  │ filter_sellers()   │ │    ↓              │ │ filter_sellers()│ │
+    │  │    → BUYER leads   │ │ filter_sellers()  │ │    → BUYER leads│ │
+    │  └─────────┬──────────┘ │    → BUYER leads  │ └────────┬────────┘ │
+    │            │            └─────────┬─────────┘          │          │
+    │            │                      │                    │          │
+    │            └──────────────────────┼────────────────────┘          │
+    │                                   ▼                               │
+    │        ┌──────────────────────────────────────────────────┐       │
+    │        │  AGGREGATION                                     │       │
+    │        │  1. Final filter_sellers() (safety check)        │       │
+    │        │  2. Deduplicate (keep higher score)              │       │
+    │        │  3. SORT by intent_score (warmest first!)        │       │
+    │        │  4. Return top N leads                           │       │
+    │        └──────────────────────────────────────────────────┘       │
+    │                                                                    │
+    └────────────────────────────────────────────────────────────────────┘
     │
     ▼
-Export: JSON, CSV, Execution Log
+Export: JSON, CSV, Execution Log (sorted warmest→coldest)
 ```
 
 ---
 
 ## Active vs Discontinued Features
 
-### ACTIVE (Current)
+### ACTIVE (Current - v3.4)
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| **Orchestrator Crew** | ACTIVE | Primary architecture |
-| **Reddit Tools** | ACTIVE | search, score, extract |
-| **TechCrunch Tools** | ACTIVE | fetch, select, extract, decision_makers |
+| **Orchestrator Crew** | ACTIVE | 5 agents, task chaining |
+| **Reddit Tools** | ACTIVE | search, score, extract (relaxed - no classification) |
+| **TechCrunch Tools** | ACTIVE | fetch_parallel, select, extract, SERP_decision_makers |
+| **Competitor Tools** | ACTIVE v3.4 | identify, scrape_posts (competitor displacement) |
+| **SERP Decision Makers** | ACTIVE v3.4 | Fast founder lookup via Google SERP |
 | **Filter Sellers** | ACTIVE | Critical for all leads |
-| **LinkedIn Tools** | ACTIVE | company_search, employees_search |
+| **LinkedIn Tools** | ACTIVE | company_search, employees_search, company_posts |
 | **Composite Tools** | ACTIVE | intent_hunter, trigger_scanner |
 
 ### DISCONTINUED
@@ -769,6 +830,8 @@ class MyTool(BaseTool):
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 3.4 | 2025-11-28 | **Major Update**: (1) **Reddit Relaxation** - Removed `_classify_commenters_batch()`, simplified to extract ALL engagers, uses `filter_sellers` at end only. (2) **TechCrunch SERP** - Added `TechCrunchFetchParallelTool` and `TechCrunchSerpDecisionMakersTool` for ~30-60s decision maker lookup (was 6-8 min). (3) **Competitor Displacement** - New strategy using `harvestapi/linkedin-company-posts` actor to find leads from competitor post engagers. (4) **Final Sorting** - Leads sorted by intent_score descending (warmest first). Now 5 agents, 5 tasks. |
+| 3.3 | 2025-11-28 | **Structured Output Standardization**: All tool LLM calls now use `response_format` with `json_schema`. Removed retry/fallback complexity for JSON parsing. Updated: `apify_reddit.py`, `apify_linkedin_employees.py`. |
 | 3.2 | 2025-11-28 | Unified gpt-4o-mini: Both AGENT_MODEL and TOOL_MODEL now use gpt-4o-mini for reliable structured outputs. Removed gpt-5-mini due to JSON schema issues. |
 | 3.1 | 2025-11-28 | Model fix: TOOL_MODEL changed to gpt-5-mini (gpt-5-nano returned empty responses). Added retry/fallback patterns for batch scoring. |
 | 3.0 | 2025-11-27 | Multi-Task Sequential Architecture: 4 agents, task chaining via context, Pydantic outputs per task |

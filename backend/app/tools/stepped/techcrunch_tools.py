@@ -422,3 +422,175 @@ class TechCrunchSelectDecisionMakersTool(BaseTool):
                 "error": str(e),
                 "recommendation": "Error selecting decision makers"
             })
+
+
+# === NEW v3.4: Parallel Fetching + SERP Decision Makers ===
+
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+
+class TechCrunchFetchParallelInput(BaseModel):
+    """Input schema for parallel TechCrunch fetch."""
+    pages: List[int] = Field(default=[1, 2], description="Page numbers to fetch in parallel")
+
+
+class TechCrunchFetchParallelTool(BaseTool):
+    """
+    Fetch multiple TechCrunch pages in parallel for scale.
+
+    v3.4: Enables processing more companies by fetching multiple pages at once.
+    """
+
+    name: str = "techcrunch_fetch_parallel"
+    description: str = """
+    Fetch multiple TechCrunch funding pages in parallel.
+
+    Parameters:
+    - pages: List of page numbers (e.g., [1, 2, 3])
+
+    Returns combined articles from all pages.
+    """
+    args_schema: Type[BaseModel] = TechCrunchFetchParallelInput
+
+    def _run(self, pages: List[int] = [1, 2]) -> str:
+        """Fetch multiple pages in parallel."""
+        print(f"\n[TECHCRUNCH_PARALLEL] Fetching pages {pages} in parallel...")
+
+        all_articles = []
+        fetch_tool = TechCrunchFetchTool()
+
+        def fetch_page(page: int) -> dict:
+            result_str = fetch_tool._run(page=page)
+            return json.loads(result_str)
+
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            futures = {executor.submit(fetch_page, page): page for page in pages}
+
+            for future in as_completed(futures):
+                page = futures[future]
+                try:
+                    result = future.result()
+                    articles = result.get('articles', [])
+                    all_articles.extend(articles)
+                    print(f"[TECHCRUNCH_PARALLEL] Page {page}: {len(articles)} articles")
+                except Exception as e:
+                    print(f"[TECHCRUNCH_PARALLEL] Page {page} failed: {e}")
+
+        # Deduplicate by title
+        seen_titles = set()
+        unique_articles = []
+        for article in all_articles:
+            title = article.get('title', '')
+            if title and title not in seen_titles:
+                seen_titles.add(title)
+                unique_articles.append(article)
+
+        print(f"[TECHCRUNCH_PARALLEL] Total: {len(unique_articles)} unique articles from {len(pages)} pages")
+
+        return json.dumps({
+            "articles": unique_articles,
+            "count": len(unique_articles),
+            "pages_fetched": pages,
+            "quality": "HIGH" if len(unique_articles) >= 10 else "MEDIUM",
+            "recommendation": f"Found {len(unique_articles)} articles. Use techcrunch_select_articles to filter relevant ones."
+        }, indent=2)
+
+
+class TechCrunchSerpDecisionMakersInput(BaseModel):
+    """Input schema for SERP-based decision maker finding."""
+    companies: List[dict] = Field(..., description="Companies from techcrunch_extract_companies")
+    query: str = Field(..., description="Product description for role targeting")
+
+
+class TechCrunchSerpDecisionMakersTool(BaseTool):
+    """
+    Find decision makers using SERP instead of LinkedIn employee search.
+
+    v3.4: Replaces slow LinkedIn employee flow (~6-8 min) with fast SERP (~30-60s).
+
+    Uses Google to find "[Company] founder site:linkedin.com" and similar queries.
+    """
+
+    name: str = "techcrunch_serp_decision_makers"
+    description: str = """
+    Find decision makers for TechCrunch companies using SERP.
+
+    MUCH FASTER than LinkedIn employee search: ~30-60s vs 6-8 minutes!
+
+    Parameters:
+    - companies: List from techcrunch_extract_companies
+    - query: Product description for role targeting
+
+    Returns leads ready for filter_sellers.
+    """
+    args_schema: Type[BaseModel] = TechCrunchSerpDecisionMakersInput
+
+    def _run(self, companies: List[dict], query: str) -> str:
+        """Find decision makers using SERP."""
+        if not companies:
+            return json.dumps({
+                "leads": [],
+                "count": 0,
+                "recommendation": "No companies provided. Run techcrunch_extract_companies first."
+            })
+
+        print(f"\n[TECHCRUNCH_SERP] Finding decision makers for {len(companies)} companies...")
+        print(f"[TECHCRUNCH_SERP] Product context: {query}")
+
+        # Import SERP tool
+        import sys
+        from pathlib import Path
+        sys.path.insert(0, str(Path(__file__).parent.parent))
+        from serp_decision_makers import SerpDecisionMakersTool
+
+        serp_tool = SerpDecisionMakersTool()
+        leads = []
+
+        for company_data in companies:
+            company_name = company_data.get('name', company_data.get('company', ''))
+            if not company_name:
+                continue
+
+            funding = company_data.get('funding', 'recently funded')
+            article_url = company_data.get('article_url', 'https://techcrunch.com/tag/funding/')
+            description = company_data.get('description', '')
+
+            try:
+                result_str = serp_tool._run(
+                    company=company_name,
+                    product_context=query,
+                    funding_info=funding
+                )
+                result = json.loads(result_str)
+                decision_makers = result.get('decision_makers', [])
+
+                for dm in decision_makers[:3]:  # Limit 3 per company
+                    leads.append({
+                        "name": dm.get('name', 'Unknown'),
+                        "title": dm.get('title', 'Decision Maker'),
+                        "company": company_name,
+                        "linkedin_url": dm.get('linkedin_url', ''),
+                        "intent_signal": f"Company {funding} - {dm.get('title', 'key role')} at growing company",
+                        "intent_score": 75,
+                        "source_platform": "techcrunch",
+                        "source_url": article_url,
+                        "priority": "warm",
+                        "scoring_reasoning": f"Found via SERP, company recently {funding}"
+                    })
+
+                print(f"[TECHCRUNCH_SERP] {company_name}: {len(decision_makers)} decision makers")
+
+            except Exception as e:
+                print(f"[TECHCRUNCH_SERP] Error for {company_name}: {e}")
+                continue
+
+        print(f"[TECHCRUNCH_SERP] Total: {len(leads)} leads from {len(companies)} companies")
+
+        return json.dumps({
+            "leads": leads,
+            "count": len(leads),
+            "companies_searched": len(companies),
+            "done": f"Found {len(leads)} decision makers via SERP",
+            "warning": "APPLY filter_sellers to remove any promoters!",
+            "next": "Run filter_sellers, then leads are ready for outreach."
+        }, indent=2)
