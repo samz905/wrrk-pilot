@@ -504,8 +504,7 @@ Return ONLY JSON (no markdown):
                     {"role": "user", "content": prompt}
                 ],
                 response_format={"type": "json_schema", "json_schema": json_schema},
-                temperature=0.3,
-                max_tokens=2000
+                max_completion_tokens=2000
             )
 
             result_text = response.choices[0].message.content.strip()
@@ -806,8 +805,7 @@ If NO users show buying intent, return an empty array: []
                     {"role": "system", "content": "You are an expert at identifying buying signals in online discussions. Extract only users with genuine purchase intent. Return valid JSON arrays only."},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.3,
-                max_tokens=1500
+                max_completion_tokens=1500
             )
 
             result_text = response.choices[0].message.content.strip()
@@ -975,8 +973,7 @@ Return ONLY JSON (no markdown):
                     {"role": "user", "content": prompt}
                 ],
                 response_format={"type": "json_schema", "json_schema": json_schema},
-                temperature=0.3,
-                max_tokens=1500
+                max_completion_tokens=1500
             )
 
             result_text = response.choices[0].message.content.strip()
@@ -1236,74 +1233,116 @@ Return ONLY a JSON array with {len(posts)} objects (no markdown, no code blocks)
   ...
 ]"""
 
-        try:
-            # Single API call for ALL posts with structured output
-            client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        # Retry logic - try up to 3 times with different approaches
+        max_retries = 3
+        last_error = None
+        result_text = ""
 
-            print(f"[INFO] Making single batch API call for {len(posts)} posts (structured output)...")
+        for attempt in range(max_retries):
+            try:
+                client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-            # JSON schema for structured output
-            json_schema = {
-                "name": "post_scores",
-                "strict": True,
-                "schema": {
-                    "type": "object",
-                    "properties": {
-                        "scores": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "post_number": {"type": "integer"},
-                                    "score": {"type": "integer"},
-                                    "reasoning": {"type": "string"}
-                                },
-                                "required": ["post_number", "score", "reasoning"],
-                                "additionalProperties": False
-                            }
-                        }
-                    },
-                    "required": ["scores"],
-                    "additionalProperties": False
-                }
-            }
+                print(f"[INFO] Making batch API call for {len(posts)} posts (attempt {attempt + 1}/{max_retries})...")
 
-            response = client.chat.completions.create(
-                model=settings.TOOL_MODEL,
-                messages=[
-                    {"role": "system", "content": "You are an expert at analyzing online discussions for buyer intent and relevance."},
-                    {"role": "user", "content": prompt}
-                ],
-                response_format={"type": "json_schema", "json_schema": json_schema},
-                temperature=0.3,
-                max_tokens=2000
+                # Use simple JSON response format (works with gpt-5-nano)
+                # Note: gpt-5-nano does NOT support response_format with json_schema
+                response = client.chat.completions.create(
+                    model=settings.TOOL_MODEL,
+                    messages=[
+                        {"role": "system", "content": "You are an expert at analyzing online discussions for buyer intent and relevance. Always respond with valid JSON only, no markdown or code blocks."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_completion_tokens=4000  # Increased for 50 posts
+                )
+
+                # Parse response
+                result_text = response.choices[0].message.content
+                if not result_text or result_text.strip() == "":
+                    print(f"[WARNING] Empty response on attempt {attempt + 1}, retrying...")
+                    continue
+
+                result_text = result_text.strip()
+
+                # Clean up common formatting issues
+                if result_text.startswith("```json"):
+                    result_text = result_text[7:]
+                if result_text.startswith("```"):
+                    result_text = result_text[3:]
+                if result_text.endswith("```"):
+                    result_text = result_text[:-3]
+                result_text = result_text.strip()
+
+                # Try to parse as array directly first (the expected format)
+                try:
+                    scores_array = json.loads(result_text)
+                    if isinstance(scores_array, dict) and "scores" in scores_array:
+                        scores_array = scores_array["scores"]
+                except json.JSONDecodeError:
+                    # Try to find JSON array in the response
+                    import re
+                    match = re.search(r'\[[\s\S]*\]', result_text)
+                    if match:
+                        scores_array = json.loads(match.group())
+                    else:
+                        raise json.JSONDecodeError("No valid JSON array found", result_text, 0)
+
+                if not isinstance(scores_array, list):
+                    print(f"[WARNING] Response is not an array on attempt {attempt + 1}, retrying...")
+                    continue
+
+                print(f"[INFO] Successfully scored {len(scores_array)} posts in 1 API call")
+
+                # Validate we got scores for all posts
+                if len(scores_array) != len(posts):
+                    print(f"[WARNING] Expected {len(posts)} scores but got {len(scores_array)}")
+                    # If we got most of them, pad with individual scoring for remaining
+                    if len(scores_array) >= len(posts) * 0.7:  # At least 70% success
+                        while len(scores_array) < len(posts):
+                            idx = len(scores_array)
+                            post = posts[idx]
+                            individual_score = self._fallback_intent_score(
+                                query, post.get('title', ''), post.get('text', ''),
+                                post.get('score', 0), post.get('num_comments', 0)
+                            )
+                            scores_array.append({
+                                "post_number": idx + 1,
+                                "score": individual_score[0],
+                                "reasoning": individual_score[1]
+                            })
+
+                return scores_array
+
+            except json.JSONDecodeError as e:
+                last_error = e
+                print(f"[WARNING] JSON parse error on attempt {attempt + 1}: {e}")
+                print(f"[DEBUG] Raw response preview: {result_text[:300] if result_text else 'EMPTY'}")
+                continue
+
+            except Exception as e:
+                last_error = e
+                print(f"[WARNING] API error on attempt {attempt + 1}: {e}")
+                continue
+
+        # All retries exhausted - use fallback scoring for each post individually
+        print(f"[ERROR] All {max_retries} batch scoring attempts failed. Using individual fallback scoring...")
+        print(f"[DEBUG] Last error: {last_error}")
+
+        fallback_scores = []
+        for i, post in enumerate(posts):
+            score, reasoning = self._fallback_intent_score(
+                query,
+                post.get('title', ''),
+                post.get('text', ''),
+                post.get('score', 0),
+                post.get('num_comments', 0)
             )
+            fallback_scores.append({
+                "post_number": i + 1,
+                "score": score,
+                "reasoning": f"[FALLBACK] {reasoning}"
+            })
 
-            # Parse structured response
-            result_text = response.choices[0].message.content.strip()
-            result = json.loads(result_text)
-            scores_array = result.get("scores", [])
-
-            print(f"[INFO] Successfully scored {len(scores_array)} posts in 1 API call (structured)")
-
-            # Validate we got scores for all posts
-            if len(scores_array) != len(posts):
-                print(f"[WARNING] Expected {len(posts)} scores but got {len(scores_array)}")
-
-            return scores_array
-
-        except json.JSONDecodeError as e:
-            print(f"[ERROR] Failed to parse LLM JSON response: {e}")
-            print(f"[DEBUG] Raw response: {result_text[:500] if 'result_text' in dir() else 'N/A'}")
-            # Return fallback scores
-            return [{"score": 50, "reasoning": "Batch scoring parse error"} for _ in posts]
-
-        except Exception as e:
-            print(f"[ERROR] Batch scoring failed: {e}")
-            import traceback
-            traceback.print_exc()
-            # Return fallback scores
-            return [{"score": 50, "reasoning": "Batch scoring API error"} for _ in posts]
+        return fallback_scores
 
     def _calculate_intent_score_llm(self, query: str, title: str, text: str, score: int, num_comments: int) -> Tuple[int, str]:
         """
@@ -1360,8 +1399,7 @@ Return ONLY a JSON object (no markdown, no code blocks):
                     {"role": "system", "content": "You are an expert at analyzing online discussions for buyer intent. Return only valid JSON."},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.3,
-                max_tokens=150
+                max_completion_tokens=150
             )
 
             # Parse LLM response

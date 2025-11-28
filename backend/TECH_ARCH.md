@@ -1,7 +1,7 @@
 # Technical Architecture Documentation
 
-> **Last Updated:** 2025-11-27
-> **Version:** 2.0 (Single Orchestrator Agent Architecture)
+> **Last Updated:** 2025-11-28
+> **Version:** 3.2 (Unified gpt-4o-mini Architecture)
 
 This document serves as the canonical reference for the prospecting system architecture, patterns, and design decisions.
 
@@ -19,39 +19,64 @@ This document serves as the canonical reference for the prospecting system archi
 8. [Configuration](#configuration)
 9. [Data Flow](#data-flow)
 10. [Active vs Discontinued Features](#active-vs-discontinued-features)
+11. [Version History](#version-history)
+12. [Test Results & Quality Observations](#test-results--quality-observations)
 
 ---
 
 ## Architecture Overview
 
-### Current Architecture (v2)
+### Current Architecture (v3)
 
-The system uses a **single intelligent Orchestrator Agent** that:
-- Reasons about quality after each tool call
-- Adapts strategy based on results
-- Follows a mandatory two-platform approach (Reddit + TechCrunch)
-- Filters sellers/promoters from all leads
+The system uses a **Multi-Task Sequential Architecture** with:
+- 4 focused agents, each handling one specific task
+- Tasks chained via `context=[previous_task]` for data passing
+- Structured Pydantic outputs for each task
+- Each agent reasons independently within its domain
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│              ProspectingFlowV2 (Event-Driven)           │
-│  └─ OrchestratorCrew                                    │
-│     └─ Single Orchestrator Agent (GPT-4o)               │
-│        ├─ Reddit Strategy                               │
-│        │  └─ search → score → extract → filter_sellers  │
-│        └─ TechCrunch Strategy                           │
-│           └─ fetch → select → extract → linkedin_batch  │
-│              → employees → decision_makers → filter     │
-│        └─ Own Creative Strategies                       │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│              ProspectingFlowV2 (Event-Driven)                    │
+│  └─ OrchestratorCrew (Sequential Process)                        │
+│                                                                   │
+│     ┌─────────────────────────────────────────────────────────┐  │
+│     │  Task 1: plan_strategy                                   │  │
+│     │  Agent: strategy_planner                                 │  │
+│     │  Output: StrategyPlan (queries, focus, titles)           │  │
+│     └────────────────────┬────────────────────────────────────┘  │
+│                          │ context                                │
+│           ┌──────────────┴──────────────┐                        │
+│           ▼                              ▼                        │
+│  ┌────────────────────┐     ┌─────────────────────────────┐      │
+│  │ Task 2: reddit     │     │ Task 3: techcrunch          │      │
+│  │ Agent: reddit_spec │     │ Agent: techcrunch_spec      │      │
+│  │ Output: RedditLeads│     │ Output: TechCrunchLeads     │      │
+│  │                    │     │                              │      │
+│  │ search → score →   │     │ fetch → select → extract →  │      │
+│  │ extract → filter   │     │ linkedin_batch → employees  │      │
+│  └─────────┬──────────┘     │ → decision_makers → filter  │      │
+│            │                 └────────────┬────────────────┘      │
+│            │ context                      │ context               │
+│            └──────────────┬───────────────┘                       │
+│                           ▼                                       │
+│     ┌─────────────────────────────────────────────────────────┐  │
+│     │  Task 4: aggregate_leads                                 │  │
+│     │  Agent: lead_aggregator                                  │  │
+│     │  Output: ProspectingOutput (final leads)                 │  │
+│     │                                                          │  │
+│     │  filter_sellers → deduplicate → rank → top N             │  │
+│     └─────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ### Key Design Principles
 
-1. **Agent Decides**: Tools provide data + recommendations, agent reasons and chooses next action
-2. **Pure Stepped Tools**: Each tool does ONE thing, no internal tool calls
-3. **Mandatory Seller Filtering**: Every platform runs `filter_sellers` before leads are finalized
-4. **Clear State Communication**: Tool outputs include `done`, `next`, and `warning` fields
+1. **Task Modularity**: Each task is focused and manageable
+2. **Context Chaining**: Tasks pass data via `context=[previous_task]`
+3. **Structured Outputs**: Pydantic models for each task ensure data consistency
+4. **Agent Specialization**: Each agent has only the tools it needs
+5. **Mandatory Seller Filtering**: Every platform runs `filter_sellers` before leads are finalized
+6. **Visible Reasoning**: Agents output workflow traces at each step
 
 ---
 
@@ -146,18 +171,61 @@ class ProspectingState(BaseModel):
 
 ### 2. OrchestratorCrew (`crews/orchestrator/`)
 
-Single intelligent agent with full tool suite:
+Multi-agent crew with 4 focused agents and task chaining:
 
-**Agent Configuration (`agents.yaml`):**
-- Role: Senior Sales Prospecting Strategist
-- Model: GPT-4o (better reasoning)
-- Temperature: 0.3
-- Mandatory: Must use BOTH Reddit AND TechCrunch
+**Agents (`agents.yaml`):**
 
-**Task Configuration (`tasks.yaml`):**
-- Detailed step-by-step workflow
-- Quality checkpoints after each tool
-- Seller filtering requirements
+| Agent | Role | Tools |
+|-------|------|-------|
+| `strategy_planner` | Analyze product, create plan | None (reasoning only) |
+| `reddit_specialist` | Execute Reddit workflow | reddit_search, reddit_score, reddit_extract, filter_sellers |
+| `techcrunch_specialist` | Execute TechCrunch workflow | techcrunch_*, linkedin_*, filter_sellers |
+| `lead_aggregator` | Combine and filter leads | filter_sellers |
+
+**Tasks (`tasks.yaml`):**
+
+| Task | Agent | Context | Output Model |
+|------|-------|---------|--------------|
+| `plan_strategy` | strategy_planner | (input) | `StrategyPlan` |
+| `reddit_prospecting` | reddit_specialist | plan_strategy | `RedditLeads` |
+| `techcrunch_prospecting` | techcrunch_specialist | plan_strategy | `TechCrunchLeads` |
+| `aggregate_leads` | lead_aggregator | reddit + techcrunch | `ProspectingOutput` |
+
+**Pydantic Output Models (`crew.py`):**
+```python
+class StrategyPlan(BaseModel):
+    product_category: str
+    competitors: List[str]
+    reddit_queries: List[str]
+    techcrunch_focus: str
+    target_titles: List[str]
+    lead_distribution: str
+
+class RedditLeads(BaseModel):
+    leads: List[Lead]
+    count: int
+    queries_used: List[str]
+    workflow_trace: str
+
+class TechCrunchLeads(BaseModel):
+    leads: List[Lead]
+    count: int
+    companies_found: List[str]
+    workflow_trace: str
+
+class ProspectingOutput(BaseModel):
+    leads: List[Lead]
+    total_leads: int
+    hot_leads: int
+    warm_leads: int
+    reddit_leads_count: int
+    techcrunch_leads_count: int
+    sellers_removed: int
+    duplicates_removed: int
+    platforms_searched: List[str]
+    strategies_used: List[str]
+    summary: str
+```
 
 ---
 
@@ -316,66 +384,98 @@ class FilterSellersTool:
 
 ## Structured Output Patterns
 
-### Pattern 1: OpenAI Beta Parse API (Preferred)
+### Pattern 1: JSON Schema Response (Preferred for gpt-4o-mini)
 
 ```python
 from openai import OpenAI
-from pydantic import BaseModel
-
-class LeadClassification(BaseModel):
-    name: str
-    is_seller: bool
-    reason: str
-
-class ClassificationsList(BaseModel):
-    classifications: List[LeadClassification]
+import json
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-response = client.beta.chat.completions.parse(
-    model="gpt-5-nano",
-    messages=[
-        {"role": "system", "content": "Classify leads as buyer or seller"},
-        {"role": "user", "content": f"Classify: {leads}"}
-    ],
-    response_format=ClassificationsList,
-    temperature=0.2
-)
-
-result = response.choices[0].message.parsed  # Returns Pydantic model
-```
-
-### Pattern 2: JSON Schema (Alternative)
-
-```python
+# gpt-4o-mini supports full json_schema response format
 json_schema = {
-    "name": "lead_extraction",
+    "name": "classification_result",
     "strict": True,
     "schema": {
         "type": "object",
         "properties": {
-            "leads": {
+            "classifications": {
                 "type": "array",
                 "items": {
                     "type": "object",
                     "properties": {
                         "name": {"type": "string"},
-                        "intent_score": {"type": "integer"}
-                    }
+                        "type": {"enum": ["BUYER", "SELLER"]}
+                    },
+                    "required": ["name", "type"]
                 }
             }
         },
-        "required": ["leads"]
+        "required": ["classifications"]
     }
 }
 
 response = client.chat.completions.create(
-    model="gpt-5-nano",
-    messages=[...],
-    response_format={"type": "json_schema", "json_schema": json_schema}
+    model="gpt-4o-mini",
+    messages=[
+        {"role": "system", "content": "Classify leads as BUYER or SELLER."},
+        {"role": "user", "content": f"Classify: {leads}"}
+    ],
+    response_format={"type": "json_schema", "json_schema": json_schema},
+    max_completion_tokens=2000
 )
 
 result = json.loads(response.choices[0].message.content)
+```
+
+### Pattern 2: Retry with Fallback (For resilience)
+
+```python
+max_retries = 3
+for attempt in range(max_retries):
+    try:
+        response = client.chat.completions.create(
+            model=settings.TOOL_MODEL,
+            messages=[...],
+            max_completion_tokens=4000
+        )
+
+        result_text = response.choices[0].message.content
+        if not result_text or result_text.strip() == "":
+            print(f"[WARNING] Empty response on attempt {attempt + 1}, retrying...")
+            continue
+
+        # Parse and validate JSON
+        scores_array = json.loads(result_text.strip())
+        return scores_array
+
+    except json.JSONDecodeError as e:
+        print(f"[WARNING] JSON parse error on attempt {attempt + 1}: {e}")
+        continue
+
+# Fallback: keyword-based scoring if all retries fail
+return fallback_scoring(data)
+```
+
+### Pattern 3: Simple JSON (Legacy fallback)
+
+```python
+# Use this only if json_schema causes issues with a specific model
+# gpt-4o-mini works great with json_schema, so prefer Pattern 1
+
+response = client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[
+        {"role": "system", "content": "Always respond with valid JSON only."},
+        {"role": "user", "content": f"Extract leads: {data}"}
+    ],
+    max_completion_tokens=2000
+)
+
+result_text = response.choices[0].message.content.strip()
+# Clean markdown if present
+result_text = result_text.replace("```json", "").replace("```", "").strip()
+result = json.loads(result_text)
 ```
 
 ### Structured Output Models Reference
@@ -417,6 +517,36 @@ result = json.loads(response.choices[0].message.content)
 ---
 
 ## Configuration
+
+### Model Configuration (`app/core/config.py`)
+
+```python
+# Agent model - used for orchestrator agent reasoning (needs strong reasoning)
+AGENT_MODEL: str = "gpt-4o-mini"  # Best for agentic tasks, tool selection
+AGENT_TEMPERATURE: float = 0.3
+
+# Tool model - used for tool LLM calls (structured outputs)
+TOOL_MODEL: str = "gpt-4o-mini"  # Same as agent - reliable structured outputs
+TOOL_TEMPERATURE: float = 0.2
+```
+
+**Model Selection Rationale:**
+| Model | Use Case | Notes |
+|-------|----------|-------|
+| `gpt-4o-mini` | Agent reasoning + Tool calls | Unified model, reliable JSON schema support |
+| `gpt-5-mini` | **AVOID for tools** | Structured output issues, empty responses |
+| `gpt-5-nano` | **AVOID** | Returns empty responses frequently |
+
+**Why Unified gpt-4o-mini:**
+- Consistent behavior across agent reasoning and tool calls
+- Full `response_format={"type": "json_schema", ...}` support
+- Reliable structured outputs without retry/fallback complexity
+- Cost difference minimal for this use case
+
+**Known Issues with gpt-5 models:**
+- `gpt-5-nano`: Returns empty `message.content` for batch scoring
+- `gpt-5-mini`: Inconsistent with `response_format` json_schema
+- Both: Require retry logic and fallback scoring patterns
 
 ### Environment Variables
 
@@ -639,5 +769,60 @@ class MyTool(BaseTool):
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 3.2 | 2025-11-28 | Unified gpt-4o-mini: Both AGENT_MODEL and TOOL_MODEL now use gpt-4o-mini for reliable structured outputs. Removed gpt-5-mini due to JSON schema issues. |
+| 3.1 | 2025-11-28 | Model fix: TOOL_MODEL changed to gpt-5-mini (gpt-5-nano returned empty responses). Added retry/fallback patterns for batch scoring. |
+| 3.0 | 2025-11-27 | Multi-Task Sequential Architecture: 4 agents, task chaining via context, Pydantic outputs per task |
 | 2.0 | 2025-11-27 | Single Orchestrator Agent, stepped tools refactored, G2/Upwork discontinued |
 | 1.0 | 2025-11 | Initial multi-crew architecture |
+
+---
+
+## Test Results & Quality Observations
+
+### Latest Test Run (2025-11-28)
+
+**Query:** "customer service bot that you can embed on your website"
+**Target:** 20 leads
+**Duration:** ~27 minutes
+**Result:** 14 leads (70% of target)
+
+| Metric | Value |
+|--------|-------|
+| Total Leads | 14 |
+| Hot Leads | 0 |
+| Warm Leads | 12 |
+| Cold Leads | 2 |
+| Reddit Leads | 2 |
+| TechCrunch Leads | 12 |
+
+### Quality Issues Identified
+
+1. **TechCrunch Relevance Problem**
+   - Companies found (Finout, Serval, DataBank, Coco Robotics) don't match "customer service bot" use case
+   - Issue: `techcrunch_select_articles` selecting by funding amount, not product relevance
+   - Fix needed: Industry/use-case filtering in article selection
+
+2. **Generic Intent Signals**
+   - Intent reasoning is templated: "As the CEO, they would be responsible for..."
+   - Not actual buying signals from the source content
+   - Fix needed: Extract real quotes/context from funding articles
+
+3. **Reddit Query Quality**
+   - Reddit leads found (PSU warranty, Hostinger complaint) unrelated to chatbots
+   - Issue: Generic queries not finding chatbot discussions
+   - Fix needed: Strategy planner should generate better queries like "looking for chatbot", "customer support automation"
+
+4. **No Hot Leads**
+   - All warm/cold, none with score >= 80
+   - Issue: TechCrunch leads default to 75, Reddit to 50
+   - Fix needed: Only score 80+ when explicit buying intent detected
+
+### Recommended Improvements
+
+| Priority | Area | Change |
+|----------|------|--------|
+| HIGH | TechCrunch | Add industry/use-case filter to `techcrunch_select_articles` |
+| HIGH | Reddit | Strategy planner should generate chatbot-specific queries |
+| MEDIUM | Scoring | Real intent signals from source content, not templated |
+| MEDIUM | Hot leads | Stricter criteria for score >= 80 |
+| LOW | Speed | Consider parallel Reddit + TechCrunch execution |

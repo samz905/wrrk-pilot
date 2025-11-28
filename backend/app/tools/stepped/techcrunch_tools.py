@@ -83,8 +83,8 @@ class TechCrunchExtractCompaniesInput(BaseModel):
 class TechCrunchSelectDecisionMakersInput(BaseModel):
     """Input schema for decision maker selection."""
     employees_by_company: dict = Field(..., description="Dict of {company_name: [employees]} from LinkedIn searches")
-    query: str = Field(..., description="Product description")
-    companies_context: List[dict] = Field(..., description="Company funding info from techcrunch_extract_companies")
+    query: str = Field(default="", description="Product description (optional)")
+    companies_context: List[dict] = Field(default=[], description="Company funding info from techcrunch_extract_companies (optional)")
 
 
 class TechCrunchFetchTool(BaseTool):
@@ -165,8 +165,7 @@ class TechCrunchFetchTool(BaseTool):
                     {"role": "system", "content": "Extract funding article information from TechCrunch page content. Look for patterns like 'Company raises $XM' or 'Company secures funding'. If you can find article URLs, include them."},
                     {"role": "user", "content": f"Extract all funding articles from this TechCrunch page. Include article URLs if visible:\n\n{content[:12000]}"}
                 ],
-                response_format=FundingArticlesList,
-                temperature=0.2
+                response_format=FundingArticlesList
             )
 
             result = response.choices[0].message.parsed
@@ -223,8 +222,7 @@ class TechCrunchSelectArticlesTool(BaseTool):
                     {"role": "system", "content": "You select recently funded companies relevant to a product query. Pick companies that would be good prospects for the product."},
                     {"role": "user", "content": f"Product: {query}\n\nSelect up to {limit} recently funded companies that might need this product:\n\n{articles_text}"}
                 ],
-                response_format=SelectedCompaniesList,
-                temperature=0.3
+                response_format=SelectedCompaniesList
             )
 
             result = response.choices[0].message.parsed
@@ -387,8 +385,7 @@ class TechCrunchSelectDecisionMakersTool(BaseTool):
                         {"role": "system", "content": "You identify the best decision makers to contact for a product. Select 1-3 people who would actually buy/use the product."},
                         {"role": "user", "content": f"Product: {query}\n\nCompany: {company_name}\nFunding: {funding}\nDoes: {description}\n\nEmployees:\n{emp_text}\n\nSelect 1-3 people who would buy this product."}
                     ],
-                    response_format=DecisionMakersList,
-                    temperature=0.3
+                    response_format=DecisionMakersList
                 )
 
                 result = response.choices[0].message.parsed

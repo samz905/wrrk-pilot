@@ -9,11 +9,14 @@ class Settings(BaseSettings):
     # Apify
     APIFY_API_TOKEN: str
 
-    # Anthropic Claude
-    ANTHROPIC_API_KEY: str
+    # Anthropic Claude (optional - not used for OpenAI-based orchestrator)
+    ANTHROPIC_API_KEY: Optional[str] = None
 
     # OpenAI
     OPENAI_API_KEY: Optional[str] = None
+
+    # Serper (for web search - optional)
+    SERPER_API_KEY: Optional[str] = None
 
     # FastAPI
     API_HOST: str = "0.0.0.0"
@@ -28,11 +31,11 @@ class Settings(BaseSettings):
     # MODEL CONFIGURATION - Change models in ONE place!
     # ==========================================================================
     # Agent model - used for orchestrator agent reasoning (needs strong reasoning)
-    AGENT_MODEL: str = "gpt-5.1"
+    AGENT_MODEL: str = "gpt-4o-mini"  # gpt-5-mini doesn't work well for agentic tasks
     AGENT_TEMPERATURE: float = 0.3
 
-    # Tool model - used for tool LLM calls (fast, cheap, structured outputs)
-    TOOL_MODEL: str = "gpt-5-nano"
+    # Tool model - used for tool LLM calls (structured outputs)
+    TOOL_MODEL: str = "gpt-4o-mini"  # Same as agent - reliable structured outputs
     TOOL_TEMPERATURE: float = 0.2
 
     class Config:

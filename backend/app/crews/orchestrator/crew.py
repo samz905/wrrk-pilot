@@ -1,13 +1,13 @@
 """
-Orchestrator Crew - Single agent with all tools for autonomous prospecting.
+Orchestrator Crew - Multi-Task Sequential Architecture.
 
-This crew uses one intelligent agent with reasoning capabilities to:
-1. Analyze the prospecting query
-2. Choose the best tools and strategies
-3. Execute searches across platforms
-4. Reflect on results and adapt
-5. Enrich and score leads
-6. Return qualified leads
+This crew uses 4 focused agents with task chaining:
+1. strategy_planner -> Analyze query, create prospecting plan
+2. reddit_specialist -> Execute Reddit strategy
+3. techcrunch_specialist -> Execute TechCrunch strategy
+4. lead_aggregator -> Combine and filter final leads
+
+Tasks pass data via context=[previous_task] for sequential execution.
 """
 import os
 from pathlib import Path
@@ -62,11 +62,24 @@ from tools.apify_linkedin_post_comments import LinkedInPostCommentsTool
 from tools.apify_linkedin_company_search import LinkedInCompanySearchTool, LinkedInCompanyBatchSearchTool
 
 
-# Pydantic models for structured output
+# =============================================================================
+# PYDANTIC OUTPUT MODELS - Structured outputs for each task
+# =============================================================================
+
 class LeadPriority(str, Enum):
     HOT = "hot"
     WARM = "warm"
     COLD = "cold"
+
+
+class StrategyPlan(BaseModel):
+    """Output from Task 1: Strategy planning."""
+    product_category: str = Field(description="Type of product")
+    competitors: List[str] = Field(description="Likely competitors")
+    reddit_queries: List[str] = Field(description="2-3 Reddit search queries")
+    techcrunch_focus: str = Field(description="Industry and funding stage focus")
+    target_titles: List[str] = Field(description="Decision maker titles to target")
+    lead_distribution: str = Field(description="How to split leads between sources")
 
 
 class Lead(BaseModel):
@@ -95,7 +108,6 @@ class Lead(BaseModel):
         """Normalize LLM priority responses to valid enum values."""
         if isinstance(v, str):
             v = v.lower().strip()
-            # Map common LLM variations to valid enum values
             mapping = {
                 'medium': 'warm',
                 'high': 'hot',
@@ -104,28 +116,60 @@ class Lead(BaseModel):
             v = mapping.get(v, v)
         return v
 
+    @field_validator('source_url', mode='before')
+    @classmethod
+    def normalize_source_url(cls, v):
+        """Handle None source_url by providing a default."""
+        if v is None:
+            return "No URL available"
+        return v
+
+
+class RedditLeads(BaseModel):
+    """Output from Task 2: Reddit prospecting."""
+    leads: List[Lead] = Field(description="Buyer leads from Reddit")
+    count: int = Field(description="Number of leads found")
+    queries_used: List[str] = Field(description="Search queries that worked")
+    workflow_trace: str = Field(description="Reasoning at each step")
+
+
+class TechCrunchLeads(BaseModel):
+    """Output from Task 3: TechCrunch prospecting."""
+    leads: List[Lead] = Field(description="Decision-maker leads from TechCrunch")
+    count: int = Field(description="Number of leads found")
+    companies_found: List[str] = Field(description="Companies with recent funding")
+    workflow_trace: str = Field(description="Reasoning at each step")
+
 
 class ProspectingOutput(BaseModel):
-    """Structured output from prospecting task."""
+    """Output from Task 4: Final aggregated leads."""
     leads: List[Lead] = Field(description="List of qualified leads")
     total_leads: int = Field(description="Total number of leads found")
     hot_leads: int = Field(description="Number of hot leads (score >= 80)")
     warm_leads: int = Field(description="Number of warm leads (score 60-79)")
+    reddit_leads_count: int = Field(default=0, description="Leads from Reddit")
+    techcrunch_leads_count: int = Field(default=0, description="Leads from TechCrunch")
+    sellers_removed: int = Field(default=0, description="Sellers filtered out")
+    duplicates_removed: int = Field(default=0, description="Duplicates removed")
     platforms_searched: List[str] = Field(description="Platforms that were searched")
     strategies_used: List[str] = Field(description="Strategies employed")
     summary: str = Field(description="Summary of the prospecting session")
 
 
+# =============================================================================
+# ORCHESTRATOR CREW - 4 Agents, 4 Tasks, Sequential Process
+# =============================================================================
+
 @CrewBase
 class OrchestratorCrew:
     """
-    Single-agent orchestrator crew for autonomous prospecting.
+    Multi-task orchestrator crew for modular prospecting.
 
-    This crew uses one powerful agent with:
-    - All atomic and composite tools
-    - Reasoning enabled for planning
-    - Reflection and retry capabilities
-    - Memory for context across tool calls
+    Architecture:
+    - 4 focused agents, each handling one task
+    - Tasks chained via context=[previous_task]
+    - Structured outputs with Pydantic models
+    - Each agent reasons independently
     """
 
     agents_config = 'agents.yaml'
@@ -133,90 +177,139 @@ class OrchestratorCrew:
 
     def __init__(self):
         """Initialize the orchestrator crew with LLM configuration."""
-        # Use centralized config for model settings
         self.llm = LLM(
             model=settings.AGENT_MODEL,
             temperature=settings.AGENT_TEMPERATURE,
             api_key=os.getenv("OPENAI_API_KEY")
         )
 
+    # =========================================================================
+    # AGENTS - 4 focused agents
+    # =========================================================================
+
     @agent
-    def orchestrator(self) -> Agent:
-        """
-        Create the orchestrator agent with stepped tools for reasoning at each checkpoint.
-
-        STEPPED TOOLS (primary - agent reasons after each):
-        - Reddit: search -> score -> extract -> filter_sellers
-        - TechCrunch: fetch -> select -> extract -> decision_makers
-
-        ATOMIC TOOLS (secondary - for creative exploration):
-        - Direct crawling, search, enrichment
-        """
+    def strategy_planner(self) -> Agent:
+        """Agent 1: Analyze product and create prospecting strategy."""
         return Agent(
-            config=self.agents_config['orchestrator'],
+            config=self.agents_config['strategy_planner'],
             tools=[
-                # === STEPPED TOOLS (Primary - Agent reasons after each) ===
-
-                # REDDIT STRATEGY: search -> score -> extract
-                RedditSearchSteppedTool(),   # Step 1: Search, review quality
-                RedditScoreTool(),           # Step 2: Score, review results
-                RedditExtractTool(),         # Step 3: Extract leads
-
-                # TECHCRUNCH STRATEGY: fetch -> select -> extract -> decision makers
-                TechCrunchFetchTool(),           # Step 1: Get funding articles
-                TechCrunchSelectArticlesTool(),  # Step 2: Select relevant articles
-                TechCrunchExtractCompaniesTool(), # Step 3: Extract company info
-                TechCrunchSelectDecisionMakersTool(), # Step 4: Pick decision makers
-
-                # SELLER FILTER (Reusable utility - ALWAYS use before finalizing)
-                FilterSellersTool(),
-
-                # === ATOMIC TOOLS (Secondary - For creative exploration) ===
-
-                # LinkedIn - for enrichment ONLY (use after finding leads)
-                LinkedInCompanySearchTool(),    # Find company LinkedIn URL by name
-                LinkedInCompanyBatchSearchTool(), # Batch search for multiple companies
-                LinkedInEmployeesSearchTool(),  # Find decision makers at ONE company
-                LinkedInEmployeesBatchSearchTool(), # Find decision makers at MULTIPLE companies (PARALLEL - use this!)
-                ApifyLinkedInProfileDetailTool(),
-
-                # Google/Web tools - for creative exploration
-                SerperDevTool(),        # SERP search (HackerNews, forums, etc.)
-                ScrapeWebsiteTool(),    # Extract content from URLs
-
-                # Search tools - backup/creative use
-                ApifyTwitterSearchTool(),
+                # Planning agent doesn't need tools - just analyzes input
             ],
             llm=self.llm,
             verbose=True,
+            max_retry_limit=2
+        )
 
-            # Agentic behavior parameters
-            max_iter=50,                # Allow extensive iteration
-            max_retry_limit=3,          # Retry failed tool calls
-            memory=True,                # Maintain context across calls
-            allow_delegation=False,     # Single agent for simplicity
+    @agent
+    def reddit_specialist(self) -> Agent:
+        """Agent 2: Execute Reddit stepped workflow."""
+        return Agent(
+            config=self.agents_config['reddit_specialist'],
+            tools=[
+                # Reddit stepped tools
+                RedditSearchSteppedTool(),
+                RedditScoreTool(),
+                RedditExtractTool(),
+                FilterSellersTool(),
+            ],
+            llm=self.llm,
+            verbose=True,
+            max_iter=25,
+            max_retry_limit=3,
+            memory=True
+        )
 
-            # Resource management
-            max_rpm=10,                 # Prevent API throttling
-            max_execution_time=900,     # 15 minute max
-            respect_context_window=True # Auto-summarize if needed
+    @agent
+    def techcrunch_specialist(self) -> Agent:
+        """Agent 3: Execute TechCrunch workflow with LinkedIn enrichment."""
+        return Agent(
+            config=self.agents_config['techcrunch_specialist'],
+            tools=[
+                # TechCrunch stepped tools
+                TechCrunchFetchTool(),
+                TechCrunchSelectArticlesTool(),
+                TechCrunchExtractCompaniesTool(),
+                TechCrunchSelectDecisionMakersTool(),
+
+                # LinkedIn tools for company/employee search
+                LinkedInCompanySearchTool(),
+                LinkedInCompanyBatchSearchTool(),
+                LinkedInEmployeesSearchTool(),
+                LinkedInEmployeesBatchSearchTool(),
+
+                # Seller filter
+                FilterSellersTool(),
+            ],
+            llm=self.llm,
+            verbose=True,
+            max_iter=30,
+            max_retry_limit=3,
+            memory=True
+        )
+
+    @agent
+    def lead_aggregator(self) -> Agent:
+        """Agent 4: Combine, deduplicate, and rank final leads."""
+        return Agent(
+            config=self.agents_config['lead_aggregator'],
+            tools=[
+                FilterSellersTool(),  # Final seller check
+            ],
+            llm=self.llm,
+            verbose=True,
+            max_retry_limit=2
+        )
+
+    # =========================================================================
+    # TASKS - 4 chained tasks with context passing
+    # =========================================================================
+
+    @task
+    def plan_strategy(self) -> Task:
+        """Task 1: Create prospecting strategy plan."""
+        return Task(
+            config=self.tasks_config['plan_strategy'],
+            agent=self.strategy_planner(),
+            output_pydantic=StrategyPlan
         )
 
     @task
-    def prospect_leads(self) -> Task:
-        """
-        Create the main prospecting task with structured output.
-        """
+    def reddit_prospecting(self) -> Task:
+        """Task 2: Execute Reddit strategy using plan from Task 1."""
         return Task(
-            config=self.tasks_config['prospect_leads'],
-            agent=self.orchestrator(),
+            config=self.tasks_config['reddit_prospecting'],
+            agent=self.reddit_specialist(),
+            context=[self.plan_strategy()],  # Receives strategy plan
+            output_pydantic=RedditLeads
+        )
+
+    @task
+    def techcrunch_prospecting(self) -> Task:
+        """Task 3: Execute TechCrunch strategy using plan from Task 1."""
+        return Task(
+            config=self.tasks_config['techcrunch_prospecting'],
+            agent=self.techcrunch_specialist(),
+            context=[self.plan_strategy()],  # Receives strategy plan
+            output_pydantic=TechCrunchLeads
+        )
+
+    @task
+    def aggregate_leads(self) -> Task:
+        """Task 4: Combine leads from Tasks 2 & 3 into final output."""
+        return Task(
+            config=self.tasks_config['aggregate_leads'],
+            agent=self.lead_aggregator(),
+            context=[
+                self.reddit_prospecting(),     # Receives Reddit leads
+                self.techcrunch_prospecting()  # Receives TechCrunch leads
+            ],
             output_pydantic=ProspectingOutput
         )
 
     @crew
     def crew(self) -> Crew:
         """
-        Create the orchestrator crew with single agent and task.
+        Create the orchestrator crew with 4 agents and sequential tasks.
         """
         return Crew(
             agents=self.agents,
@@ -224,11 +317,13 @@ class OrchestratorCrew:
             process=Process.sequential,
             verbose=True,
             max_rpm=10
-            # Removed planning=True - was causing agent to "narrate" instead of execute tools
         )
 
 
-# Convenience function to run the orchestrator
+# =============================================================================
+# CONVENIENCE FUNCTION
+# =============================================================================
+
 def run_prospecting(
     product_description: str,
     target_leads: int = 100,
@@ -256,13 +351,15 @@ def run_prospecting(
     return result.pydantic
 
 
-# Test function
+# =============================================================================
+# TEST FUNCTION
+# =============================================================================
+
 if __name__ == "__main__":
     print("\n" + "=" * 70)
-    print("ORCHESTRATOR CREW TEST")
+    print("ORCHESTRATOR CREW TEST - Multi-Task Architecture")
     print("=" * 70)
 
-    # Test with a simple query
     result = run_prospecting(
         product_description="AI design agent that helps startups ship UI faster",
         target_leads=10,
@@ -279,6 +376,10 @@ if __name__ == "__main__":
     print(f"Total leads: {result.total_leads}")
     print(f"Hot leads: {result.hot_leads}")
     print(f"Warm leads: {result.warm_leads}")
+    print(f"Reddit leads: {result.reddit_leads_count}")
+    print(f"TechCrunch leads: {result.techcrunch_leads_count}")
+    print(f"Sellers removed: {result.sellers_removed}")
+    print(f"Duplicates removed: {result.duplicates_removed}")
     print(f"Platforms: {result.platforms_searched}")
     print(f"Strategies: {result.strategies_used}")
     print(f"\nSummary: {result.summary}")

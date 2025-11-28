@@ -1,140 +1,304 @@
-prospect_leads:
+# =============================================================================
+# ORCHESTRATOR CREW TASKS - Sequential Multi-Task Architecture
+# =============================================================================
+# 4 tasks chained via context=[previous_task]:
+# 1. plan_strategy -> Analyze product, create prospecting plan
+# 2. reddit_prospecting -> Execute Reddit stepped workflow
+# 3. techcrunch_prospecting -> Execute TechCrunch workflow
+# 4. aggregate_leads -> Combine, filter, rank final leads
+# =============================================================================
+
+plan_strategy:
   description: |
-    Find high-intent BUYER leads for: {product_description}
-    Target: {target_leads} qualified leads
-    ICP: {icp_criteria}
+    Analyze the product and create a prospecting strategy plan.
+
+    INPUT:
+    - Product: {product_description}
+    - Target: {target_leads} leads
+    - ICP: {icp_criteria}
+
+    YOUR TASK - Create a strategy plan (NOT execution):
+
+    1. IDENTIFY the product category
+       - What type of product is this?
+       - Who are likely competitors?
+       - What pain points does it solve?
+
+    2. GENERATE Reddit search queries (2-3 variations):
+       - Direct query: "project management tool"
+       - Pain-based: "frustrated with Asana"
+       - Alternative-seeking: "alternative to Monday.com"
+
+    3. DEFINE TechCrunch focus:
+       - Target industry/sector
+       - Funding stages to prioritize (Seed, Series A, B, C)
+       - Decision maker titles to target
+
+    OUTPUT a structured plan for the execution specialists.
+
+  expected_output: |
+    A strategy plan with:
+    - product_category: What type of product
+    - competitors: List of likely competitors
+    - reddit_queries: 2-3 search queries
+    - techcrunch_focus: Industry and funding stage
+    - target_titles: Decision maker titles
+    - lead_distribution: How many from each source
+
+  agent: strategy_planner
+
+
+reddit_prospecting:
+  description: |
+    Execute Reddit strategy using the plan from strategy_planner.
+    Target: ~50% of {target_leads} leads
+
+    YOU HAVE THE STRATEGY PLAN from context. Use it!
 
     ================================================================================
-    MANDATORY: YOU MUST USE BOTH REDDIT AND TECHCRUNCH
+    STEPPED WORKFLOW - Execute tools in order, REASON after each step
     ================================================================================
 
-    REQUIRED EXECUTION ORDER:
-    1. First, run Reddit strategy to get ~50% of leads
-    2. Then, run TechCrunch strategy to get the other ~50%
-    3. DO NOT skip TechCrunch! Recently funded companies = CONFIRMED BUDGET
+    STEP 1: reddit_search(query)
+    ----------------------------
+    Use query from strategy plan. Review results:
+    - Quality HIGH (>30% relevant)? -> Continue to reddit_score
+    - Quality LOW? -> Try alternative query from plan
+    - Still LOW after 2 tries? -> Return what you have
 
-    ================================================================================
-    STEPPED WORKFLOW - You have stepped tools that let you REASON after each step
-    ================================================================================
+    Example trace:
+    "Reddit search for 'project management tool' returned 50 posts, 60% relevant.
+     Quality HIGH. Proceeding to scoring..."
 
-    You have stepped tools. Review results after EACH tool call. Adapt as needed.
-    If results are poor, try different query or skip to next strategy.
-
-    STEP 1: ANALYZE & PLAN
-    ----------------------
-    - What product category is this?
-    - Who are likely competitors?
-    - For {target_leads} leads, plan: Reddit (~50%) + TechCrunch (~50%)
-    - YOU MUST USE BOTH PLATFORMS - this is required!
-
-    STEP 2: REDDIT STRATEGY
-    -----------------------
-    a) reddit_search(query) -> Review quality
-       - Quality HIGH? -> Continue to reddit_score
-       - Quality LOW? -> Try different query (e.g., "frustrated with [competitor]")
-       - Still LOW after 2 tries? -> Skip to TechCrunch strategy
-
-    b) reddit_score(posts) -> Review scores
-       - Many posts >= 50? -> Continue to reddit_extract
-       - Few high scores? -> May get weak leads, adjust expectations
-
-    c) reddit_extract(posts) -> Get raw leads
-       - Returns leads but WARNING: may include sellers!
-
-    d) filter_sellers(leads) -> CRITICAL! Remove promoters
-       - Only BUYER leads remain
-
-    STEP 3: TECHCRUNCH STRATEGY
+    STEP 2: reddit_score(posts)
     ---------------------------
-    a) techcrunch_fetch() -> Get recent funding articles
-       - TechCrunch has fresh funding news daily
-       - Recently funded = CONFIRMED BUDGET
+    Score posts for buying intent. Review:
+    - Many posts >= 50? -> Continue to reddit_extract
+    - Few high scores? -> Proceed but expect fewer leads
 
-    b) techcrunch_select_articles(articles) -> Select relevant ones
-       - Pick articles for startups in your target industry
-       - Look for Series A/B/C rounds
+    Example trace:
+    "Scoring complete. 26/50 posts scored >= 50. Good quality.
+     Proceeding to lead extraction..."
 
-    c) techcrunch_extract_companies(articles) -> Get company list
-       - Extracts company name, funding amount, description
-       - Returns companies_for_linkedin ready for next step
+    STEP 3: reddit_extract(posts)
+    -----------------------------
+    Extract author info as leads.
+    WARNING: These leads still need seller filtering!
 
-    d) linkedin_company_batch_search(companies_for_linkedin) -> Get LinkedIn URLs
-       - Finds each company's LinkedIn page
-       - Returns companies with URLs for employee search
+    Example trace:
+    "Extracted 18 leads from high-quality posts.
+     Running seller filter next..."
 
-    e) linkedin_employees_batch_search(companies, query) -> Get employees PARALLEL!
-       - Pass ALL companies at once (not one by one!)
-       - Searches all companies in parallel (~2 min total vs ~2 min EACH)
-       - Returns employees_by_company ready for next step
+    STEP 4: filter_sellers(leads) - CRITICAL!
+    -----------------------------------------
+    Remove promoters. Only BUYERS remain.
 
-    f) techcrunch_select_decision_makers(employees) -> Pick the right contacts
-       - Find Founders, CEOs, CTOs at funded companies
-       - These are HIGH INTENT leads (have budget!)
+    BUYER vs SELLER - THE MOST IMPORTANT RULE:
+    - "I built UIBrush" = SELLER = REMOVE (Andy Roberts is NOT a lead!)
+    - "Looking for AI design tool" = BUYER = KEEP
 
-    g) filter_sellers(leads) -> Remove any promoters
-       - TechCrunch leads may include self-promoters too
-
-    STEP 4: REVIEW & ADAPT
-    ----------------------
-    After each strategy, ask yourself:
-    - Do I have enough leads?
-    - Are the leads high quality?
-    - Should I retry with different query?
-
-    STEP 5: FINAL AGGREGATION
-    -------------------------
-    - Combine leads from all strategies
-    - Run filter_sellers ONE MORE TIME on all leads (safety check)
-    - Score and rank by intent
-    - Return top {target_leads}
-
-    ================================================================================
-    CRITICAL: BUYER vs SELLER - THE MOST IMPORTANT RULE
-    ================================================================================
-
-    ONLY include BUYERS. FILTER OUT SELLERS.
-
-    SELLER signals (REMOVE these leads):
+    SELLER signals (REMOVE):
     - "I built X", "We launched Y", "My startup"
     - "Check out", "Introducing", "Just launched"
-    - Promoting their own product
     - "We developed", "I created", "My tool"
 
-    BUYER signals (KEEP these leads):
+    BUYER signals (KEEP):
     - "Looking for", "Need help with", "Recommendations?"
     - "Frustrated with", "Alternative to", "Issues with"
     - Asking questions, seeking solutions
-    - Complaining about current tools
 
-    EXAMPLE:
-    - Andy Roberts: "I built UIBrush for designers" = SELLER = REMOVE (score 0)
-    - John Smith: "Looking for AI design tool, Figma is too slow" = BUYER = KEEP
+    Example trace:
+    "Removed 6 sellers (Andy Roberts, SarahBuilds, LaunchMike...).
+     12 BUYER leads remain."
 
-    Always use filter_sellers before finalizing leads!
+    Return your filtered buyer leads for aggregation.
 
   expected_output: |
-    {target_leads} qualified BUYER leads with:
-    - Clear buying intent (NOT selling!)
-    - Source platform and URL
-    - Intent score >= 60
-    - Reasoning for each score
+    Reddit leads with:
+    - leads: Array of buyer leads (NOT sellers!)
+    - count: Number of leads found
+    - queries_used: Which queries worked
+    - workflow_trace: Your reasoning at each step
 
-    Strategy execution summary:
-    - Tools called and decisions made at each step
-    - Leads per strategy (Reddit, TechCrunch)
-    - Sellers filtered (with names)
-    - Quality assessment
+    Each lead must have:
+    - name, username
+    - intent_signal: Quote showing BUYING intent
+    - intent_score: 0-100
+    - source_url, source_platform: "reddit"
+    - priority: hot/warm/cold
+    - scoring_reasoning
 
-    Lead format:
+  agent: reddit_specialist
+
+
+techcrunch_prospecting:
+  description: |
+    Execute TechCrunch strategy using the plan from strategy_planner.
+    Target: ~50% of {target_leads} leads
+
+    WHY TECHCRUNCH: Recently funded companies = CONFIRMED BUDGET!
+
+    YOU HAVE THE STRATEGY PLAN from context. Use it!
+
+    ================================================================================
+    STEPPED WORKFLOW - Execute tools in order
+    ================================================================================
+
+    STEP 1: techcrunch_fetch()
+    --------------------------
+    Get recent funding articles.
+    TechCrunch has fresh funding news daily.
+
+    Example trace:
+    "Fetched 15 funding articles from TechCrunch.
+     Selecting relevant ones for target industry..."
+
+    STEP 2: techcrunch_select_articles(articles)
+    --------------------------------------------
+    Select articles matching target industry from strategy plan.
+    Look for Series A/B/C rounds.
+
+    Example trace:
+    "Selected 8 articles in project management/productivity space.
+     Extracting company information..."
+
+    STEP 3: techcrunch_extract_companies(articles)
+    ----------------------------------------------
+    Extract company name, funding amount, description.
+    Returns companies_for_linkedin ready for next step.
+
+    Example trace:
+    "Extracted 8 companies with recent funding.
+     Getting LinkedIn URLs..."
+
+    STEP 4: linkedin_company_batch_search(companies)
+    ------------------------------------------------
+    Find each company's LinkedIn page.
+    Returns companies with LinkedIn URLs.
+
+    Example trace:
+    "Found LinkedIn URLs for 6/8 companies.
+     Searching for employees..."
+
+    STEP 5: linkedin_employees_batch_search(companies, query)
+    ---------------------------------------------------------
+    IMPORTANT: Pass ALL companies at once (not one by one!)
+    Searches in parallel (~2 min total vs ~2 min EACH!)
+
+    Use target_titles from strategy plan (e.g., "Founder OR CEO OR CTO")
+
+    Example trace:
+    "Searching for decision makers at 6 companies in parallel...
+     Found 45 employees across all companies."
+
+    STEP 6: techcrunch_select_decision_makers(employees)
+    ----------------------------------------------------
+    Pick Founders, CEOs, CTOs at funded companies.
+    These are HIGH INTENT leads (have budget!).
+
+    Example trace:
+    "Selected 12 decision makers.
+     Running seller filter..."
+
+    STEP 7: filter_sellers(leads)
+    -----------------------------
+    TechCrunch leads may include self-promoters too.
+    Apply same buyer/seller logic.
+
+    Example trace:
+    "Removed 2 self-promoters.
+     10 qualified decision-maker leads remain."
+
+    Return your filtered leads for aggregation.
+
+  expected_output: |
+    TechCrunch leads with:
+    - leads: Array of decision-maker leads
+    - count: Number of leads found
+    - companies_found: Companies with recent funding
+    - workflow_trace: Your reasoning at each step
+
+    Each lead must have:
+    - name, title, company
+    - linkedin_url: LinkedIn profile URL
+    - intent_signal: Recent funding + role (e.g., "CEO of company that raised $5M Series A")
+    - intent_score: 0-100
+    - source_url, source_platform: "techcrunch"
+    - priority: hot/warm/cold
+    - scoring_reasoning
+
+  agent: techcrunch_specialist
+
+
+aggregate_leads:
+  description: |
+    Combine leads from Reddit and TechCrunch into final {target_leads} qualified BUYER leads.
+
+    YOU HAVE LEADS FROM BOTH SPECIALISTS via context.
+
+    ================================================================================
+    AGGREGATION WORKFLOW
+    ================================================================================
+
+    STEP 1: RECEIVE leads from both platforms
+    -----------------------------------------
+    - Reddit leads (context from reddit_prospecting)
+    - TechCrunch leads (context from techcrunch_prospecting)
+
+    Example trace:
+    "Received 12 Reddit leads + 10 TechCrunch leads = 22 total.
+     Running final seller check..."
+
+    STEP 2: filter_sellers ONE MORE TIME (safety check)
+    ---------------------------------------------------
+    Both specialists should have filtered, but double-check.
+
+    SELLER: "I built X", "We launched Y", "My startup", "Check out"
+    BUYER: "Looking for", "Need help with", "Frustrated with"
+
+    Example trace:
+    "Final seller check: Removed 1 (missed earlier).
+     21 verified buyer leads remain."
+
+    STEP 3: DEDUPLICATE
+    -------------------
+    Same person may appear from multiple sources.
+    Keep the higher-scored version.
+
+    Example trace:
+    "Found 2 duplicates (same person on Reddit + LinkedIn).
+     19 unique leads remain."
+
+    STEP 4: RANK by intent_score
+    ----------------------------
+    Sort highest first.
+
+    STEP 5: RETURN top {target_leads} leads
+    ---------------------------------------
+    Final output with all required fields.
+
+  expected_output: |
+    Final {target_leads} qualified BUYER leads:
+
+    Each lead MUST have:
     - name: Full name
     - title: Job title
     - company: Company name
-    - linkedin_url: If available
+    - linkedin_url: If available (from TechCrunch) or null
+    - email: If available or null
     - intent_signal: Quote showing BUYING intent
     - intent_score: 0-100
-    - source_platform: reddit or techcrunch
-    - source_url: Original URL
-    - priority: hot (>=80), warm (60-79), cold (<60)
+    - source_platform: "reddit" or "techcrunch"
+    - source_url: Original URL where found
+    - priority: "hot" (>=80), "warm" (60-79), "cold" (<60)
     - scoring_reasoning: Why this score
 
-  agent: orchestrator
+    Summary:
+    - total_leads: Final count
+    - reddit_leads: Count from Reddit
+    - techcrunch_leads: Count from TechCrunch
+    - sellers_removed: Count filtered out
+    - duplicates_removed: Count deduplicated
+    - workflow_trace: Aggregation steps
+
+  agent: lead_aggregator

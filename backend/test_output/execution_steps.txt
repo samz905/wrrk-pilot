@@ -1,15 +1,28 @@
 ORCHESTRATOR EXECUTION LOG
-Generated: 2025-11-27T13:46:56.905026
+Generated: 2025-11-27T23:52:51.135530
 ======================================================================
 
-[13:46:56] Query: project management software for startups
-[13:46:56] Target: 10 leads
-[13:46:56] --------------------------------------------------
-[13:46:56] Starting orchestrator...
-[13:46:56] ==================================================
-[13:46:56] [THOUGHT] Initializing intelligent prospecting flow v2...
-[13:46:56] [THOUGHT] Product: project management software for startups
-[13:46:56] [THOUGHT] Target: 10 high-quality leads
-[13:46:56] [THOUGHT] Using single Orchestrator Agent with full tool suite
-[13:46:57] [AGENT] Started: Orchestrator Agent analyzing query...
-[13:46:57] [THOUGHT] Strategy: Agent will decide
+[23:52:51] Query: customer service bot that you can embed on your website
+[23:52:51] Target: 20 leads
+[23:52:51] --------------------------------------------------
+[23:52:51] Starting orchestrator...
+[23:52:51] ==================================================
+[23:52:51] [THOUGHT] Initializing intelligent prospecting flow v2...
+[23:52:51] [THOUGHT] Product: customer service bot that you can embed on your website
+[23:52:51] [THOUGHT] Target: 20 high-quality leads
+[23:52:51] [THOUGHT] Using single Orchestrator Agent with full tool suite
+[23:52:51] [AGENT] Started: Orchestrator Agent analyzing query...
+[23:52:51] [THOUGHT] Strategy: Agent will decide
+[00:19:52] [AGENT] Completed: Found 14 new leads (total: 14)
+[00:19:52] [THOUGHT] Finalized 14 qualified buyer leads from Reddit and TechCrunch.
+[00:19:52] [THOUGHT] Progress: 12 qualified leads (target: 20, need 10)
+[00:19:52] [COMPLETED] Leads found: {'total_leads': 12, 'hot_leads': 0, 'warm_leads': 12, 'platforms': ['reddit', 'techcrunch'], 'strategies': ['filter sellers', 'deduplicate', 'rank by intent score'], 'exports': {'json': 'C:\\Users\\samZ9\\Downloads\\Code\\wrrk-pilot\\backend\\test_output\\leads_20251128-001952.json', 'csv': 'C:\\Users\\samZ9\\Downloads\\Code\\wrrk-pilot\\backend\\test_output\\leads_20251128-001952.csv', 'log': 'C:\\Users\\samZ9\\Downloads\\Code\\wrrk-pilot\\backend\\test_output\\agent_run_log_20251128-001952.json'}}
+[00:19:52] [THOUGHT] Success! Found 12 qualified leads
+[00:19:52] ==================================================
+[00:19:52] FINAL RESULTS:
+[00:19:52]   Status: ProspectingStatus.COMPLETED
+[00:19:52]   Total leads: 14
+[00:19:52]   Hot leads: 0
+[00:19:52]   Warm leads: 12
+[00:19:52]   Strategies: ['filter sellers', 'deduplicate', 'rank by intent score']
+[00:19:52]   CSV: C:\Users\samZ9\Downloads\Code\wrrk-pilot\backend\test_output\leads.csv

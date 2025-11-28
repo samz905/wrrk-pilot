@@ -1,0 +1,1702 @@
+================================================================================
+PROSPECTING AGENT - EXECUTION TRACE
+================================================================================
+
+Query: project management software for startups
+Target: 10 leads
+ICP: {'titles': ['Founder', 'CEO', 'CTO', 'Head of Product', 'VP Engineering'], 'company_size': '1-500 employees', 'industries': ['SaaS', 'Technology', 'AI/ML', 'Developer Tools']}
+
+--------------------------------------------------------------------------------
+AGENT REASONING & ACTIONS
+--------------------------------------------------------------------------------
+[PLANNING] └── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[AGENT] Status: Executing Task...┌───────────────────────────── 🤖 Agent Started ──────────────────────────────┐
+[AGENT] │  Agent: Prospecting Strategy Planner                                        │
+[PLANNING] │  Task: Analyze the product and create a prospecting strategy plan.          │
+[FOUND] │  - ICP: {'titles': ['Founder', 'CEO', 'CTO', 'Head of Product', 'VP         │
+[PLANNING] │  YOUR TASK - Create a strategy plan (NOT execution):                        │
+[SEARCH] │  2. GENERATE Reddit search queries (2-3 variations):                        │
+[PLANNING] │  OUTPUT a structured plan for the execution specialists.                    │
+[PLANNING] └── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] Assigned to: Prospecting Strategy Planner
+[AGENT] │  Agent: Prospecting Strategy Planner                                        │
+[FOUND] │      "Founder",                                                             │
+[SEARCH] │    "lead_distribution": "3 leads from Reddit queries, 4 leads from          │
+[PLANNING] │  Name: plan_strategy                                                        │
+[AGENT] │  Agent: Prospecting Strategy Planner                                        │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[AGENT] Status: Executing Task...┌───────────────────────────── 🤖 Agent Started ──────────────────────────────┐
+[AGENT] │  Agent: Reddit Intelligence Specialist                                      │
+[PLANNING] │  Task: Execute Reddit strategy using the plan from strategy_planner.        │
+[PLANNING] │  YOU HAVE THE STRATEGY PLAN from context. Use it!                           │
+[PLANNING] │  Use query from strategy plan. Review results:                              │
+[PLANNING] │  - Quality LOW? -> Try alternative query from plan                          │
+[SEARCH] │  "Reddit search for 'project management tool' returned 50 posts, 60%        │
+[SEARCH] [REDDIT_SEARCH] Searching for 'project management tool'...
+[FOUND] [REDDIT_SEARCH] Found 50 posts, 30 relevant (60%)
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[AGENT] │  Agent: Reddit Intelligence Specialist                                      │
+[THINKING] I will start by executing the first step of the workflow, which   │
+[PLANNING] │  is to search Reddit using the first query from the strategy plan:          │
+[TOOL] reddit_search                                                  │
+[ACTION] Making single batch API call for 38 posts (structured output)...
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[AGENT] │  Agent: Reddit Intelligence Specialist                                      │
+[THINKING] The Reddit search for "project management tool"          │
+[TOOL] reddit_score                                                   │
+[SEARCH] │        "subreddit": "BestofRedditorUpdates",                                │
+[SEARCH] │  "https://www.reddit.com/r/BestofRedditorUpdates/comments/1okkvio/my_emplo  │
+[SEARCH] │  rules**](https://www.reddit.com/r/BestofRedditorUpdates/wiki/subrules).    │
+[SEARCH] │  [CONCLUDED](https://www.reddit.com/r/BestofRedditorUpdates/search?sort=ne  │
+[SEARCH] │  this subreddit](/message/compose/?to=/r/BestofRedditorUpdates) if you      │
+[SEARCH] │  "https://www.reddit.com/r/BestofRedditorUpdates/comments/1okkvio/my_emplo  │
+[PLANNING] │  make things easier for myself. I also think they can just help plan life   │
+[PLANNING] │  with hourly billing.\n\n**Pros**: Unlimited users on the free plan,        │
+[PLANNING] │  self-hosting. I already am planning to put up a separate finance tracking  │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[AGENT] │  Agent: Reddit Intelligence Specialist                                      │
+[THINKING] Scoring complete. 38 out of 38 posts scored >= 50.       │
+[TOOL] reddit_extract                                                 │
+[SEARCH] │        "subreddit": "BestofRedditorUpdates",                                │
+[SEARCH] │  "https://www.reddit.com/r/BestofRedditorUpdates/comments/1okkvio/my_emplo  │
+[SEARCH] │  rules**](https://www.reddit.com/r/BestofRedditorUpdates/wiki/subrules).    │
+[SEARCH] │  [CONCLUDED](https://www.reddit.com/r/BestofRedditorUpdates/search?sort=ne  │
+[SEARCH] │  this subreddit](/message/compose/?to=/r/BestofRedditorUpdates) if you      │
+[SEARCH] │  "https://www.reddit.com/r/BestofRedditorUpdates/comments/1okkvio/my_emplo  │
+[PLANNING] │  make things easier for myself. I also think they can just help plan life   │
+[PLANNING] │  with hourly billing.\n\n**Pros**: Unlimited users on the free plan,        │
+[PLANNING] │  self-hosting. I already am planning to put up a separate finance tracking  │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[AGENT] │  Agent: Reddit Intelligence Specialist                                      │
+[THINKING] I need to filter the extracted leads to remove any       │
+[TOOL] filter_sellers                                                 │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │  "https://www.reddit.com/r/BestofRedditorUpdates/comments/1okkvio/my_emplo  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[FOUND] │  "Lanky_Tackle_543", "title": "Founder", "company": "Not specified",        │
+[SEARCH] │  "Extracted from Reddit post"}, {"name": "Anxious_Block9930", "username":   │
+[FOUND] │  "Anxious_Block9930", "title": "Founder", "company": "Not specified",       │
+[SEARCH] │  "scoring_reasoning": "Extracted from Reddit post"}, {"name": "FuegoKels",  │
+[FOUND] │  "username": "FuegoKels", "title": "Founder", "company": "Not specified",   │
+[SEARCH] │  "scoring_reasoning": "Extracted from Reddit post"}, {"name":               │
+[FOUND] │  "ReturnoftheBoat", "username": "ReturnoftheBoat", "title": "Founder",      │
+[SEARCH] │  "scoring_reasoning": "Extracted from Reddit post"}, {"name":               │
+[FOUND] │  "Founder", "company": "Not specified", "linkedin_url": null, "email":      │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: Reddit Intelligence Specialist                                      │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │  "https://www.reddit.com/r/BestofRedditorUpdates/comments/1okkvio/my_emplo  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[SEARCH] │    "workflow_trace": "Reddit search returned 50 posts, quality HIGH.        │
+[AGENT] │  Agent: Reddit Intelligence Specialist                                      │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] Status: Executing Task...┌───────────────────────────── 🤖 Agent Started ──────────────────────────────┐
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[PLANNING] │  Task: Execute TechCrunch strategy using the plan from strategy_planner.    │
+[PLANNING] │  YOU HAVE THE STRATEGY PLAN from context. Use it!                           │
+[PLANNING] │  Select articles matching target industry from strategy plan.               │
+[FOUND] │  "Found LinkedIn URLs for 6/8 companies.                                    │
+[SEARCH] │   Searching for employees..."                                               │
+[PLANNING] │  Use target_titles from strategy plan (e.g., "Founder OR CEO OR CTO")       │
+[SEARCH] │  "Searching for decision makers at 6 companies in parallel...               │
+[FOUND] │   Found 45 employees across all companies."                                 │
+[FOUND] │  Pick Founders, CEOs, CTOs at funded companies.                             │
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] I need to fetch recent funding articles from TechCrunch to        │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] It seems I did not receive any articles from the first   │
+[TOOL] techcrunch_fetch                                               │
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] I need to fetch recent funding articles again, but I     │
+[TOOL] techcrunch_fetch                                               │
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] I have not been able to fetch any articles from          │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] I still haven't received any articles from TechCrunch    │
+[TOOL] techcrunch_select_articles                                     │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] I have not been able to retrieve any articles from       │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] └── 🧠 Thinking...┌───────────────────────────── 🤖 Agent Started ──────────────────────────────┐
+[AGENT] │  Agent: Lead Aggregation & Quality Specialist                               │
+[SEARCH] │  Task: Combine leads from Reddit and TechCrunch into final 10 qualified     │
+[SEARCH] │  - Reddit leads (context from reddit_prospecting)                           │
+[SEARCH] │  "Received 12 Reddit leads + 10 TechCrunch leads = 22 total.                │
+[SEARCH] │  "Found 2 duplicates (same person on Reddit + LinkedIn).                    │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: Lead Aggregation & Quality Specialist                               │
+[THINKING] I need to process the leads received from Reddit and TechCrunch   │
+[SEARCH] │  TechCrunch, I will focus on the Reddit leads and run a final seller        │
+[TOOL] filter_sellers                                                 │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │  "https://www.reddit.com/r/BestofRedditorUpdates/comments/1okkvio/my_emplo  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │  {"buyer_leads": [{"name": "Lanky_Tackle_543", "title": "Founder",          │
+[SEARCH] │  "Extracted from Reddit post"}, {"name": "Anxious_Block9930", "title":      │
+[FOUND] │  "Founder", "company": "Not specified", "linkedin_url": null, "email":      │
+[SEARCH] │  "scoring_reasoning": "Extracted from Reddit post"}, {"name": "FuegoKels",  │
+[FOUND] │  "title": "Founder", "company": "Not specified", "linkedin_url": null,      │
+[SEARCH] │  "scoring_reasoning": "Extracted from Reddit post"}, {"name":               │
+[FOUND] │  "ReturnoftheBoat", "title": "Founder", "company": "Not specified",         │
+[SEARCH] │  "scoring_reasoning": "Extracted from Reddit post"}, {"name":               │
+[FOUND] │  "Striking_Parfait741", "title": "Founder", "company": "Not specified",     │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: Lead Aggregation & Quality Specialist                               │
+[THINKING] I have completed the final seller check, and there are 35 buyer   │
+[SEARCH] │  leads remaining from Reddit. Now I will deduplicate these leads to ensure  │
+[THINKING] I need to deduplicate the leads to ensure uniqueness and keep     │
+[TOOL] DEDUPLICATE                                                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │  "https://www.reddit.com/r/BestofRedditorUpdates/comments/1okkvio/my_emplo  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[THINKING] you should always think about what to do                          │
+[THINKING] I now can give a great answer                                     │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: Lead Aggregation & Quality Specialist                               │
+[THINKING] I need to filter the leads again to ensure that I only   │
+[TOOL] filter_sellers                                                 │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │  "https://www.reddit.com/r/BestofRedditorUpdates/comments/1okkvio/my_emplo  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: Lead Aggregation & Quality Specialist                               │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │  "https://www.reddit.com/r/BestofRedditorUpdates/comments/1okkvio/my_emplo  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[SEARCH] │    "summary": "Filtered and deduplicated leads from Reddit. Selected top    │
+[AGENT] │  Agent: Lead Aggregation & Quality Specialist                               │
+[AGENT] ┌───────────────────────────── 🤖 Agent Started ──────────────────────────────┐
+[AGENT] │  Agent: Prospecting Strategy Planner                                        │
+[PLANNING] │  Task: Analyze the product and create a prospecting strategy plan.          │
+[FOUND] │  - ICP: {'titles': ['Founder', 'CEO', 'CTO', 'Head of Product', 'VP         │
+[PLANNING] │  YOUR TASK - Create a strategy plan (NOT execution):                        │
+[SEARCH] │  2. GENERATE Reddit search queries (2-3 variations):                        │
+[PLANNING] │  OUTPUT a structured plan for the execution specialists.                    │
+[PLANNING] └── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[AGENT] │  Agent: Prospecting Strategy Planner                                        │
+[FOUND] │      "Founder",                                                             │
+[SEARCH] │    "lead_distribution": "3 leads from Reddit queries, 4 leads from          │
+[PLANNING] └── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] Assigned to: Prospecting Strategy Planner
+[PLANNING] │  Name: plan_strategy                                                        │
+[AGENT] │  Agent: Prospecting Strategy Planner                                        │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[AGENT] Status: Executing Task...┌───────────────────────────── 🤖 Agent Started ──────────────────────────────┐
+[AGENT] │  Agent: Reddit Intelligence Specialist                                      │
+[PLANNING] │  Task: Execute Reddit strategy using the plan from strategy_planner.        │
+[PLANNING] │  YOU HAVE THE STRATEGY PLAN from context. Use it!                           │
+[PLANNING] │  Use query from strategy plan. Review results:                              │
+[PLANNING] │  - Quality LOW? -> Try alternative query from plan                          │
+[SEARCH] │  "Reddit search for 'project management tool' returned 50 posts, 60%        │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[AGENT] │  Agent: Reddit Intelligence Specialist                                      │
+[THINKING] I will start by executing the first step of the workflow, which   │
+[PLANNING] │  is to search Reddit using the first query from the strategy plan,          │
+[TOOL] reddit_search                                                  │
+[ACTION] Making single batch API call for 38 posts (structured output)...
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[AGENT] │  Agent: Reddit Intelligence Specialist                                      │
+[THINKING] The Reddit search for "project management tool"          │
+[TOOL] reddit_score                                                   │
+[SEARCH] │        "subreddit": "BestofRedditorUpdates",                                │
+[SEARCH] │  "https://www.reddit.com/r/BestofRedditorUpdates/comments/1okkvio/my_emplo  │
+[SEARCH] │  rules**](https://www.reddit.com/r/BestofRedditorUpdates/wiki/subrules).    │
+[SEARCH] │  [CONCLUDED](https://www.reddit.com/r/BestofRedditorUpdates/search?sort=ne  │
+[SEARCH] │  this subreddit](/message/compose/?to=/r/BestofRedditorUpdates) if you      │
+[SEARCH] │  "https://www.reddit.com/r/BestofRedditorUpdates/comments/1okkvio/my_emplo  │
+[PLANNING] │  make things easier for myself. I also think they can just help plan life   │
+[PLANNING] │  with hourly billing.\n\n**Pros**: Unlimited users on the free plan,        │
+[PLANNING] │  self-hosting. I already am planning to put up a separate finance tracking  │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[AGENT] │  Agent: Reddit Intelligence Specialist                                      │
+[THINKING] The scoring is complete, and I have 38 high-quality      │
+[TOOL] reddit_extract                                                 │
+[SEARCH] │        "subreddit": "BestofRedditorUpdates",                                │
+[SEARCH] │  "https://www.reddit.com/r/BestofRedditorUpdates/comments/1okkvio/my_emplo  │
+[SEARCH] │  rules**](https://www.reddit.com/r/BestofRedditorUpdates/wiki/subrules).    │
+[SEARCH] │  [CONCLUDED](https://www.reddit.com/r/BestofRedditorUpdates/search?sort=ne  │
+[SEARCH] │  this subreddit](/message/compose/?to=/r/BestofRedditorUpdates) if you      │
+[SEARCH] │  "https://www.reddit.com/r/BestofRedditorUpdates/comments/1okkvio/my_emplo  │
+[PLANNING] │  make things easier for myself. I also think they can just help plan life   │
+[PLANNING] │  with hourly billing.\n\n**Pros**: Unlimited users on the free plan,        │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[AGENT] │  Agent: Reddit Intelligence Specialist                                      │
+[THINKING] I have extracted 30 leads from the high-quality posts.   │
+[TOOL] filter_sellers                                                 │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │  "https://www.reddit.com/r/BestofRedditorUpdates/comments/1okkvio/my_emplo  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[FOUND] │  "Lanky_Tackle_543", "title": "Founder", "company": "Not specified",        │
+[SEARCH] │  "Extracted from Reddit post"}, {"name": "Anxious_Block9930", "username":   │
+[FOUND] │  "Anxious_Block9930", "title": "Founder", "company": "Not specified",       │
+[SEARCH] │  "scoring_reasoning": "Extracted from Reddit post"}, {"name": "FuegoKels",  │
+[FOUND] │  "username": "FuegoKels", "title": "Founder", "company": "Not specified",   │
+[SEARCH] │  "scoring_reasoning": "Extracted from Reddit post"}, {"name":               │
+[FOUND] │  "ReturnoftheBoat", "username": "ReturnoftheBoat", "title": "Founder",      │
+[SEARCH] │  "scoring_reasoning": "Extracted from Reddit post"}, {"name":               │
+[FOUND] │  "Founder", "company": "Not specified", "linkedin_url": null, "email":      │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: Reddit Intelligence Specialist                                      │
+[AGENT] │  Agent: Reddit Intelligence Specialist                                      │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │  "https://www.reddit.com/r/BestofRedditorUpdates/comments/1okkvio/my_emplo  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[SEARCH] │    "workflow_trace": "Reddit search returned 50 posts, quality HIGH.        │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] Status: Executing Task...┌───────────────────────────── 🤖 Agent Started ──────────────────────────────┐
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[PLANNING] │  Task: Execute TechCrunch strategy using the plan from strategy_planner.    │
+[PLANNING] │  YOU HAVE THE STRATEGY PLAN from context. Use it!                           │
+[PLANNING] │  Select articles matching target industry from strategy plan.               │
+[FOUND] │  "Found LinkedIn URLs for 6/8 companies.                                    │
+[SEARCH] │   Searching for employees..."                                               │
+[PLANNING] │  Use target_titles from strategy plan (e.g., "Founder OR CEO OR CTO")       │
+[SEARCH] │  "Searching for decision makers at 6 companies in parallel...               │
+[FOUND] │   Found 45 employees across all companies."                                 │
+[FOUND] │  Pick Founders, CEOs, CTOs at funded companies.                             │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] I need to start by fetching recent funding articles      │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] It seems that there are no recent funding articles       │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no recent funding articles available on  │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[ACTION] [2025-11-27 18:04:25]: Max RPM reached, waiting for next minute to start.
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] Since there are no recent funding articles available on  │
+[TOOL] techcrunch_fetch                                               │
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no recent funding articles available on  │
+[TOOL] techcrunch_fetch                                               │
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no recent funding articles available on  │
+[TOOL] techcrunch_fetch                                               │
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no recent funding articles available on  │
+[TOOL] techcrunch_fetch                                               │
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no recent funding articles available on  │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no recent funding articles available on  │
+[TOOL] techcrunch_fetch                                               │
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no recent funding articles available on  │
+[TOOL] techcrunch_fetch                                               │
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no recent funding articles available on  │
+[TOOL] techcrunch_fetch                                               │
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no recent funding articles available on  │
+[TOOL] techcrunch_fetch                                               │
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no recent funding articles available on  │
+[TOOL] techcrunch_fetch                                               │
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[ACTION] [2025-11-27 18:06:17]: Max RPM reached, waiting for next minute to start.
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no recent funding articles available on  │
+[TOOL] techcrunch_fetch                                               │
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no recent funding articles available on  │
+[TOOL] techcrunch_fetch                                               │
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no recent funding articles available on  │
+[TOOL] techcrunch_fetch                                               │
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no recent funding articles available on  │
+[TOOL] techcrunch_fetch                                               │
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no recent funding articles available on  │
+[TOOL] techcrunch_fetch                                               │
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no recent funding articles available on  │
+[TOOL] techcrunch_fetch                                               │
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no recent funding articles available on  │
+[TOOL] techcrunch_fetch                                               │
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no recent funding articles available on  │
+[TOOL] techcrunch_fetch                                               │
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no recent funding articles available on  │
+[TOOL] techcrunch_fetch                                               │
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no recent funding articles available on  │
+[TOOL] techcrunch_fetch                                               │
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[ACTION] [2025-11-27 18:08:02]: Max RPM reached, waiting for next minute to start.
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no recent funding articles available on  │
+[TOOL] techcrunch_fetch                                               │
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no recent funding articles available on  │
+[TOOL] techcrunch_fetch                                               │
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no recent funding articles available on  │
+[TOOL] techcrunch_fetch                                               │
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no recent funding articles available on  │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no recent funding articles available on  │
+[TOOL] techcrunch_fetch                                               │
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no recent funding articles available on  │
+[TOOL] techcrunch_fetch                                               │
+[TOOL] Read website content
+[FOUND] [TECHCRUNCH_FETCH] Found 0 funding articles
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no recent funding articles available on  │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] └── 🧠 Thinking...┌───────────────────────────── 🤖 Agent Started ──────────────────────────────┐
+[AGENT] │  Agent: Lead Aggregation & Quality Specialist                               │
+[SEARCH] │  Task: Combine leads from Reddit and TechCrunch into final 10 qualified     │
+[SEARCH] │  - Reddit leads (context from reddit_prospecting)                           │
+[SEARCH] │  "Received 12 Reddit leads + 10 TechCrunch leads = 22 total.                │
+[SEARCH] │  "Found 2 duplicates (same person on Reddit + LinkedIn).                    │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: Lead Aggregation & Quality Specialist                               │
+[THINKING] I need to process the leads received from Reddit and TechCrunch,  │
+[TOOL] filter_sellers                                                 │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │  "https://www.reddit.com/r/BestofRedditorUpdates/comments/1okkvio/my_emplo  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │  {"buyer_leads": [{"name": "Lanky_Tackle_543", "title": "Founder",          │
+[SEARCH] │  "Extracted from Reddit post"}, {"name": "Anxious_Block9930", "title":      │
+[FOUND] │  "Founder", "company": "Not specified", "linkedin_url": null, "email":      │
+[SEARCH] │  "scoring_reasoning": "Extracted from Reddit post"}, {"name": "FuegoKels",  │
+[FOUND] │  "title": "Founder", "company": "Not specified", "linkedin_url": null,      │
+[SEARCH] │  "scoring_reasoning": "Extracted from Reddit post"}, {"name":               │
+[FOUND] │  "ReturnoftheBoat", "title": "Founder", "company": "Not specified",         │
+[SEARCH] │  "scoring_reasoning": "Extracted from Reddit post"}, {"name":               │
+[FOUND] │  "Striking_Parfait741", "title": "Founder", "company": "Not specified",     │
+[ACTION] [2025-11-27 18:12:59]: Max RPM reached, waiting for next minute to start.
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: Lead Aggregation & Quality Specialist                               │
+[THINKING] I need to run the filter_sellers tool again to ensure    │
+[TOOL] filter_sellers                                                 │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │  "https://www.reddit.com/r/BestofRedditorUpdates/comments/1okkvio/my_emplo  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[ACTION] [2025-11-27 18:16:17]: Max RPM reached, waiting for next minute to start.
+[ACTION] [2025-11-27 18:18:32]: Max RPM reached, waiting for next minute to start.
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: Lead Aggregation & Quality Specialist                               │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │  "https://www.reddit.com/r/BestofRedditorUpdates/comments/1okkvio/my_emplo  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[SEARCH] │    "summary": "Finalized 10 qualified buyer leads from Reddit, all with     │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: Lead Aggregation & Quality Specialist                               │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │  "https://www.reddit.com/r/BestofRedditorUpdates/comments/1okkvio/my_emplo  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[SEARCH] │    "summary": "Finalized 10 qualified buyer leads from Reddit, all with     │
+[PLANNING] └── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[AGENT] Status: Executing Task...┌───────────────────────────── 🤖 Agent Started ──────────────────────────────┐
+[AGENT] │  Agent: Prospecting Strategy Planner                                        │
+[PLANNING] │  Task: Analyze the product and create a prospecting strategy plan.          │
+[FOUND] │  - ICP: {'titles': ['Founder', 'CEO', 'CTO', 'Head of Product', 'VP         │
+[PLANNING] │  YOUR TASK - Create a strategy plan (NOT execution):                        │
+[SEARCH] │  2. GENERATE Reddit search queries (2-3 variations):                        │
+[PLANNING] │  OUTPUT a structured plan for the execution specialists.                    │
+[PLANNING] └── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] Assigned to: Prospecting Strategy Planner
+[AGENT] │  Agent: Prospecting Strategy Planner                                        │
+[FOUND] │      "Founder",                                                             │
+[SEARCH] │    "lead_distribution": "4 leads from Reddit, 3 leads from TechCrunch, 3    │
+[PLANNING] │  Name: plan_strategy                                                        │
+[AGENT] │  Agent: Prospecting Strategy Planner                                        │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[AGENT] Status: Executing Task...┌───────────────────────────── 🤖 Agent Started ──────────────────────────────┐
+[AGENT] │  Agent: Reddit Intelligence Specialist                                      │
+[PLANNING] │  Task: Execute Reddit strategy using the plan from strategy_planner.        │
+[PLANNING] │  YOU HAVE THE STRATEGY PLAN from context. Use it!                           │
+[PLANNING] │  Use query from strategy plan. Review results:                              │
+[PLANNING] │  - Quality LOW? -> Try alternative query from plan                          │
+[SEARCH] │  "Reddit search for 'project management tool' returned 50 posts, 60%        │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[AGENT] │  Agent: Reddit Intelligence Specialist                                      │
+[THINKING] I will start by executing the first step of the workflow, which   │
+[PLANNING] │  is to search Reddit using the first query from the strategy plan,          │
+[TOOL] reddit_search                                                  │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[ACTION] Making single batch API call for 8 posts (structured output)...
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[AGENT] │  Agent: Reddit Intelligence Specialist                                      │
+[THINKING] The Reddit search for "project management tool"          │
+[TOOL] reddit_score                                                   │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[AGENT] │  Agent: Reddit Intelligence Specialist                                      │
+[THINKING] The scoring is complete, and all 8 high-quality posts    │
+[TOOL] reddit_extract                                                 │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[AGENT] │  Agent: Reddit Intelligence Specialist                                      │
+[THINKING] I have extracted 7 potential leads from the              │
+[TOOL] filter_sellers                                                 │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[FOUND] │  "Lanky_Tackle_543", "title": "Founder", "company": "Not specified",        │
+[SEARCH] │  "Extracted from Reddit post"}, {"name": "Anxious_Block9930", "username":   │
+[FOUND] │  "Anxious_Block9930", "title": "Founder", "company": "Not specified",       │
+[SEARCH] │  "scoring_reasoning": "Extracted from Reddit post"}, {"name": "FuegoKels",  │
+[FOUND] │  "username": "FuegoKels", "title": "Founder", "company": "Not specified",   │
+[SEARCH] │  "scoring_reasoning": "Extracted from Reddit post"}, {"name":               │
+[FOUND] │  "ReturnoftheBoat", "username": "ReturnoftheBoat", "title": "Founder",      │
+[SEARCH] │  "scoring_reasoning": "Extracted from Reddit post"}, {"name":               │
+[FOUND] │  "Dasbeerboots", "username": "Dasbeerboots", "title": "Founder",            │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: Reddit Intelligence Specialist                                      │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[SEARCH] │    "workflow_trace": "Reddit search returned 50 posts, quality HIGH.        │
+[AGENT] │  Agent: Reddit Intelligence Specialist                                      │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] Status: Executing Task...┌───────────────────────────── 🤖 Agent Started ──────────────────────────────┐
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[PLANNING] │  Task: Execute TechCrunch strategy using the plan from strategy_planner.    │
+[PLANNING] │  YOU HAVE THE STRATEGY PLAN from context. Use it!                           │
+[PLANNING] │  Select articles matching target industry from strategy plan.               │
+[FOUND] │  "Found LinkedIn URLs for 6/8 companies.                                    │
+[SEARCH] │   Searching for employees..."                                               │
+[PLANNING] │  Use target_titles from strategy plan (e.g., "Founder OR CEO OR CTO")       │
+[SEARCH] │  "Searching for decision makers at 6 companies in parallel...               │
+[FOUND] │   Found 45 employees across all companies."                                 │
+[FOUND] │  Pick Founders, CEOs, CTOs at funded companies.                             │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] I need to start by fetching recent funding articles      │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] It seems there are no articles available on the first    │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[ACTION] [2025-11-27 18:24:09]: Max RPM reached, waiting for next minute to start.
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no articles available on the second      │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no articles available on the third page  │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] It appears that there are no funding articles available  │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no articles available on the fifth page  │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no articles available on the sixth page  │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no articles available on the seventh     │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no articles available on the eighth      │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no articles available on the ninth page  │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no articles available on the tenth page  │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no articles available on the eleventh    │
+[TOOL] techcrunch_fetch                                               │
+[ACTION] [2025-11-27 18:25:30]: Max RPM reached, waiting for next minute to start.
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no articles available on the twelfth     │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no articles available on the thirteenth  │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no articles available on the fourteenth  │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no articles available on the fifteenth   │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no articles available on the sixteenth   │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no articles available on the             │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no articles available on the eighteenth  │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no articles available on the nineteenth  │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no articles available on the twentieth   │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no articles available on the             │
+[TOOL] techcrunch_fetch                                               │
+[ACTION] [2025-11-27 18:26:57]: Max RPM reached, waiting for next minute to start.
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no articles available on the             │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no articles available on the             │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no articles available on the             │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no articles available on the             │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no articles available on the             │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no articles available on the             │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no articles available on the             │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[THINKING] There are still no articles available on the             │
+[TOOL] techcrunch_fetch                                               │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: TechCrunch Funding Intelligence Specialist                          │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] └── 🧠 Thinking...┌───────────────────────────── 🤖 Agent Started ──────────────────────────────┐
+[AGENT] │  Agent: Lead Aggregation & Quality Specialist                               │
+[SEARCH] │  Task: Combine leads from Reddit and TechCrunch into final 10 qualified     │
+[SEARCH] │  - Reddit leads (context from reddit_prospecting)                           │
+[SEARCH] │  "Received 12 Reddit leads + 10 TechCrunch leads = 22 total.                │
+[SEARCH] │  "Found 2 duplicates (same person on Reddit + LinkedIn).                    │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: Lead Aggregation & Quality Specialist                               │
+[THINKING] I need to run a final seller check on the leads received from     │
+[SEARCH] │  Reddit to ensure that only buyer leads are retained.                       │
+[TOOL] filter_sellers                                                 │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[FOUND] │        "title": "Founder",                                                  │
+[SEARCH] │        "scoring_reasoning": "Extracted from Reddit post"                    │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[FOUND] │  {"buyer_leads": [{"name": "Lanky_Tackle_543", "title": "Founder",          │
+[SEARCH] │  "Extracted from Reddit post"}, {"name": "Anxious_Block9930", "title":      │
+[FOUND] │  "Founder", "company": "Not specified", "linkedin_url": null, "email":      │
+[SEARCH] │  "scoring_reasoning": "Extracted from Reddit post"}, {"name": "FuegoKels",  │
+[FOUND] │  "title": "Founder", "company": "Not specified", "linkedin_url": null,      │
+[SEARCH] │  "scoring_reasoning": "Extracted from Reddit post"}, {"name":               │
+[FOUND] │  "ReturnoftheBoat", "title": "Founder", "company": "Not specified",         │
+[SEARCH] │  "scoring_reasoning": "Extracted from Reddit post"}, {"name":               │
+[FOUND] │  "Dasbeerboots", "title": "Founder", "company": "Not specified",            │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: Lead Aggregation & Quality Specialist                               │
+[THINKING] I have received the leads from Reddit and performed a final       │
+[PLANNING] ├── 📋 Task: plan_strategy (ID: 29d07b40-45fc-4fc4-b9e4-a7d57418dd27)
+[PLANNING] │   Assigned to: Prospecting Strategy Planner
+[SEARCH] │   Assigned to: Reddit Intelligence Specialist
+[AGENT] │  Agent: Lead Aggregation & Quality Specialist                               │
+
+--------------------------------------------------------------------------------
+RESULTS SUMMARY
+--------------------------------------------------------------------------------
+Platforms searched: reddit, techcrunch, Reddit
+Strategies used: filter_sellers, lead aggregation, buyer intent filtering, deduplication, Final seller check, Deduplication
+Total leads found: 0
+Hot leads (score >= 80): 0
+Warm leads (score 60-79): 0
+
+--------------------------------------------------------------------------------
+LEADS FOUND
+--------------------------------------------------------------------------------
+
+================================================================================
+END OF TRACE
+================================================================================

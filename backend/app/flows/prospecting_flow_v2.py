@@ -47,8 +47,31 @@ class ReasoningCapture:
             if not clean_line:
                 continue
 
+            # === AGENT THINKING (most important!) ===
+            # CrewAI outputs "Thought: ..." when agent reasons
+            if 'Thought:' in clean_line:
+                # Extract just the thought content
+                thought = clean_line.split('Thought:', 1)[-1].strip()
+                # Handle double "Thought: Thought:" pattern
+                if thought.startswith('Thought:'):
+                    thought = thought.split('Thought:', 1)[-1].strip()
+                if thought:
+                    self.reasoning_lines.append(f"[THINKING] {thought}")
+
+            # === TOOL USAGE ===
+            elif 'Using Tool:' in clean_line:
+                tool = clean_line.split('Using Tool:', 1)[-1].strip()
+                self.reasoning_lines.append(f"[TOOL] {tool}")
+
+            elif 'Tool Usage Failed' in clean_line or 'Tool Error' in clean_line:
+                self.reasoning_lines.append(f"[ERROR] {clean_line}")
+
+            # === AGENT STATUS ===
+            elif 'Agent Started' in clean_line or 'Agent:' in clean_line:
+                self.reasoning_lines.append(f"[AGENT] {clean_line}")
+
             # Capture planning/reasoning
-            if 'Planning' in clean_line or 'plan' in clean_line.lower():
+            elif 'Planning' in clean_line or 'plan' in clean_line.lower():
                 self.reasoning_lines.append(f"[PLANNING] {clean_line}")
             elif '[INFO]' in clean_line:
                 # Tool usage info

@@ -1,0 +1,720 @@
+{
+  "summary": {
+    "run_id": "prospecting-20251127-173302",
+    "start_time": "2025-11-27T17:33:02.029277",
+    "end_time": "2025-11-27T18:29:02.615766",
+    "duration_seconds": 3360.59,
+    "total_leads": 20,
+    "hot_leads": 0,
+    "warm_leads": 0,
+    "cold_leads": 20,
+    "leads_by_platform": {
+      "reddit": 20
+    },
+    "tools_used": {
+      "OrchestratorCrew": 3
+    },
+    "total_tool_calls": 3,
+    "errors_count": 0,
+    "log_entries_count": 44
+  },
+  "logs": [
+    {
+      "timestamp": "2025-11-27T17:33:02.029277",
+      "elapsed_seconds": 0.0,
+      "type": "run_start",
+      "run_id": "prospecting-20251127-173302",
+      "started_at": "2025-11-27T17:33:02.029277"
+    },
+    {
+      "timestamp": "2025-11-27T17:33:02.029277",
+      "elapsed_seconds": 0.0,
+      "type": "phase",
+      "phase": "Initialization",
+      "status": "started"
+    },
+    {
+      "timestamp": "2025-11-27T17:33:02.029277",
+      "elapsed_seconds": 0.0,
+      "type": "reasoning",
+      "thought": "Starting prospecting flow v2 with single Orchestrator Agent",
+      "context": null
+    },
+    {
+      "timestamp": "2025-11-27T17:33:02.029277",
+      "elapsed_seconds": 0.0,
+      "type": "reasoning",
+      "thought": "Query: project management software for startups",
+      "context": null
+    },
+    {
+      "timestamp": "2025-11-27T17:33:02.029277",
+      "elapsed_seconds": 0.0,
+      "type": "reasoning",
+      "thought": "Target: 10 leads",
+      "context": null
+    },
+    {
+      "timestamp": "2025-11-27T17:33:02.456814",
+      "elapsed_seconds": 0.427537,
+      "type": "phase",
+      "phase": "Initialization",
+      "status": "completed"
+    },
+    {
+      "timestamp": "2025-11-27T17:33:02.456814",
+      "elapsed_seconds": 0.427537,
+      "type": "phase",
+      "phase": "Orchestrator Agent Execution",
+      "status": "started"
+    },
+    {
+      "timestamp": "2025-11-27T17:33:02.457832",
+      "elapsed_seconds": 0.428555,
+      "type": "reasoning",
+      "thought": "Starting orchestrator with strategy: auto",
+      "context": null
+    },
+    {
+      "timestamp": "2025-11-27T17:33:02.457832",
+      "elapsed_seconds": 0.428555,
+      "type": "tool_call",
+      "tool": "OrchestratorCrew",
+      "inputs": {
+        "product_description": "project management software for startups",
+        "target_leads": 10,
+        "icp_criteria": {
+          "titles": [
+            "Founder",
+            "CEO",
+            "CTO",
+            "Head of Product",
+            "VP Engineering"
+          ],
+          "company_size": "1-500 employees",
+          "industries": [
+            "SaaS",
+            "Technology",
+            "AI/ML",
+            "Developer Tools"
+          ]
+        }
+      },
+      "call_number": 1
+    },
+    {
+      "timestamp": "2025-11-27T17:54:11.294363",
+      "elapsed_seconds": 1269.265086,
+      "type": "tool_result",
+      "tool": "OrchestratorCrew",
+      "summary": "Found 10 new leads (total: 10) from ['reddit']",
+      "count": 10,
+      "success": true
+    },
+    {
+      "timestamp": "2025-11-27T17:54:11.294363",
+      "elapsed_seconds": 1269.265086,
+      "type": "lead_found",
+      "lead_number": 1,
+      "username": "Unknown",
+      "intent_score": 50,
+      "platform": "reddit",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T17:54:11.294363",
+      "elapsed_seconds": 1269.265086,
+      "type": "lead_found",
+      "lead_number": 2,
+      "username": "Unknown",
+      "intent_score": 50,
+      "platform": "reddit",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T17:54:11.294363",
+      "elapsed_seconds": 1269.265086,
+      "type": "lead_found",
+      "lead_number": 3,
+      "username": "Unknown",
+      "intent_score": 50,
+      "platform": "reddit",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T17:54:11.294363",
+      "elapsed_seconds": 1269.265086,
+      "type": "lead_found",
+      "lead_number": 4,
+      "username": "Unknown",
+      "intent_score": 50,
+      "platform": "reddit",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T17:54:11.294363",
+      "elapsed_seconds": 1269.265086,
+      "type": "lead_found",
+      "lead_number": 5,
+      "username": "Unknown",
+      "intent_score": 50,
+      "platform": "reddit",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T17:54:11.294363",
+      "elapsed_seconds": 1269.265086,
+      "type": "lead_found",
+      "lead_number": 6,
+      "username": "Unknown",
+      "intent_score": 50,
+      "platform": "reddit",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T17:54:11.294363",
+      "elapsed_seconds": 1269.265086,
+      "type": "lead_found",
+      "lead_number": 7,
+      "username": "Unknown",
+      "intent_score": 50,
+      "platform": "reddit",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T17:54:11.294363",
+      "elapsed_seconds": 1269.265086,
+      "type": "lead_found",
+      "lead_number": 8,
+      "username": "Unknown",
+      "intent_score": 50,
+      "platform": "reddit",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T17:54:11.294363",
+      "elapsed_seconds": 1269.265086,
+      "type": "lead_found",
+      "lead_number": 9,
+      "username": "Unknown",
+      "intent_score": 50,
+      "platform": "reddit",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T17:54:11.294363",
+      "elapsed_seconds": 1269.265086,
+      "type": "lead_found",
+      "lead_number": 10,
+      "username": "Unknown",
+      "intent_score": 50,
+      "platform": "reddit",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T17:54:11.310247",
+      "elapsed_seconds": 1269.28097,
+      "type": "phase",
+      "phase": "Orchestrator Agent Execution",
+      "status": "completed"
+    },
+    {
+      "timestamp": "2025-11-27T17:54:11.310247",
+      "elapsed_seconds": 1269.28097,
+      "type": "retry",
+      "reason": "Only 0 qualified leads found (target: 10)",
+      "new_strategy": "Switching from auto to intent_signals"
+    },
+    {
+      "timestamp": "2025-11-27T17:54:11.310247",
+      "elapsed_seconds": 1269.28097,
+      "type": "phase",
+      "phase": "Orchestrator Agent Execution",
+      "status": "started"
+    },
+    {
+      "timestamp": "2025-11-27T17:54:11.310247",
+      "elapsed_seconds": 1269.28097,
+      "type": "reasoning",
+      "thought": "Starting orchestrator with strategy: intent_signals",
+      "context": null
+    },
+    {
+      "timestamp": "2025-11-27T17:54:11.310247",
+      "elapsed_seconds": 1269.28097,
+      "type": "tool_call",
+      "tool": "OrchestratorCrew",
+      "inputs": {
+        "product_description": "project management software for startups",
+        "target_leads": 10,
+        "icp_criteria": {
+          "titles": [
+            "Founder",
+            "CEO",
+            "CTO",
+            "Head of Product",
+            "VP Engineering"
+          ],
+          "company_size": "1-500 employees",
+          "industries": [
+            "SaaS",
+            "Technology",
+            "AI/ML",
+            "Developer Tools"
+          ]
+        }
+      },
+      "call_number": 2
+    },
+    {
+      "timestamp": "2025-11-27T18:20:04.226400",
+      "elapsed_seconds": 2822.197123,
+      "type": "tool_result",
+      "tool": "OrchestratorCrew",
+      "summary": "Found 10 new leads (total: 10) from ['reddit', 'techcrunch']",
+      "count": 10,
+      "success": true
+    },
+    {
+      "timestamp": "2025-11-27T18:20:04.226400",
+      "elapsed_seconds": 2822.197123,
+      "type": "lead_found",
+      "lead_number": 11,
+      "username": "Unknown",
+      "intent_score": 50,
+      "platform": "reddit",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T18:20:04.226400",
+      "elapsed_seconds": 2822.197123,
+      "type": "lead_found",
+      "lead_number": 12,
+      "username": "Unknown",
+      "intent_score": 50,
+      "platform": "reddit",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T18:20:04.226400",
+      "elapsed_seconds": 2822.197123,
+      "type": "lead_found",
+      "lead_number": 13,
+      "username": "Unknown",
+      "intent_score": 50,
+      "platform": "reddit",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T18:20:04.226400",
+      "elapsed_seconds": 2822.197123,
+      "type": "lead_found",
+      "lead_number": 14,
+      "username": "Unknown",
+      "intent_score": 50,
+      "platform": "reddit",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T18:20:04.226400",
+      "elapsed_seconds": 2822.197123,
+      "type": "lead_found",
+      "lead_number": 15,
+      "username": "Unknown",
+      "intent_score": 50,
+      "platform": "reddit",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T18:20:04.226400",
+      "elapsed_seconds": 2822.197123,
+      "type": "lead_found",
+      "lead_number": 16,
+      "username": "Unknown",
+      "intent_score": 50,
+      "platform": "reddit",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T18:20:04.226400",
+      "elapsed_seconds": 2822.197123,
+      "type": "lead_found",
+      "lead_number": 17,
+      "username": "Unknown",
+      "intent_score": 50,
+      "platform": "reddit",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T18:20:04.226400",
+      "elapsed_seconds": 2822.197123,
+      "type": "lead_found",
+      "lead_number": 18,
+      "username": "Unknown",
+      "intent_score": 50,
+      "platform": "reddit",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T18:20:04.226400",
+      "elapsed_seconds": 2822.197123,
+      "type": "lead_found",
+      "lead_number": 19,
+      "username": "Unknown",
+      "intent_score": 50,
+      "platform": "reddit",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T18:20:04.226400",
+      "elapsed_seconds": 2822.197123,
+      "type": "lead_found",
+      "lead_number": 20,
+      "username": "Unknown",
+      "intent_score": 50,
+      "platform": "reddit",
+      "user_type": "unknown"
+    },
+    {
+      "timestamp": "2025-11-27T18:20:04.226400",
+      "elapsed_seconds": 2822.197123,
+      "type": "phase",
+      "phase": "Orchestrator Agent Execution",
+      "status": "completed"
+    },
+    {
+      "timestamp": "2025-11-27T18:20:04.227366",
+      "elapsed_seconds": 2822.198089,
+      "type": "retry",
+      "reason": "Only 0 qualified leads found (target: 10)",
+      "new_strategy": "Switching from intent_signals to company_triggers"
+    },
+    {
+      "timestamp": "2025-11-27T18:20:04.227366",
+      "elapsed_seconds": 2822.198089,
+      "type": "phase",
+      "phase": "Orchestrator Agent Execution",
+      "status": "started"
+    },
+    {
+      "timestamp": "2025-11-27T18:20:04.227366",
+      "elapsed_seconds": 2822.198089,
+      "type": "reasoning",
+      "thought": "Starting orchestrator with strategy: company_triggers",
+      "context": null
+    },
+    {
+      "timestamp": "2025-11-27T18:20:04.227366",
+      "elapsed_seconds": 2822.198089,
+      "type": "tool_call",
+      "tool": "OrchestratorCrew",
+      "inputs": {
+        "product_description": "project management software for startups",
+        "target_leads": 10,
+        "icp_criteria": {
+          "titles": [
+            "Founder",
+            "CEO",
+            "CTO",
+            "Head of Product",
+            "VP Engineering"
+          ],
+          "company_size": "1-500 employees",
+          "industries": [
+            "SaaS",
+            "Technology",
+            "AI/ML",
+            "Developer Tools"
+          ]
+        }
+      },
+      "call_number": 3
+    },
+    {
+      "timestamp": "2025-11-27T18:29:02.612764",
+      "elapsed_seconds": 3360.583487,
+      "type": "tool_result",
+      "tool": "OrchestratorCrew",
+      "summary": "Found 0 new leads (total: 10) from ['Reddit']",
+      "count": 0,
+      "success": true
+    },
+    {
+      "timestamp": "2025-11-27T18:29:02.612764",
+      "elapsed_seconds": 3360.583487,
+      "type": "phase",
+      "phase": "Orchestrator Agent Execution",
+      "status": "completed"
+    },
+    {
+      "timestamp": "2025-11-27T18:29:02.614765",
+      "elapsed_seconds": 3360.585488,
+      "type": "phase",
+      "phase": "Finalization (Partial)",
+      "status": "started"
+    }
+  ],
+  "leads": [
+    {
+      "name": "Lanky_Tackle_543",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "A open to letter to Diamond Project management - QA Score",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/RWShelp/comments/1oxak9t/a_open_to_letter_to_diamond_project_management_qa/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    },
+    {
+      "name": "Anxious_Block9930",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "No title",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/RWShelp/comments/1oxak9t/a_open_to_letter_to_diamond_project_management_qa/novxbao/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    },
+    {
+      "name": "FuegoKels",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "Any advice for a green as can be Project Manager?",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/electricians/comments/1p5mk6w/any_advice_for_a_green_as_can_be_project_manager/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    },
+    {
+      "name": "ReturnoftheBoat",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "What approved collaboration/project management tools are you using?",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/BCPublicServants/comments/1oxc4vy/what_approved_collaborationproject_management/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    },
+    {
+      "name": "Striking_Parfait741",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "No title",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/BCPublicServants/comments/1oxc4vy/what_approved_collaborationproject_management/nowcz3g/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    },
+    {
+      "name": "Dasbeerboots",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "Recommendation: Commercial Construction Project Manager",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/NicksHandmadeBoots/comments/1oxfazy/recommendation_commercial_construction_project/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    },
+    {
+      "name": "Pale-Highlight-6895",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "No title",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/NicksHandmadeBoots/comments/1oxfazy/recommendation_commercial_construction_project/nowvczd/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    },
+    {
+      "name": "Choice_Evidence1983",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "my employee is passing off ChatGPT lists as his own ideas",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/BestofRedditorUpdates/comments/1okkvio/my_employee_is_passing_off_chatgpt_lists_as_his/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    },
+    {
+      "name": "OrganicAd1884",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "What project management tool for a bootstrapped startup?",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/webdev/comments/1oqe3he/what_project_management_tool_for_a_bootstrapped/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    },
+    {
+      "name": "Civil-Increase-4228",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "What is the most annoying part about switching between your project management tool and invoicing system? besides losing your sanity from time to time🤪",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/agency/comments/1ov6s74/what_is_the_most_annoying_part_about_switching/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    },
+    {
+      "name": "Lanky_Tackle_543",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "A open to letter to Diamond Project management - QA Score",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/RWShelp/comments/1oxak9t/a_open_to_letter_to_diamond_project_management_qa/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    },
+    {
+      "name": "Anxious_Block9930",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "No title",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/RWShelp/comments/1oxak9t/a_open_to_letter_to_diamond_project_management_qa/novxbao/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    },
+    {
+      "name": "FuegoKels",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "Any advice for a green as can be Project Manager?",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/electricians/comments/1p5mk6w/any_advice_for_a_green_as_can_be_project_manager/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    },
+    {
+      "name": "ReturnoftheBoat",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "What approved collaboration/project management tools are you using?",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/BCPublicServants/comments/1oxc4vy/what_approved_collaborationproject_management/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    },
+    {
+      "name": "Striking_Parfait741",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "No title",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/BCPublicServants/comments/1oxc4vy/what_approved_collaborationproject_management/nowcz3g/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    },
+    {
+      "name": "Dasbeerboots",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "Recommendation: Commercial Construction Project Manager",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/NicksHandmadeBoots/comments/1oxfazy/recommendation_commercial_construction_project/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    },
+    {
+      "name": "Pale-Highlight-6895",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "No title",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/NicksHandmadeBoots/comments/1oxfazy/recommendation_commercial_construction_project/nowvczd/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    },
+    {
+      "name": "Choice_Evidence1983",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "my employee is passing off ChatGPT lists as his own ideas",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/BestofRedditorUpdates/comments/1okkvio/my_employee_is_passing_off_chatgpt_lists_as_his/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    },
+    {
+      "name": "OrganicAd1884",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "What project management tool for a bootstrapped startup?",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/webdev/comments/1oqe3he/what_project_management_tool_for_a_bootstrapped/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    },
+    {
+      "name": "Civil-Increase-4228",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "What is the most annoying part about switching between your project management tool and invoicing system? besides losing your sanity from time to time🤪",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/agency/comments/1ov6s74/what_is_the_most_annoying_part_about_switching/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    }
+  ],
+  "errors": []
+}

@@ -176,8 +176,7 @@ Select the BEST match. Consider:
 
 If no good match (confidence < 50%), return linkedin_url as empty string."""}
                 ],
-                response_format=CompanyMatch,
-                temperature=0.2
+                response_format=CompanyMatch
             )
 
             result = response.choices[0].message.parsed
@@ -352,8 +351,7 @@ For EACH company, select the best matching LinkedIn URL.
 Consider name similarity, description relevance, and industry.
 If no good match exists, set linkedin_url to empty string."""}
                 ],
-                response_format=CompanyMatchList,
-                temperature=0.2
+                response_format=CompanyMatchList
             )
 
             result = response.choices[0].message.parsed

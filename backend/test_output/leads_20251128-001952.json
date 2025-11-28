@@ -1,0 +1,211 @@
+{
+  "metadata": {
+    "generated_at": "2025-11-28T00:19:52.289476",
+    "total_leads": 14,
+    "hot_leads": 0,
+    "warm_leads": 12,
+    "cold_leads": 2,
+    "leads_by_platform": {
+      "unknown": 14
+    },
+    "leads_by_user_type": {
+      "unknown": 14
+    },
+    "average_intent_score": 71.4,
+    "query": "customer service bot that you can embed on your website",
+    "target_leads": 20,
+    "platforms_searched": [
+      "reddit",
+      "techcrunch"
+    ],
+    "strategies_used": [
+      "filter sellers",
+      "deduplicate",
+      "rank by intent score"
+    ]
+  },
+  "leads": [
+    {
+      "name": "Co-Founder & CEO at Finout",
+      "title": "Co-Founder & CEO",
+      "company": "Finout",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "Company $40M - As the CEO, they would be responsible for the overall strategy and decision-making regarding tools and services that manage cloud costs effectively.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "https://techcrunch.com/tag/funding/",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, As the CEO, they would be responsible for the overall strategy and decision-making regarding tools and services that manage cloud costs effectively."
+    },
+    {
+      "name": "Co-Founder & CTO at Finout",
+      "title": "Co-Founder & CTO",
+      "company": "Finout",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "Company $40M - As the CTO, they would be focused on overseeing technology implementations that optimize cloud usage and manage costs.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "https://techcrunch.com/tag/funding/",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, As the CTO, they would be focused on overseeing technology implementations that optimize cloud usage and manage costs."
+    },
+    {
+      "name": "Co-Founder & CPO at Finout",
+      "title": "Co-Founder & CPO",
+      "company": "Finout",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "Company $40M - As the CPO, they would be involved in product strategy, including decisions about tools that can enhance product functionality and manage costs.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "https://techcrunch.com/tag/funding/",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, As the CPO, they would be involved in product strategy, including decisions about tools that can enhance product functionality and manage costs."
+    },
+    {
+      "name": "Founder & CEO at Serval",
+      "title": "Founder & CEO",
+      "company": "Serval",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "Company $47M - As the primary decision maker, the CEO is directly responsible for the strategic direction and purchases related to the company's technology solutions.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "https://techcrunch.com/tag/funding/",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, As the primary decision maker, the CEO is directly responsible for the strategic direction and purchases related to the company's technology solutions."
+    },
+    {
+      "name": "CTO @ Serval",
+      "title": "CTO",
+      "company": "Serval",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "Company $47M - The CTO oversees the technology strategy and implementation, making them a key stakeholder in acquiring products that enhance IT services.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "https://techcrunch.com/tag/funding/",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, The CTO oversees the technology strategy and implementation, making them a key stakeholder in acquiring products that enhance IT services."
+    },
+    {
+      "name": "Head of Growth @ Serval",
+      "title": "Head of Growth",
+      "company": "Serval",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "Company $47M - The Head of Growth would be involved in identifying tools that can help scale operations and improve IT service management.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "https://techcrunch.com/tag/funding/",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, The Head of Growth would be involved in identifying tools that can help scale operations and improve IT service management."
+    },
+    {
+      "name": "Chief Operating Officer at DataBank",
+      "title": "Chief Operating Officer",
+      "company": "DataBank",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "Company $250M - As the COO, this individual is likely responsible for overseeing the company's operational functions and would make decisions regarding the implementation of new technologies or systems that could enhance operational efficiency.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "https://techcrunch.com/tag/funding/",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, As the COO, this individual is likely responsible for overseeing the company's operational functions and would make decisions regarding the implementation of new technologies or systems that could enhance operational efficiency."
+    },
+    {
+      "name": "President & CFO at DataBank, Ltd.",
+      "title": "President & CFO",
+      "company": "DataBank",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "Company $250M - The President & CFO would be involved in strategic decisions and budgeting, making them a key decision maker for any significant investments in technology or systems related to data management.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "https://techcrunch.com/tag/funding/",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, The President & CFO would be involved in strategic decisions and budgeting, making them a key decision maker for any significant investments in technology or systems related to data management."
+    },
+    {
+      "name": "Senior Vice President - Enterprise Sales at DataBank, Ltd.",
+      "title": "Senior Vice President",
+      "company": "DataBank",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "Company $250M - This individual would have insights into customer needs and market demands, making them instrumental in deciding on new products that enhance service offerings to enterprise clients.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "https://techcrunch.com/tag/funding/",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, This individual would have insights into customer needs and market demands, making them instrumental in deciding on new products that enhance service offerings to enterprise clients."
+    },
+    {
+      "name": "Co-founder, CEO at Coco Robotics",
+      "title": "CEO",
+      "company": "Coco Robotics",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "Company $80M - As the CEO, they have the authority to make purchasing decisions and oversee the integration of new technology into the company.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "https://techcrunch.com/tag/funding/",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, As the CEO, they have the authority to make purchasing decisions and oversee the integration of new technology into the company."
+    },
+    {
+      "name": "Co-founder/CTO at Coco Robotics",
+      "title": "CTO",
+      "company": "Coco Robotics",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "Company $80M - Responsible for the technical direction of the company, they would evaluate the product's technical capabilities and relevance to the company’s operations.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "https://techcrunch.com/tag/funding/",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, Responsible for the technical direction of the company, they would evaluate the product's technical capabilities and relevance to the company’s operations."
+    },
+    {
+      "name": "CBO & Board Member at Coco Robotics",
+      "title": "CBO",
+      "company": "Coco Robotics",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "Company $80M - The Chief Business Officer can drive strategic purchasing decisions and is likely to see the product's potential impact on business growth.",
+      "intent_score": 75,
+      "source_platform": "techcrunch",
+      "source_url": "https://techcrunch.com/tag/funding/",
+      "priority": "warm",
+      "scoring_reasoning": "Recently funded company, The Chief Business Officer can drive strategic purchasing decisions and is likely to see the product's potential impact on business growth."
+    },
+    {
+      "name": "Frostsniper1635",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "Customer service for psu warranty",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/Corsair/comments/1p6pch0/customer_service_for_psu_warranty/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post."
+    },
+    {
+      "name": "AwarenessPowerful868",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "Horizons cannot create a functional website",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/Hostinger/comments/1p42z54/horizons_cannot_create_a_functional_website/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post."
+    }
+  ]
+}

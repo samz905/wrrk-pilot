@@ -1,0 +1,156 @@
+{
+  "metadata": {
+    "generated_at": "2025-11-27T18:29:02.614765",
+    "total_leads": 10,
+    "hot_leads": 0,
+    "warm_leads": 0,
+    "cold_leads": 10,
+    "leads_by_platform": {
+      "unknown": 10
+    },
+    "leads_by_user_type": {
+      "unknown": 10
+    },
+    "average_intent_score": 50.0,
+    "query": "project management software for startups",
+    "target_leads": 10,
+    "status": "partial",
+    "platforms_searched": [
+      "reddit",
+      "techcrunch",
+      "Reddit"
+    ]
+  },
+  "leads": [
+    {
+      "name": "Lanky_Tackle_543",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "A open to letter to Diamond Project management - QA Score",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/RWShelp/comments/1oxak9t/a_open_to_letter_to_diamond_project_management_qa/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    },
+    {
+      "name": "Anxious_Block9930",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "No title",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/RWShelp/comments/1oxak9t/a_open_to_letter_to_diamond_project_management_qa/novxbao/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    },
+    {
+      "name": "FuegoKels",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "Any advice for a green as can be Project Manager?",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/electricians/comments/1p5mk6w/any_advice_for_a_green_as_can_be_project_manager/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    },
+    {
+      "name": "ReturnoftheBoat",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "What approved collaboration/project management tools are you using?",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/BCPublicServants/comments/1oxc4vy/what_approved_collaborationproject_management/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    },
+    {
+      "name": "Striking_Parfait741",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "No title",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/BCPublicServants/comments/1oxc4vy/what_approved_collaborationproject_management/nowcz3g/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    },
+    {
+      "name": "Dasbeerboots",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "Recommendation: Commercial Construction Project Manager",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/NicksHandmadeBoots/comments/1oxfazy/recommendation_commercial_construction_project/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    },
+    {
+      "name": "Pale-Highlight-6895",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "No title",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/NicksHandmadeBoots/comments/1oxfazy/recommendation_commercial_construction_project/nowvczd/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    },
+    {
+      "name": "Choice_Evidence1983",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "my employee is passing off ChatGPT lists as his own ideas",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/BestofRedditorUpdates/comments/1okkvio/my_employee_is_passing_off_chatgpt_lists_as_his/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    },
+    {
+      "name": "OrganicAd1884",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "What project management tool for a bootstrapped startup?",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/webdev/comments/1oqe3he/what_project_management_tool_for_a_bootstrapped/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    },
+    {
+      "name": "Civil-Increase-4228",
+      "title": "Founder",
+      "company": "Not specified",
+      "linkedin_url": null,
+      "email": null,
+      "intent_signal": "What is the most annoying part about switching between your project management tool and invoicing system? besides losing your sanity from time to time🤪",
+      "intent_score": 50,
+      "source_platform": "reddit",
+      "source_url": "https://www.reddit.com/r/agency/comments/1ov6s74/what_is_the_most_annoying_part_about_switching/",
+      "priority": "cold",
+      "scoring_reasoning": "Extracted from Reddit post"
+    }
+  ]
+}

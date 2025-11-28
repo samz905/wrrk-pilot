@@ -98,8 +98,7 @@ CLASSIFICATION:
                     {"role": "system", "content": "You identify buyers vs sellers in lead lists. Sellers promote their own products. Buyers look for solutions."},
                     {"role": "user", "content": prompt}
                 ],
-                response_format=ClassificationsList,
-                temperature=0.2
+                response_format=ClassificationsList
             )
 
             result = response.choices[0].message.parsed

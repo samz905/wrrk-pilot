@@ -32,7 +32,7 @@ class RedditSearchInput(BaseModel):
 class RedditScoreInput(BaseModel):
     """Input schema for Reddit scoring step."""
     posts: List[Dict] = Field(..., description="Posts from reddit_search (pass the posts array)")
-    query: str = Field(..., description="Original query for context")
+    query: str = Field(default="product", description="Original query for context (optional - defaults to 'product')")
 
 
 class RedditExtractInput(BaseModel):
