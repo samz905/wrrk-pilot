@@ -1,7 +1,7 @@
 # Technical Architecture Documentation
 
 > **Last Updated:** 2025-11-28
-> **Version:** 3.4 (Reddit Relaxation + TechCrunch Scale + Competitor Displacement)
+> **Version:** 3.5 (Supervisor Orchestrator + Parallel Workers)
 
 This document serves as the canonical reference for the prospecting system architecture, patterns, and design decisions.
 
@@ -26,60 +26,71 @@ This document serves as the canonical reference for the prospecting system archi
 
 ## Architecture Overview
 
-### Current Architecture (v3.4)
+### Current Architecture (v3.5)
 
-The system uses a **Multi-Task Sequential Architecture** with:
-- 5 focused agents, each handling one specific task
-- Tasks chained via `context=[previous_task]` for data passing
-- Structured Pydantic outputs for each task
-- Each agent reasons independently within its domain
-- Final leads sorted by intent_score (warmest first)
+The system uses a **Supervisor Orchestrator with Parallel Workers** architecture:
+- 1 LLM orchestrator that plans, reviews, and fixes
+- 3 Python worker classes running in PARALLEL via ThreadPoolExecutor
+- Workers execute deterministic steps, orchestrator handles intelligence
+- Intra-step review after each worker step
+- ~6 min execution (down from 29+ min in v3.4)
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│              ProspectingFlowV2 (Event-Driven)                    │
-│  └─ OrchestratorCrew (Sequential Process)                        │
+│                 SupervisorOrchestrator v3.5                      │
 │                                                                   │
-│     ┌─────────────────────────────────────────────────────────┐  │
-│     │  Task 1: plan_strategy                                   │  │
-│     │  Agent: strategy_planner                                 │  │
-│     │  Output: StrategyPlan (queries, focus, titles, competitors)│
-│     └────────────────────┬────────────────────────────────────┘  │
-│                          │ context                                │
-│        ┌─────────────────┼─────────────────┐                     │
-│        ▼                 ▼                 ▼                      │
-│  ┌───────────┐  ┌──────────────┐  ┌──────────────────┐           │
-│  │ Task 2:   │  │ Task 3:      │  │ Task 4:          │           │
-│  │ reddit    │  │ techcrunch   │  │ competitor       │           │
-│  │ (~33%)    │  │ (~33%)       │  │ (~33%)           │           │
-│  │           │  │              │  │                  │           │
-│  │ search →  │  │ fetch_par → │  │ identify →       │           │
-│  │ score →   │  │ select →     │  │ scrape_posts →   │           │
-│  │ extract → │  │ extract →    │  │ extract_engagers │           │
-│  │ filter    │  │ SERP_dm →    │  │ → filter         │           │
-│  └─────┬─────┘  │ filter       │  └────────┬─────────┘           │
-│        │        └──────┬───────┘           │                     │
-│        │ context       │ context           │ context             │
-│        └───────────────┼───────────────────┘                     │
-│                        ▼                                         │
-│     ┌─────────────────────────────────────────────────────────┐  │
-│     │  Task 5: aggregate_leads                                 │  │
-│     │  Agent: lead_aggregator                                  │  │
-│     │  Output: ProspectingOutput (final leads)                 │  │
-│     │                                                          │  │
-│     │  filter_sellers → deduplicate → SORT BY SCORE → top N    │  │
-│     └─────────────────────────────────────────────────────────┘  │
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │  Phase 1: PLAN STRATEGY (LLM Agent)                         │ │
+│  │  - Analyze product description                               │ │
+│  │  - Generate Reddit queries (actual search strings!)          │ │
+│  │  - Identify competitors                                      │ │
+│  │  - Set TechCrunch industry focus                            │ │
+│  │  → Output: StrategyPlan                                      │ │
+│  └─────────────────────┬───────────────────────────────────────┘ │
+│                        │                                         │
+│  ┌─────────────────────▼───────────────────────────────────────┐ │
+│  │  Phase 2: PARALLEL WORKERS (ThreadPoolExecutor)             │ │
+│  │                                                              │ │
+│  │   ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐     │ │
+│  │   │RedditWorker │  │TechCrunch   │  │CompetitorWorker │     │ │
+│  │   │  (Python)   │  │  Worker     │  │   (Python)      │     │ │
+│  │   │             │  │  (Python)   │  │                 │     │ │
+│  │   │ search →    │  │ fetch_par → │  │ identify →      │     │ │
+│  │   │ score →     │  │ select →    │  │ scrape_posts →  │     │ │
+│  │   │ extract →   │  │ extract →   │  │ extract_engagers│     │ │
+│  │   │ filter      │  │ SERP_dm →   │  │ → filter        │     │ │
+│  │   │             │  │ filter      │  │                 │     │ │
+│  │   └──────┬──────┘  └──────┬──────┘  └────────┬────────┘     │ │
+│  │          │                │                  │               │ │
+│  │          └────────────────┼──────────────────┘               │ │
+│  │                           ▼                                  │ │
+│  │     ┌─────────────────────────────────────────────────────┐  │ │
+│  │     │ INTRA-STEP REVIEW (Orchestrator reviews each step)  │  │ │
+│  │     │ - Approve good results                              │  │ │
+│  │     │ - Retry failed steps                                │  │ │
+│  │     │ - Skip if repeated failures                         │  │ │
+│  │     └─────────────────────────────────────────────────────┘  │ │
+│  └──────────────────────────────────────────────────────────────┘ │
+│                                                                   │
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │  Phase 3: AGGREGATE                                         │ │
+│  │  - Combine leads from all workers                           │ │
+│  │  - Deduplicate by username                                  │ │
+│  │  - Sort by intent_score (warmest first)                     │ │
+│  │  - Return top N leads                                       │ │
+│  └─────────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ### Key Design Principles
 
-1. **Task Modularity**: Each task is focused and manageable
-2. **Context Chaining**: Tasks pass data via `context=[previous_task]`
-3. **Structured Outputs**: Pydantic models for each task ensure data consistency
-4. **Agent Specialization**: Each agent has only the tools it needs
+1. **Orchestrator Only Orchestrates**: No atomic work - just plan, review, fix
+2. **Parallel Execution**: Workers run concurrently via ThreadPoolExecutor
+3. **Deterministic Workers**: Python classes with predictable step execution
+4. **Intra-Step Review**: Orchestrator reviews each step before proceeding
 5. **Mandatory Seller Filtering**: Every platform runs `filter_sellers` before leads are finalized
-6. **Visible Reasoning**: Agents output workflow traces at each step
+6. **Strict Mode**: Never accept empty/bad results - retry or skip
+7. **Field Mapping**: Tools use `intent_signal`/`source_platform`, exporter maps to CSV fields
 
 ---
 
@@ -91,18 +102,25 @@ backend/
 │   ├── core/
 │   │   └── config.py              # Environment configuration
 │   │
+│   ├── supervisor_orchestrator.py # PRIMARY v3.5 - Orchestrator with parallel workers
+│   │
+│   ├── workers/                   # NEW v3.5 - Python worker classes
+│   │   ├── reddit_worker.py       # RedditWorker (search → score → extract → filter)
+│   │   ├── techcrunch_worker.py   # TechCrunchWorker (fetch → select → extract → SERP_dm)
+│   │   └── competitor_worker.py   # CompetitorWorker (identify → scrape → extract)
+│   │
 │   ├── crews/
-│   │   └── orchestrator/          # PRIMARY - Single agent crew
+│   │   └── orchestrator/          # LEGACY - CrewAI crew (replaced by supervisor)
 │   │       ├── crew.py            # OrchestratorCrew class
 │   │       ├── agents.yaml        # Agent role, goal, backstory
 │   │       └── tasks.yaml         # Task definitions
 │   │
 │   ├── flows/
-│   │   └── prospecting_flow_v2.py # Event-driven flow orchestration
+│   │   └── prospecting_flow_v2.py # LEGACY - Event-driven flow orchestration
 │   │
 │   ├── tools/
-│   │   ├── stepped/               # Multi-step tools with agent reasoning
-│   │   │   ├── reddit_tools.py    # ACTIVE: search, score, extract (relaxed v3.4)
+│   │   ├── stepped/               # Multi-step tools (used by workers)
+│   │   │   ├── reddit_tools.py    # ACTIVE: search, score, extract
 │   │   │   ├── techcrunch_tools.py# ACTIVE: fetch, fetch_parallel, select, extract, serp_dm
 │   │   │   ├── competitor_tools.py# ACTIVE v3.4: identify, scrape competitor posts
 │   │   │   ├── filter_sellers.py  # ACTIVE: LLM buyer/seller classification
@@ -111,6 +129,7 @@ backend/
 │   │   │
 │   │   ├── serp_decision_makers.py# ACTIVE v3.4: SERP-based decision maker finder
 │   │   ├── apify_linkedin_company_posts.py  # ACTIVE v3.4: LinkedIn company posts
+│   │   ├── utility_tools.py       # NEW v3.5: DeduplicateLeadsTool, ValidateLeadsTool
 │   │   │
 │   │   ├── composite/             # Parallel execution tools
 │   │   │   ├── intent_signal_hunter.py
@@ -125,7 +144,7 @@ backend/
 │   │
 │   ├── utils/
 │   │   ├── agent_logger.py        # Execution trace logging
-│   │   └── lead_exporter.py       # JSON/CSV export
+│   │   └── lead_exporter.py       # JSON/CSV export (with field mapping)
 │   │
 │   └── api/
 │       └── v1/
@@ -135,6 +154,8 @@ backend/
 │
 ├── test_output/                   # Test execution artifacts
 │
+├── test_supervisor.py             # NEW v3.5 - Test harness for supervisor
+│
 └── TECH_ARCH.md                   # This file
 ```
 
@@ -142,41 +163,110 @@ backend/
 
 ## Core Components
 
-### 1. ProspectingFlowV2 (`flows/prospecting_flow_v2.py`)
+### 1. SupervisorOrchestrator (`app/supervisor_orchestrator.py`) - PRIMARY v3.5
 
-Event-driven flow using CrewAI Flow decorators:
+The main orchestrator that coordinates all prospecting work:
 
 ```python
-class ProspectingFlowV2(Flow[ProspectingState]):
-    @start()
-    def initialize(self): ...
+class SupervisorOrchestrator:
+    """
+    LLM-based orchestrator that supervises Python workers.
+    - Plans strategy (LLM decides queries, competitors, focus)
+    - Launches 3 workers in PARALLEL (ThreadPoolExecutor)
+    - Reviews each worker's output
+    - Retries or fixes issues
+    - Aggregates and deduplicates final leads
+    """
 
-    @listen(initialize)
-    def run_orchestrator_with_retries(self): ...
+    def run(self, product_description: str, target_leads: int = 50) -> OrchestratorResult:
+        # Phase 1: Plan strategy
+        strategy = self._plan_strategy(product_description, target_leads)
 
-    @router(run_orchestrator_with_retries)
-    def route_to_finalize(self): ...
+        # Phase 2: Run workers in parallel
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            futures = {
+                executor.submit(reddit_worker.run, ...): "reddit",
+                executor.submit(techcrunch_worker.run, ...): "techcrunch",
+                executor.submit(competitor_worker.run, ...): "competitor",
+            }
 
-    @listen("success")
-    def finalize_success(self): ...
+        # Phase 3: Aggregate results
+        return self._aggregate_results(all_leads)
 ```
 
-**State Model:**
+**Output Model:**
 ```python
-class ProspectingState(BaseModel):
-    query: str
-    product_description: str
-    target_leads: int = 100
-    icp_criteria: Dict[str, Any] = {}
-    status: ProspectingStatus
-    leads: List[Dict]
-    hot_leads: int      # score >= 80
-    warm_leads: int     # score 60-79
-    platforms_searched: List[str]
-    strategies_used: List[str]
+@dataclass
+class OrchestratorResult:
+    success: bool = False
+    leads: List[Dict] = field(default_factory=list)
+    total_leads: int = 0
+    hot_leads: int = 0      # score >= 80
+    warm_leads: int = 0     # score 60-79
+    reddit_leads: int = 0
+    techcrunch_leads: int = 0
+    competitor_leads: int = 0
+    sellers_removed: int = 0
+    duplicates_removed: int = 0
+    platforms_searched: List[str] = field(default_factory=list)
+    execution_time: float = 0.0
+    errors: List[str] = field(default_factory=list)
+    trace: List[str] = field(default_factory=list)
 ```
 
-### 2. OrchestratorCrew (`crews/orchestrator/`)
+### 2. Python Workers (`app/workers/`) - NEW v3.5
+
+Workers are Python classes that execute deterministic step sequences:
+
+| Worker | Steps | Target |
+|--------|-------|--------|
+| `RedditWorker` | search → score → extract → filter_sellers | ~33% of leads |
+| `TechCrunchWorker` | fetch_parallel → select → extract → serp_dm → filter | ~33% of leads |
+| `CompetitorWorker` | identify → scrape_posts → extract_engagers → filter | ~33% of leads |
+
+**Worker Interface:**
+```python
+@dataclass
+class WorkerResult:
+    success: bool = False
+    data: Any = None
+    error: Optional[str] = None
+    step: str = ""
+    step_number: int = 0
+    leads_count: int = 0
+    trace: List[str] = field(default_factory=list)
+
+class RedditWorker:
+    def run(self, queries: List[str], target: int, product_context: str) -> WorkerResult:
+        # Step 1: Search
+        step1_result = self.step_search(queries[0])
+        # Step 2: Score
+        step2_result = self.step_score(posts, query)
+        # Step 3: Extract
+        step3_result = self.step_extract(high_quality_posts, query)
+        # Step 4: Filter sellers
+        step4_result = self.step_filter(leads)
+        return WorkerResult(success=True, data=leads)
+```
+
+### 3. Strategy Planning (LLM)
+
+The orchestrator uses a CrewAI Agent for strategy planning:
+
+```python
+class StrategyPlan(BaseModel):
+    product_category: str = Field(description="Type of product")
+    competitors: List[str] = Field(description="Likely competitors")
+    reddit_queries: List[str] = Field(description="ACTUAL search query strings")
+    techcrunch_focus: str = Field(description="Industry focus for TechCrunch")
+    target_titles: List[str] = Field(description="Decision maker titles")
+```
+
+**IMPORTANT:** Reddit queries must be actual search strings:
+- ✅ Good: `["best ML observability tools", "how to monitor ML models"]`
+- ❌ Bad: `["direct", "pain_based", "alternative"]` (category labels, not queries!)
+
+### 4. LEGACY: OrchestratorCrew (`crews/orchestrator/`)
 
 Multi-agent crew with 5 focused agents and task chaining:
 
@@ -808,21 +898,29 @@ class MyTool(BaseTool):
 
 ### Common Issues
 
-1. **Duplicate API Calls**
-   - Cause: Tool internally calling another tool
-   - Fix: Remove internal calls, update `next` recommendation
+1. **Empty CSV Fields (buying_signal, platform)**
+   - Cause: Field name mismatch between tools and exporter
+   - Fix: Tools use `intent_signal`, `source_platform`. Exporter maps them in `lead_exporter.py`
 
-2. **Agent Skipping Platform**
-   - Cause: Weak prompts in agents.yaml
-   - Fix: Add "MANDATORY" language, explicit execution order
+2. **Strategy Generates Category Labels Instead of Queries**
+   - Cause: Prompt not explicit about needing actual search strings
+   - Fix: Strategy prompt includes examples: "Good: 'best ML tools', Bad: 'direct'"
 
-3. **Sellers in Final Leads**
-   - Cause: Missing `filter_sellers` call
-   - Fix: Add `warning` field to tool output
+3. **Worker Parameter Mismatch**
+   - Cause: Worker passes wrong param name to tool (e.g., `industry` vs `query`)
+   - Fix: Check tool's `args_schema` and match parameter names exactly
 
-4. **Agent Confusion**
-   - Cause: Vague recommendation messages
-   - Fix: Use clear `done`/`next` format
+4. **Sellers in Final Leads**
+   - Cause: Missing `filter_sellers` call in worker
+   - Fix: Every worker must call `step_filter()` as final step
+
+5. **Slow Execution (29+ min)**
+   - Cause: Sequential execution in v3.4
+   - Fix: v3.5 uses ThreadPoolExecutor for parallel worker execution (~6 min)
+
+6. **TechCrunch Returns 0 Leads**
+   - Cause: TechCrunch companies filtered as "sellers"
+   - Fix: TechCrunch decision makers skip seller filter (they're pre-qualified)
 
 ---
 
@@ -830,6 +928,7 @@ class MyTool(BaseTool):
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 3.5 | 2025-11-28 | **Supervisor Orchestrator**: (1) **New Architecture** - Single LLM orchestrator with 3 parallel Python workers (RedditWorker, TechCrunchWorker, CompetitorWorker). (2) **Parallel Execution** - Workers run via ThreadPoolExecutor (~6 min vs 29+ min). (3) **Intra-Step Review** - Orchestrator reviews each worker step, retries failures. (4) **Strategy Fix** - Strategy planner now generates actual search queries (not category labels like "direct", "pain_based"). (5) **Field Mapping Fix** - `lead_exporter.py` maps tool fields (`intent_signal`, `source_platform`) to CSV columns (`buying_signal`, `platform`). |
 | 3.4 | 2025-11-28 | **Major Update**: (1) **Reddit Relaxation** - Removed `_classify_commenters_batch()`, simplified to extract ALL engagers, uses `filter_sellers` at end only. (2) **TechCrunch SERP** - Added `TechCrunchFetchParallelTool` and `TechCrunchSerpDecisionMakersTool` for ~30-60s decision maker lookup (was 6-8 min). (3) **Competitor Displacement** - New strategy using `harvestapi/linkedin-company-posts` actor to find leads from competitor post engagers. (4) **Final Sorting** - Leads sorted by intent_score descending (warmest first). Now 5 agents, 5 tasks. |
 | 3.3 | 2025-11-28 | **Structured Output Standardization**: All tool LLM calls now use `response_format` with `json_schema`. Removed retry/fallback complexity for JSON parsing. Updated: `apify_reddit.py`, `apify_linkedin_employees.py`. |
 | 3.2 | 2025-11-28 | Unified gpt-4o-mini: Both AGENT_MODEL and TOOL_MODEL now use gpt-4o-mini for reliable structured outputs. Removed gpt-5-mini due to JSON schema issues. |
@@ -842,50 +941,61 @@ class MyTool(BaseTool):
 
 ## Test Results & Quality Observations
 
-### Latest Test Run (2025-11-28)
+### Latest Test Run v3.5 (2025-11-28)
 
-**Query:** "customer service bot that you can embed on your website"
-**Target:** 20 leads
-**Duration:** ~27 minutes
-**Result:** 14 leads (70% of target)
+**Query:** "ML observability tool for startups"
+**Target:** 30 leads
+**Duration:** ~6 minutes (was 29+ min in v3.4!)
+**Result:** 30 leads (100% of target)
 
 | Metric | Value |
 |--------|-------|
-| Total Leads | 14 |
-| Hot Leads | 0 |
-| Warm Leads | 12 |
-| Cold Leads | 2 |
-| Reddit Leads | 2 |
-| TechCrunch Leads | 12 |
+| Total Leads | 30 |
+| Hot Leads | 2 |
+| Warm Leads | 28 |
+| Cold Leads | 0 |
+| Reddit Leads | 14 |
+| TechCrunch Leads | 15 |
+| Competitor Leads | 1 |
 
-### Quality Issues Identified
+**CSV Fields Now Populated:**
+- ✅ `buying_signal`: Real signals like "Deploying AI Agents in the Real World..."
+- ✅ `fit_reasoning`: Context like "Posted in r/LangChain..." or "Found via SERP..."
+- ✅ `platform`: Correctly shows "reddit", "techcrunch", or "linkedin"
 
-1. **TechCrunch Relevance Problem**
-   - Companies found (Finout, Serval, DataBank, Coco Robotics) don't match "customer service bot" use case
-   - Issue: `techcrunch_select_articles` selecting by funding amount, not product relevance
-   - Fix needed: Industry/use-case filtering in article selection
+### Key Fixes in v3.5
 
-2. **Generic Intent Signals**
-   - Intent reasoning is templated: "As the CEO, they would be responsible for..."
-   - Not actual buying signals from the source content
-   - Fix needed: Extract real quotes/context from funding articles
+1. **Strategy Query Fix** ✅ RESOLVED
+   - v3.4 Issue: Strategy planner generated category labels ("direct", "pain_based")
+   - v3.5 Fix: Now generates actual search queries ("best ML observability tools", "how to monitor ML models")
 
-3. **Reddit Query Quality**
-   - Reddit leads found (PSU warranty, Hostinger complaint) unrelated to chatbots
-   - Issue: Generic queries not finding chatbot discussions
-   - Fix needed: Strategy planner should generate better queries like "looking for chatbot", "customer support automation"
+2. **Field Mapping Fix** ✅ RESOLVED
+   - v3.4 Issue: CSV had empty `buying_signal`, `fit_reasoning`, `platform` columns
+   - v3.5 Fix: `lead_exporter.py` maps `intent_signal` → `buying_signal`, `source_platform` → `platform`
 
-4. **No Hot Leads**
-   - All warm/cold, none with score >= 80
-   - Issue: TechCrunch leads default to 75, Reddit to 50
-   - Fix needed: Only score 80+ when explicit buying intent detected
+3. **Parallel Execution** ✅ RESOLVED
+   - v3.4 Issue: Sequential agent execution took 29+ minutes
+   - v3.5 Fix: ThreadPoolExecutor runs workers in parallel (~6 min)
 
-### Recommended Improvements
+4. **Parameter Mismatches** ✅ RESOLVED
+   - v3.4 Issue: TechCrunch `industry` param vs tool's `query` param
+   - v3.5 Fix: Workers use correct parameter names matching tool signatures
 
-| Priority | Area | Change |
-|----------|------|--------|
-| HIGH | TechCrunch | Add industry/use-case filter to `techcrunch_select_articles` |
-| HIGH | Reddit | Strategy planner should generate chatbot-specific queries |
-| MEDIUM | Scoring | Real intent signals from source content, not templated |
-| MEDIUM | Hot leads | Stricter criteria for score >= 80 |
-| LOW | Speed | Consider parallel Reddit + TechCrunch execution |
+### Field Mapping Reference
+
+Tools use these field names internally:
+```
+intent_signal      → buying_signal (CSV)
+scoring_reasoning  → fit_reasoning (CSV)
+source_platform    → platform (CSV)
+```
+
+The mapping is done in `lead_exporter.py` (lines 126-134):
+```python
+if 'intent_signal' in row and not row.get('buying_signal'):
+    row['buying_signal'] = row.get('intent_signal', '')
+if 'scoring_reasoning' in row and not row.get('fit_reasoning'):
+    row['fit_reasoning'] = row.get('scoring_reasoning', '')
+if 'source_platform' in row and not row.get('platform'):
+    row['platform'] = row.get('source_platform', '')
+```

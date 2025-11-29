@@ -10,6 +10,7 @@ import os
 import json
 import re
 from typing import Type, Optional, List, Dict
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from crewai.tools import BaseTool
 from pydantic import BaseModel, Field
 from openai import OpenAI
@@ -81,18 +82,23 @@ class SerpDecisionMakersTool(BaseTool):
         all_results = []
         seen_urls = set()
 
-        # Execute SERP queries
-        for query in queries:
+        # Execute SERP queries in PARALLEL (3 workers)
+        def execute_query(query):
             try:
-                results = self._serp_search(query, serper_api_key)
-                for result in results:
-                    url = result.get('link', '')
-                    if url and 'linkedin.com/in/' in url and url not in seen_urls:
-                        seen_urls.add(url)
-                        all_results.append(result)
+                return self._serp_search(query, serper_api_key)
             except Exception as e:
                 print(f"[SERP] Query failed: {query} - {e}")
-                continue
+                return []
+
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            query_results = list(executor.map(execute_query, queries))
+
+        for result_list in query_results:
+            for result in result_list:
+                url = result.get('link', '')
+                if url and 'linkedin.com/in/' in url and url not in seen_urls:
+                    seen_urls.add(url)
+                    all_results.append(result)
 
         # Parse LinkedIn profiles from results
         decision_makers = self._parse_linkedin_results(all_results, company)
@@ -283,27 +289,36 @@ class SerpDecisionMakersBatchTool(BaseTool):
                 "results": {}
             })
 
-        print(f"\n[SERP_BATCH] Finding decision makers for {len(companies)} companies...")
+        print(f"\n[SERP_BATCH] Finding decision makers for {len(companies)} companies (PARALLEL - 5 workers)...")
 
         single_tool = SerpDecisionMakersTool()
         results = {}
 
-        for company_data in companies:
+        def search_company(company_data):
+            """Search for decision makers at a single company."""
             company_name = company_data.get('name', company_data.get('company', ''))
             if not company_name:
-                continue
+                return None, []
 
             funding = company_data.get('funding', '')
-            description = company_data.get('description', '')
-
             result_str = single_tool._run(
                 company=company_name,
                 product_context=product_context,
                 funding_info=funding
             )
-
             result = json.loads(result_str)
-            results[company_name] = result.get('decision_makers', [])
+            return company_name, result.get('decision_makers', [])
+
+        # Execute company searches in PARALLEL (5 workers)
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            futures = [executor.submit(search_company, c) for c in companies]
+            for future in as_completed(futures):
+                try:
+                    company_name, dms = future.result()
+                    if company_name:
+                        results[company_name] = dms
+                except Exception as e:
+                    print(f"[SERP_BATCH] Error in parallel search: {e}")
 
         total_found = sum(len(dms) for dms in results.values())
         print(f"[SERP_BATCH] Found {total_found} total decision makers across {len(companies)} companies")

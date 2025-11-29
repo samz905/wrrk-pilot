@@ -249,20 +249,16 @@ class OrchestratorCrew:
                 TechCrunchSelectArticlesTool(),
                 TechCrunchExtractCompaniesTool(),
                 TechCrunchSelectDecisionMakersTool(),
-                TechCrunchSerpDecisionMakersTool(),  # SERP-based decision makers (fast!)
+                TechCrunchSerpDecisionMakersTool(),  # SERP-based decision makers (ONLY method - no fallback!)
 
-                # LinkedIn tools (backup/enrichment only)
+                # LinkedIn company tools for URL lookup only (NO employee search)
                 LinkedInCompanySearchTool(),
                 LinkedInCompanyBatchSearchTool(),
-                LinkedInEmployeesSearchTool(),
-                LinkedInEmployeesBatchSearchTool(),
-
-                # Seller filter
-                FilterSellersTool(),
+                # NOTE: LinkedIn employee tools REMOVED - use SERP only for decision makers
             ],
             llm=self.llm,
             verbose=True,
-            max_iter=30,
+            max_iter=15,  # Reduced from 30 - SERP parallelization makes this faster
             max_retry_limit=3,
             memory=True
         )

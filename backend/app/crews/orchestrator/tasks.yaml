@@ -139,64 +139,16 @@ techcrunch_prospecting:
 
     WHY TECHCRUNCH: Recently funded companies = CONFIRMED BUDGET!
 
-    YOU HAVE THE STRATEGY PLAN from context. Use it!
+    WORKFLOW (execute in order):
+    1. techcrunch_fetch_parallel(pages=[1,2]) - Get funding articles
+    2. techcrunch_select_articles(articles) - Filter by target industry from strategy plan
+    3. techcrunch_extract_companies(articles) - Get company details
+    4. techcrunch_serp_decision_makers(companies, product_context) - Find founders via SERP (FAST!)
 
-    ================================================================================
-    STEPPED WORKFLOW v3.4 - SERP-based decision makers (FAST!)
-    ================================================================================
+    IMPORTANT: TechCrunch leads are pre-qualified decision makers at funded companies.
+    Skip filter_sellers - these are confirmed buyers with budget, not sellers.
 
-    STEP 1: techcrunch_fetch() OR techcrunch_fetch_parallel(pages=[1,2])
-    --------------------------------------------------------------------
-    Get recent funding articles.
-    Use parallel fetch for more articles faster.
-
-    Example trace:
-    "Fetched 30 funding articles from TechCrunch (2 pages in parallel).
-     Selecting relevant ones for target industry..."
-
-    STEP 2: techcrunch_select_articles(articles)
-    --------------------------------------------
-    Select articles matching target industry from strategy plan.
-    Look for Series A/B/C rounds.
-
-    Example trace:
-    "Selected 8 articles in project management/productivity space.
-     Extracting company information..."
-
-    STEP 3: techcrunch_extract_companies(articles)
-    ----------------------------------------------
-    Extract company name, funding amount, description.
-    Returns companies ready for decision maker search.
-
-    Example trace:
-    "Extracted 8 companies with recent funding.
-     Finding decision makers via SERP..."
-
-    STEP 4: techcrunch_serp_decision_makers(companies, product_context)
-    -------------------------------------------------------------------
-    PREFERRED METHOD: Find ALL founders via Google SERP (~30-60s total!)
-    Much faster than LinkedIn employee search (was 6-8 min).
-
-    Searches for: Founders, Co-founders, CEO + role-specific titles
-    based on product_context (e.g., CTO for dev tools, VP Sales for sales tools).
-
-    Example trace:
-    "SERP search found 24 decision makers across 8 companies in 45s.
-     Running seller filter..."
-
-    FALLBACK: If SERP fails, use linkedin_employees_batch_search(companies, query)
-    But this is SLOW (~2 min per company).
-
-    STEP 5: filter_sellers(leads)
-    -----------------------------
-    TechCrunch leads may include self-promoters too.
-    Apply same buyer/seller logic.
-
-    Example trace:
-    "Removed 2 self-promoters.
-     22 qualified decision-maker leads remain."
-
-    Return your filtered leads for aggregation.
+    Return leads directly for aggregation.
 
   expected_output: |
     TechCrunch leads with:

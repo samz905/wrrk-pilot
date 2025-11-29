@@ -28,10 +28,10 @@ def export_leads_json(
     warm_leads = [l for l in leads if 60 <= l.get('intent_score', 0) < 80]
     cold_leads = [l for l in leads if l.get('intent_score', 0) < 60]
 
-    # Count by platform
+    # Count by platform (map source_platform to platform)
     platforms = {}
     for lead in leads:
-        platform = lead.get('platform', 'unknown')
+        platform = lead.get('platform', lead.get('source_platform', 'unknown'))
         platforms[platform] = platforms.get(platform, 0) + 1
 
     # Count by user type
@@ -123,6 +123,16 @@ def export_leads_csv(
                 row['source_title'] = source.get('title', '')
                 row['source_subreddit'] = source.get('subreddit', '')
 
+            # Map tool field names to CSV column names
+            # Tools use: intent_signal, scoring_reasoning, source_platform
+            # CSV expects: buying_signal, fit_reasoning, platform
+            if 'intent_signal' in row and not row.get('buying_signal'):
+                row['buying_signal'] = row.get('intent_signal', '')
+            if 'scoring_reasoning' in row and not row.get('fit_reasoning'):
+                row['fit_reasoning'] = row.get('scoring_reasoning', '')
+            if 'source_platform' in row and not row.get('platform'):
+                row['platform'] = row.get('source_platform', '')
+
             # Calculate priority from intent_score
             score = row.get('intent_score', 0)
             if score >= 80:
@@ -162,10 +172,12 @@ def format_leads_table(leads: List[Dict[str, Any]], max_rows: int = 50) -> str:
 
     for i, lead in enumerate(sorted_leads[:max_rows], 1):
         name = lead.get('username', lead.get('name', 'Unknown'))[:24]
-        platform = lead.get('platform', 'unknown')[:9]
+        # Map source_platform to platform
+        platform = lead.get('platform', lead.get('source_platform', 'unknown'))[:9]
         score = lead.get('intent_score', 0)
         user_type = lead.get('user_type', 'unknown')[:11]
-        signal = lead.get('buying_signal', '')[:39]
+        # Map intent_signal to buying_signal
+        signal = lead.get('buying_signal', lead.get('intent_signal', ''))[:39]
 
         # Add priority indicator
         if score >= 80:

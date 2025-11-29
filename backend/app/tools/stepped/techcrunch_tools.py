@@ -570,7 +570,7 @@ class TechCrunchSerpDecisionMakersTool(BaseTool):
                         "title": dm.get('title', 'Decision Maker'),
                         "company": company_name,
                         "linkedin_url": dm.get('linkedin_url', ''),
-                        "intent_signal": f"Company {funding} - {dm.get('title', 'key role')} at growing company",
+                        "intent_signal": f"Decision maker ({dm.get('title', 'executive')}) at recently funded company ({funding}) - likely evaluating tools for growth",
                         "intent_score": 75,
                         "source_platform": "techcrunch",
                         "source_url": article_url,
@@ -591,6 +591,6 @@ class TechCrunchSerpDecisionMakersTool(BaseTool):
             "count": len(leads),
             "companies_searched": len(companies),
             "done": f"Found {len(leads)} decision makers via SERP",
-            "warning": "APPLY filter_sellers to remove any promoters!",
-            "next": "Run filter_sellers, then leads are ready for outreach."
+            "note": "TechCrunch decision makers are pre-qualified buyers - no seller filtering needed.",
+            "next": "Leads ready for outreach - skip filter_sellers for TechCrunch."
         }, indent=2)

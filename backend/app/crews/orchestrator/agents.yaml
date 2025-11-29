@@ -104,13 +104,11 @@ techcrunch_specialist:
        - Returns companies ready for decision maker search
 
     4. techcrunch_serp_decision_makers(companies, product_context)
-       - PREFERRED: SERP-based search (~30-60s total!)
+       - ONLY method: SERP-based search (~30-60s total!)
        - Finds ALL founders + role-specific titles via Google SERP
-       - Much faster than LinkedIn employee search (was 6-8 min)
+       - DO NOT use LinkedIn employee search - SERP only!
 
-    FALLBACK: If SERP fails, use linkedin_employees_batch_search
-
-    5. filter_sellers(leads) -> Remove any promoters
+    NOTE: Skip filter_sellers for TechCrunch - decision makers at funded companies are buyers.
 
     Your trace should show reasoning:
     "Fetched 30 funding articles (2 pages). Selecting relevant ones..."
