@@ -46,6 +46,55 @@ class StrategyPlan(BaseModel):
 
 
 @dataclass
+class ProspectingContext:
+    """
+    Track what's been done - passed to all workers and compensation rounds.
+
+    This prevents duplicate work when the orchestrator retries strategies.
+    Pattern: LLM generates options → Context filters to unused ones.
+    """
+    # TechCrunch tracking
+    tc_pages_fetched: List[int] = field(default_factory=list)
+    tc_companies_processed: set = field(default_factory=set)
+
+    # Reddit tracking
+    reddit_queries_used: List[str] = field(default_factory=list)
+    reddit_posts_seen: set = field(default_factory=set)
+
+    # Competitors tracking
+    competitors_scraped: List[str] = field(default_factory=list)
+
+    # Lead deduplication
+    lead_keys_seen: set = field(default_factory=set)
+
+    def next_tc_pages(self, count: int = 2) -> List[int]:
+        """Get next unfetched TechCrunch pages."""
+        max_fetched = max(self.tc_pages_fetched) if self.tc_pages_fetched else 0
+        next_pages = list(range(max_fetched + 1, max_fetched + 1 + count))
+        self.tc_pages_fetched.extend(next_pages)
+        return next_pages
+
+    def get_unused_reddit_queries(self, all_queries: List[str]) -> List[str]:
+        """Filter to queries not yet used."""
+        return [q for q in all_queries if q not in self.reddit_queries_used]
+
+    def get_unscraped_competitors(self, all_competitors: List[str]) -> List[str]:
+        """Filter to competitors not yet scraped."""
+        return [c for c in all_competitors if c not in self.competitors_scraped]
+
+    def add_leads(self, leads: List[Dict]) -> List[Dict]:
+        """Add leads and return only new ones (deduped)."""
+        new_leads = []
+        for lead in leads:
+            # Use username or linkedin_url as key
+            key = lead.get('username') or lead.get('linkedin_url') or lead.get('name', '')
+            if key and key not in self.lead_keys_seen:
+                self.lead_keys_seen.add(key)
+                new_leads.append(lead)
+        return new_leads
+
+
+@dataclass
 class OrchestratorResult:
     """Final result from the orchestrator."""
     success: bool = False
@@ -145,6 +194,9 @@ class SupervisorOrchestrator:
         self._log("THOUGHT", "Architecture: Parallel workers with intra-step review")
 
         try:
+            # Initialize context - tracks everything done
+            ctx = ProspectingContext()
+
             # Phase 1: Plan strategy
             strategy = self._plan_strategy(product_description, target_leads, icp_criteria)
             if not strategy:
@@ -158,11 +210,68 @@ class SupervisorOrchestrator:
             worker_results = self._run_workers_parallel(
                 strategy=strategy,
                 product_description=product_description,
-                target_leads=target_leads
+                target_leads=target_leads,
+                ctx=ctx
             )
 
+            # Collect initial leads
+            all_leads = self._collect_leads(worker_results, ctx)
+
+            # Update context with initial work
+            ctx.tc_pages_fetched = [1, 2]
+            ctx.reddit_queries_used = strategy.get('reddit_queries', [])
+            ctx.competitors_scraped = strategy.get('competitors', [])
+
+            # Phase 2.5: COMPENSATION LOOP (max 3 rounds)
+            max_rounds = 3
+            round_history = []  # Track what worked/failed for agent context
+
+            for round_num in range(1, max_rounds + 1):
+                if len(all_leads) >= target_leads:
+                    self._log("TARGET", f"Target met: {len(all_leads)}/{target_leads} leads")
+                    break
+
+                self._log("SHORTFALL", f"Round {round_num}: {len(all_leads)}/{target_leads} leads ({len(all_leads)/target_leads*100:.0f}%)")
+
+                # LLM agent decides what to run based on context and history
+                compensations = self._ask_compensation_agent(
+                    current_leads=len(all_leads),
+                    target_leads=target_leads,
+                    ctx=ctx,
+                    round_history=round_history
+                )
+
+                if not compensations:
+                    self._log("AGENT", "Agent decided to stop - strategies exhausted or target close enough")
+                    break
+
+                # Run each compensation and track results for next round
+                for comp in compensations:
+                    leads_before = len(all_leads)
+
+                    extra_leads = self._run_single_compensation(
+                        comp=comp,
+                        strategy=strategy,
+                        product_description=product_description,
+                        ctx=ctx
+                    )
+
+                    # Add new leads (deduped via context)
+                    new_leads = ctx.add_leads(extra_leads)
+                    all_leads.extend(new_leads)
+
+                    # Track result for agent's next decision
+                    round_history.append({
+                        'round': round_num,
+                        'strategy': comp,
+                        'leads': len(new_leads),
+                        'success': len(new_leads) > 0
+                    })
+
+                    self._log("COMPENSATE", f"{comp}: +{len(new_leads)} leads (total: {len(all_leads)})")
+
             # Phase 3: Aggregate results
-            result = self._aggregate_results(worker_results, target_leads)
+            result = self._aggregate_results_from_leads(all_leads, target_leads)
 
             result.execution_time = time.time() - self.start_time
             result.trace = self.trace.copy()
@@ -278,12 +387,14 @@ class SupervisorOrchestrator:
         self,
         strategy: Dict,
         product_description: str,
-        target_leads: int
+        target_leads: int,
+        ctx: Optional[ProspectingContext] = None
     ) -> Dict[str, WorkerResult]:
         """
         Phase 2: Launch all workers in PARALLEL.
 
         Each worker runs independently, orchestrator reviews as they complete.
+        Context is used to track what pages/queries are being used.
         """
         self._log("PARALLEL", "Deploying 3 workers in parallel...")
 
@@ -494,6 +605,335 @@ class SupervisorOrchestrator:
             platforms_searched=platforms,
             strategies_used=strategies,
             errors=errors
+        )
+
+    def _collect_leads(
+        self,
+        worker_results: Dict[str, WorkerResult],
+        ctx: ProspectingContext
+    ) -> List[Dict]:
+        """Collect leads from worker results and add to context."""
+        all_leads = []
+        for source, result in worker_results.items():
+            if result.success and result.data:
+                # Add to context for deduplication
+                new_leads = ctx.add_leads(result.data)
+                all_leads.extend(new_leads)
+                self._log("COLLECT", f"{source}: {len(new_leads)} unique leads")
+        return all_leads
+
+    def _ask_compensation_agent(
+        self,
+        current_leads: int,
+        target_leads: int,
+        ctx: ProspectingContext,
+        round_history: List[Dict]
+    ) -> List[str]:
+        """
+        LLM agent decides what compensations to run.
+        Has full context of what's been tried and what worked/failed.
+        Priority: TC → Competitors → Reddit
+        """
+        from openai import OpenAI
+        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+        # Check what's still available
+        tc_available = max(ctx.tc_pages_fetched) < 10 if ctx.tc_pages_fetched else True
+        tc_pages_left = 10 - max(ctx.tc_pages_fetched) if ctx.tc_pages_fetched else 10
+        comp_count = len(ctx.competitors_scraped)
+        reddit_count = len(ctx.reddit_queries_used)
+
+        context_summary = f"""
+Current: {current_leads}/{target_leads} leads ({current_leads/target_leads*100:.0f}%)
+Shortfall: {target_leads - current_leads} leads needed
+
+Resources used:
+- TechCrunch: pages {ctx.tc_pages_fetched} fetched ({tc_pages_left} pages left, max 10)
+- Competitors: {comp_count} scraped so far: {ctx.competitors_scraped[:5]}{'...' if comp_count > 5 else ''}
+- Reddit: {reddit_count} queries used
+
+Round history (what worked/failed):
+{self._format_round_history(round_history)}
+
+Available strategies (priority order):
+1. techcrunch - Fetch more funding pages (fast, ~15 leads/run)
+2. competitor - Scrape competitor LinkedIn posts (medium, variable)
+3. reddit - Run more Reddit queries (slower, needs good queries)
+"""
+
+        try:
+            response = client.chat.completions.create(
+                model=settings.TOOL_MODEL,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": """You are a compensation strategist for lead prospecting.
+Decide which strategies to run to hit the target.
+
+Rules:
+- Priority: techcrunch → competitor → reddit
+- If a strategy FAILED (0 leads), note it and try something else
+- If a strategy worked, can run it again
+- TechCrunch is most reliable, use it first
+- Return comma-separated strategies (e.g., "techcrunch, competitor")
+- Return "STOP" if all strategies exhausted or target nearly met (>95%)
+- Be efficient: 1-2 strategies per round is ideal"""
+                    },
+                    {"role": "user", "content": context_summary}
+                ],
+                temperature=0.3,
+                max_tokens=50
+            )
+
+            decision = response.choices[0].message.content.strip().lower()
+            self._log("AGENT", f"Compensation agent decided: {decision}")
+
+            if "stop" in decision:
+                return []
+
+            # Parse strategies in priority order
+            strategies = []
+            for s in ['techcrunch', 'competitor', 'reddit']:
+                if s in decision:
+                    # Check if available
+                    if s == 'techcrunch' and not tc_available:
+                        continue
+                    strategies.append(s)
+
+            return strategies
+
+        except Exception as e:
+            self._log("ERROR", f"Compensation agent failed: {e}, using fallback")
+            # Fallback: just run TC if available
+            return ['techcrunch'] if tc_available else []
+
+    def _format_round_history(self, round_history: List[Dict]) -> str:
+        """Format round history for agent context."""
+        if not round_history:
+            return "No rounds yet (this is the first compensation round)"
+
+        lines = []
+        for entry in round_history:
+            status = "✓" if entry.get('success') else "✗"
+            lines.append(f"  Round {entry['round']}: {entry['strategy']} → {entry['leads']} leads {status}")
+        return "\n".join(lines)
+
+    def _run_single_compensation(
+        self,
+        comp: str,
+        strategy: Dict,
+        product_description: str,
+        ctx: ProspectingContext
+    ) -> List[Dict]:
+        """Run a single compensation strategy. Returns leads found."""
+        extra_leads = []
+
+        if comp == 'techcrunch':
+            # Context provides next unfetched pages
+            pages = ctx.next_tc_pages(count=2)
+            self._log("RUN", f"Fetching TechCrunch pages {pages}...")
+            result = self._run_techcrunch_extra(pages, strategy, product_description)
+            if result.success and result.data:
+                extra_leads.extend(result.data)
+
+        elif comp == 'competitor':
+            # LLM generates more competitors, context filters to unused
+            more_competitors = self._generate_more_competitors(product_description, ctx.competitors_scraped)
+            unused = ctx.get_unscraped_competitors(more_competitors)
+            if unused:
+                self._log("RUN", f"Scraping {len(unused)} new competitors: {unused}")
+                result = self._run_competitor_extra(unused, product_description)
+                if result.success and result.data:
+                    extra_leads.extend(result.data)
+                ctx.competitors_scraped.extend(unused)
+            else:
+                self._log("WARNING", "No new competitors to scrape")
+
+        elif comp == 'reddit':
+            # LLM generates more queries, context filters to unused
+            more_queries = self._generate_more_reddit_queries(product_description, ctx.reddit_queries_used)
+            unused = ctx.get_unused_reddit_queries(more_queries)
+            if unused:
+                self._log("RUN", f"Running {len(unused)} new Reddit queries")
+                result = self._run_reddit_extra(unused)
+                if result.success and result.data:
+                    extra_leads.extend(result.data)
+                ctx.reddit_queries_used.extend(unused)
+            else:
+                self._log("WARNING", "No new Reddit queries to run")
+
+        return extra_leads
+
+    def _run_techcrunch_extra(
+        self,
+        pages: List[int],
+        strategy: Dict,
+        product_description: str
+    ) -> WorkerResult:
+        """Fetch additional TechCrunch pages."""
+        worker = TechCrunchWorker(log_callback=lambda l, m: self._log("TC_EXTRA", f"[{l}] {m}"))
+        return worker.run(
+            industry=strategy.get('techcrunch_focus', 'Technology'),
+            product_context=product_description,
+            target_leads=15,
+            pages=pages
+        )
+
+    def _run_competitor_extra(
+        self,
+        competitors: List[str],
+        product_description: str
+    ) -> WorkerResult:
+        """Scrape additional competitors."""
+        worker = CompetitorWorker(log_callback=lambda l, m: self._log("COMP_EXTRA", f"[{l}] {m}"))
+        return worker.run(
+            competitors=competitors,
+            product_description=product_description,
+            target_leads=15
+        )
+
+    def _run_reddit_extra(self, queries: List[str]) -> WorkerResult:
+        """Run additional Reddit queries."""
+        worker = RedditWorker(log_callback=lambda l, m: self._log("REDDIT_EXTRA", f"[{l}] {m}"))
+        return worker.run(
+            queries=queries,
+            target_leads=15
+        )
+
+    def _generate_more_competitors(
+        self,
+        product_description: str,
+        already_scraped: List[str]
+    ) -> List[str]:
+        """Use LLM to generate more competitor names."""
+        try:
+            from openai import OpenAI
+            client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+            response = client.chat.completions.create(
+                model=settings.TOOL_MODEL,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You identify competitor companies for B2B software products. Return exactly 5 company names, one per line. No explanations."
+                    },
+                    {
+                        "role": "user",
+                        "content": f"Product: {product_description}\n\nAlready found: {', '.join(already_scraped)}\n\nList 5 MORE competitors NOT in the already found list:"
+                    }
+                ],
+                temperature=0.5,
+                max_tokens=100
+            )
+
+            content = response.choices[0].message.content.strip()
+            # Clean numbered prefixes like "1. ", "2. ", "- ", etc.
+            import re
+            competitors = []
+            for line in content.split('\n'):
+                if line.strip():
+                    # Remove numbered prefixes: "1. ", "2) ", "- ", "* "
+                    cleaned = re.sub(r'^[\d]+[\.\)]\s*', '', line.strip())
+                    cleaned = re.sub(r'^[-\*]\s*', '', cleaned)
+                    if cleaned:
+                        competitors.append(cleaned)
+            self._log("LLM", f"Generated {len(competitors)} more competitors: {competitors}")
+            return competitors[:5]
+
+        except Exception as e:
+            self._log("ERROR", f"Failed to generate more competitors: {e}")
+            return []
+
+    def _generate_more_reddit_queries(
+        self,
+        product_description: str,
+        already_used: List[str]
+    ) -> List[str]:
+        """Use LLM to generate more Reddit search queries."""
+        try:
+            from openai import OpenAI
+            client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+            response = client.chat.completions.create(
+                model=settings.TOOL_MODEL,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You generate Reddit search queries to find people with buying intent. Focus on pain points, frustrations, alternatives. Return exactly 3 search queries, one per line. No explanations."
+                    },
+                    {
+                        "role": "user",
+                        "content": f"Product: {product_description}\n\nAlready used queries: {', '.join(already_used)}\n\nGenerate 3 NEW, DIFFERENT search queries:"
+                    }
+                ],
+                temperature=0.7,
+                max_tokens=100
+            )
+
+            content = response.choices[0].message.content.strip()
+            # Clean numbered prefixes and quotes
+            import re
+            queries = []
+            for line in content.split('\n'):
+                if line.strip():
+                    cleaned = re.sub(r'^[\d]+[\.\)]\s*', '', line.strip())
+                    cleaned = re.sub(r'^[-\*]\s*', '', cleaned)
+                    cleaned = cleaned.strip('"\'')
+                    if cleaned:
+                        queries.append(cleaned)
+            self._log("LLM", f"Generated {len(queries)} more Reddit queries: {queries}")
+            return queries[:3]
+
+        except Exception as e:
+            self._log("ERROR", f"Failed to generate more Reddit queries: {e}")
+            return []
+
+    def _aggregate_results_from_leads(
+        self,
+        all_leads: List[Dict],
+        target_leads: int
+    ) -> OrchestratorResult:
+        """Aggregate final results from collected leads list."""
+        self._log("AGGREGATE", f"Aggregating {len(all_leads)} total leads...")
+
+        if not all_leads:
+            return OrchestratorResult(
+                success=False,
+                errors=["No leads found from any source"],
+                trace=self.trace.copy()
+            )
+
+        # Sort by intent score (descending)
+        all_leads.sort(key=lambda x: x.get('intent_score', 0), reverse=True)
+
+        # Take top N leads
+        final_leads = all_leads[:target_leads]
+
+        # Count by priority
+        hot_leads = len([l for l in final_leads if l.get('intent_score', 0) >= 80])
+        warm_leads = len([l for l in final_leads if 60 <= l.get('intent_score', 0) < 80])
+
+        # Count by source
+        reddit_leads = len([l for l in final_leads if l.get('source_platform') == 'reddit'])
+        techcrunch_leads = len([l for l in final_leads if l.get('source_platform') == 'techcrunch'])
+        competitor_leads = len([l for l in final_leads if l.get('source_platform') == 'linkedin'])
+
+        self._log("COMPLETE", f"Final: {len(final_leads)} qualified leads")
+        self._log("COMPLETE", f"Hot: {hot_leads}, Warm: {warm_leads}")
+
+        return OrchestratorResult(
+            success=True,
+            leads=final_leads,
+            total_leads=len(final_leads),
+            hot_leads=hot_leads,
+            warm_leads=warm_leads,
+            reddit_leads=reddit_leads,
+            techcrunch_leads=techcrunch_leads,
+            competitor_leads=competitor_leads,
+            duplicates_removed=len(all_leads) - len(final_leads) if len(all_leads) > target_leads else 0,
+            platforms_searched=list(set(l.get('source_platform', 'unknown') for l in final_leads)),
+            strategies_used=[],
+            errors=[]
         )
 
 

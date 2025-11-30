@@ -82,7 +82,13 @@ class TechCrunchWorker:
         self.trace.append(f"[{level}] {message}")
         self.log_callback(level, message)
 
-    def run(self, industry: str, product_context: str, target_leads: int = 20) -> WorkerResult:
+    def run(
+        self,
+        industry: str,
+        product_context: str,
+        target_leads: int = 20,
+        pages: Optional[List[int]] = None
+    ) -> WorkerResult:
         """
         Execute full TechCrunch workflow.
 
@@ -90,15 +96,17 @@ class TechCrunchWorker:
             industry: Target industry from strategy plan
             product_context: Product description for role targeting
             target_leads: Target number of leads to find
+            pages: Optional page numbers to fetch (default: [1, 2])
 
         Returns:
             WorkerResult with leads or error
         """
-        self._log("START", f"TechCrunch worker started: industry={industry}, target={target_leads}")
+        fetch_pages = pages or [1, 2]
+        self._log("START", f"TechCrunch worker started: industry={industry}, pages={fetch_pages}, target={target_leads}")
         self.trace = []
 
         # Step 1: Fetch articles
-        step1_result = self.step_fetch_articles(pages=[1, 2])
+        step1_result = self.step_fetch_articles(pages=fetch_pages)
         if not step1_result.success:
             self._log("ERROR", f"Fetch failed: {step1_result.error}")
             return WorkerResult(

@@ -114,47 +114,72 @@ class SerpDecisionMakersTool(BaseTool):
 
     def _generate_queries(self, company: str, product_context: str) -> List[str]:
         """
-        Generate smart SERP queries based on product context.
+        Generate smart SERP queries using LLM to determine the right decision makers.
 
-        Always targets ALL founders + role-specific titles.
+        LLM decides WHO should buy this product → queries those roles FIRST → founders as fallback.
         """
-        queries = [
+        queries = []
+
+        # LLM decides target roles based on product (cached)
+        if product_context:
+            target_roles = self._get_target_roles_from_llm(product_context)
+            # Role-specific queries FIRST
+            for role in target_roles[:3]:
+                queries.append(f'"{company}" "{role}" site:linkedin.com/in/')
+
+        # Founders/CEO as FALLBACK (always included, but after role-specific)
+        queries.extend([
             f'"{company}" founder site:linkedin.com/in/',
             f'"{company}" CEO site:linkedin.com/in/',
             f'"{company}" co-founder site:linkedin.com/in/',
-        ]
-
-        # Add role-specific queries based on product context
-        context_lower = product_context.lower()
-
-        if any(word in context_lower for word in ['sales', 'crm', 'revenue', 'outbound']):
-            queries.extend([
-                f'"{company}" "head of sales" site:linkedin.com/in/',
-                f'"{company}" "VP sales" site:linkedin.com/in/',
-            ])
-        elif any(word in context_lower for word in ['dev', 'engineering', 'platform', 'api', 'code']):
-            queries.extend([
-                f'"{company}" CTO site:linkedin.com/in/',
-                f'"{company}" "VP engineering" site:linkedin.com/in/',
-            ])
-        elif any(word in context_lower for word in ['marketing', 'growth', 'brand']):
-            queries.extend([
-                f'"{company}" CMO site:linkedin.com/in/',
-                f'"{company}" "head of marketing" site:linkedin.com/in/',
-            ])
-        elif any(word in context_lower for word in ['hr', 'people', 'talent', 'recruit']):
-            queries.extend([
-                f'"{company}" "head of people" site:linkedin.com/in/',
-                f'"{company}" "VP HR" site:linkedin.com/in/',
-            ])
-        else:
-            # Default: add COO and general decision makers
-            queries.extend([
-                f'"{company}" COO site:linkedin.com/in/',
-                f'"{company}" CTO site:linkedin.com/in/',
-            ])
+        ])
 
         return queries[:6]  # Limit to 6 queries to keep it fast
+
+    def _get_target_roles_from_llm(self, product_context: str) -> List[str]:
+        """
+        Ask LLM: Who would BUY this product?
+
+        Returns 3 specific job titles. Cached per product context.
+        """
+        # Cache check - same product = same roles (avoid repeated LLM calls)
+        if hasattr(self, '_roles_cache') and self._roles_cache.get('product') == product_context:
+            return self._roles_cache['roles']
+
+        try:
+            client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+            response = client.chat.completions.create(
+                model=settings.TOOL_MODEL,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You identify the job titles of people who would BUY a B2B software product. Return exactly 3 specific job titles, one per line. Be specific (e.g., 'VP of Sales' not just 'Sales'). No numbering or bullets."
+                    },
+                    {
+                        "role": "user",
+                        "content": f"Who would be the decision maker to BUY this product: {product_context}"
+                    }
+                ],
+                temperature=0.3,
+                max_tokens=100
+            )
+
+            # Parse response into list of titles
+            content = response.choices[0].message.content.strip()
+            titles = [t.strip() for t in content.split('\n') if t.strip()]
+            roles = titles[:3]
+
+            print(f"[SERP_DECISION_MAKERS] LLM identified target roles for '{product_context[:50]}...': {roles}")
+
+            # Cache for subsequent companies (same product = same roles)
+            self._roles_cache = {'product': product_context, 'roles': roles}
+            return roles
+
+        except Exception as e:
+            print(f"[SERP_DECISION_MAKERS] LLM role lookup failed: {e}, using defaults")
+            # Fallback to generic roles
+            return ["CTO", "VP of Engineering", "Head of Product"]
 
     def _serp_search(self, query: str, api_key: str) -> List[Dict]:
         """

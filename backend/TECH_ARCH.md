@@ -1,7 +1,7 @@
 # Technical Architecture Documentation
 
-> **Last Updated:** 2025-11-28
-> **Version:** 3.5 (Supervisor Orchestrator + Parallel Workers)
+> **Last Updated:** 2025-11-29
+> **Version:** 3.6 (Compensation Agent + LLM Decision Maker Selection)
 
 This document serves as the canonical reference for the prospecting system architecture, patterns, and design decisions.
 
@@ -26,14 +26,15 @@ This document serves as the canonical reference for the prospecting system archi
 
 ## Architecture Overview
 
-### Current Architecture (v3.5)
+### Current Architecture (v3.6)
 
-The system uses a **Supervisor Orchestrator with Parallel Workers** architecture:
+The system uses a **Supervisor Orchestrator with Parallel Workers + Compensation Agent** architecture:
 - 1 LLM orchestrator that plans, reviews, and fixes
 - 3 Python worker classes running in PARALLEL via ThreadPoolExecutor
 - Workers execute deterministic steps, orchestrator handles intelligence
-- Intra-step review after each worker step
-- ~6 min execution (down from 29+ min in v3.4)
+- **LLM Compensation Agent** decides what to run when target not met
+- **LLM Decision Maker Selection** finds role-appropriate contacts (not just founders)
+- ~5-9 min execution depending on target size
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -928,6 +929,7 @@ class MyTool(BaseTool):
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 3.6 | 2025-11-29 | **Compensation Agent + LLM Decision Makers**: (1) **LLM Compensation Agent** - Replaced heuristic `_decide_compensations()` with `_ask_compensation_agent()` that reasons about what worked/failed. Agent tracks `round_history` and makes intelligent decisions. (2) **LLM Decision Maker Selection** - `serp_decision_makers.py` now asks LLM "who would BUY this product?" to find role-appropriate contacts (VP Sales for sales tools, CTOs for dev tools) instead of always prioritizing founders. (3) **Target-Aware Loop** - Compensation loop runs up to 3 rounds until target met. Priority: TechCrunch → Competitors → Reddit. (4) **ProspectingContext** - Tracks pages fetched, queries used, competitors scraped to avoid duplicate work. (5) **Bug Fix** - Fixed numbered prefix bug ("1. Groove" → "Groove") in competitor generation. |
 | 3.5 | 2025-11-28 | **Supervisor Orchestrator**: (1) **New Architecture** - Single LLM orchestrator with 3 parallel Python workers (RedditWorker, TechCrunchWorker, CompetitorWorker). (2) **Parallel Execution** - Workers run via ThreadPoolExecutor (~6 min vs 29+ min). (3) **Intra-Step Review** - Orchestrator reviews each worker step, retries failures. (4) **Strategy Fix** - Strategy planner now generates actual search queries (not category labels like "direct", "pain_based"). (5) **Field Mapping Fix** - `lead_exporter.py` maps tool fields (`intent_signal`, `source_platform`) to CSV columns (`buying_signal`, `platform`). |
 | 3.4 | 2025-11-28 | **Major Update**: (1) **Reddit Relaxation** - Removed `_classify_commenters_batch()`, simplified to extract ALL engagers, uses `filter_sellers` at end only. (2) **TechCrunch SERP** - Added `TechCrunchFetchParallelTool` and `TechCrunchSerpDecisionMakersTool` for ~30-60s decision maker lookup (was 6-8 min). (3) **Competitor Displacement** - New strategy using `harvestapi/linkedin-company-posts` actor to find leads from competitor post engagers. (4) **Final Sorting** - Leads sorted by intent_score descending (warmest first). Now 5 agents, 5 tasks. |
 | 3.3 | 2025-11-28 | **Structured Output Standardization**: All tool LLM calls now use `response_format` with `json_schema`. Removed retry/fallback complexity for JSON parsing. Updated: `apify_reddit.py`, `apify_linkedin_employees.py`. |
@@ -941,27 +943,73 @@ class MyTool(BaseTool):
 
 ## Test Results & Quality Observations
 
-### Latest Test Run v3.5 (2025-11-28)
+### Latest Test Run v3.6 (2025-11-29)
 
-**Query:** "ML observability tool for startups"
-**Target:** 30 leads
-**Duration:** ~6 minutes (was 29+ min in v3.4!)
-**Result:** 30 leads (100% of target)
+**Query:** "Sales engagement platform for outbound sales teams"
+**Target:** 100 leads
+**Duration:** ~8.8 minutes
+**Result:** 98 leads (98% of target)
 
 | Metric | Value |
 |--------|-------|
-| Total Leads | 30 |
+| Total Leads | 98 |
 | Hot Leads | 2 |
-| Warm Leads | 28 |
-| Cold Leads | 0 |
-| Reddit Leads | 14 |
-| TechCrunch Leads | 15 |
-| Competitor Leads | 1 |
+| Warm Leads | 96 |
+| Reddit Leads | 21 |
+| TechCrunch Leads | 57 |
+| Competitor Leads | 20 |
 
-**CSV Fields Now Populated:**
-- ✅ `buying_signal`: Real signals like "Deploying AI Agents in the Real World..."
-- ✅ `fit_reasoning`: Context like "Posted in r/LangChain..." or "Found via SERP..."
-- ✅ `platform`: Correctly shows "reddit", "techcrunch", or "linkedin"
+**Compensation Loop in Action:**
+```
+Initial:  56/100 (56%) → shortfall detected
+Round 1:  68/100 (68%) → TC pages 3-4 + competitors
+Round 2:  83/100 (83%) → TC pages 5-6
+Round 3:  98/100 (98%) → TC pages 7-8
+```
+
+**LLM Decision Maker Selection:**
+```
+Product: "sales engagement platform"
+LLM identified roles: ['VP of Sales', 'Director of Sales Operations', 'Sales Enablement Manager']
+```
+→ Correctly finds sales roles, not generic founders!
+
+### Previous Test Run v3.6 (2025-11-29)
+
+**Query:** "Open source vector database"
+**Target:** 50 leads
+**Duration:** ~5.5 minutes
+**Result:** 49 leads (98% of target)
+
+| Metric | Value |
+|--------|-------|
+| Total Leads | 49 |
+| Reddit Leads | 8 |
+| TechCrunch Leads | 15 |
+| Competitor Leads | 26 |
+
+**LLM Decision Maker Selection:**
+```
+Product: "open source vector database"
+LLM identified roles: ['Chief Technology Officer', 'Data Engineering Manager', 'Head of Data Science']
+```
+
+### Key Fixes in v3.6
+
+1. **LLM Compensation Agent** ✅ NEW
+   - Replaced heuristic-based `_decide_compensations()` with LLM agent
+   - Agent sees full round history (what worked/failed)
+   - Makes intelligent decisions based on context
+
+2. **LLM Decision Maker Selection** ✅ NEW
+   - `serp_decision_makers.py` asks LLM who would BUY the product
+   - Sales tools → VP Sales, Head of Revenue
+   - Dev tools → CTO, VP Engineering
+   - Cached per product (1 LLM call per run, not per company)
+
+3. **Numbered Prefix Bug** ✅ FIXED
+   - LLM was generating "1. Groove" instead of "Groove"
+   - Fixed with regex cleanup in `_generate_more_competitors()`
 
 ### Key Fixes in v3.5
 
