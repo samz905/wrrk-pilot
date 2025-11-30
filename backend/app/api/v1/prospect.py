@@ -5,10 +5,12 @@ Routes:
 - POST /api/v1/prospect/start - Start prospecting job
 - GET /api/v1/prospect/{job_id}/stream - SSE stream for real-time updates
 - GET /api/v1/prospect/{job_id}/status - Get job status
+- POST /api/v1/prospect/{job_id}/cancel - Cancel running job
 """
 import asyncio
 import uuid
-from typing import Dict, Any
+import json
+from typing import Dict, Any, List
 from datetime import datetime, timezone
 from queue import Queue
 import threading
@@ -18,7 +20,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Optional
 
-from app.flows.prospecting_flow import ProspectingFlow, ProspectingState
+from app.supervisor_orchestrator import SupervisorOrchestrator, OrchestratorResult
 
 
 router = APIRouter(prefix="/api/v1/prospect", tags=["prospecting"])
@@ -31,11 +33,12 @@ class ProspectingJob:
         self.job_id = job_id
         self.query = query
         self.max_leads = max_leads
-        self.status = "initializing"  # initializing, running, completed, failed
+        self.status = "initializing"  # initializing, running, completed, failed, cancelled
         self.created_at = datetime.now(timezone.utc)
         self.events = Queue()
-        self.result = None
+        self.result: Optional[OrchestratorResult] = None
         self.error = None
+        self.cancel_event = threading.Event()  # For cancellation
 
 
 # Active jobs storage
@@ -86,30 +89,95 @@ async def start_prospecting(request: StartProspectingRequest):
 
     # Start prospecting in background thread
     def run_prospecting():
-        """Run ProspectingFlow in background."""
+        """Run SupervisorOrchestrator in background."""
         try:
             job.status = "running"
 
-            # Event callback to queue events for SSE
-            def event_callback(event: Dict[str, Any]):
+            # Log callback to queue events for SSE
+            def log_callback(level: str, message: str):
+                """Convert orchestrator logs to SSE events."""
+                # Check for cancellation
+                if job.cancel_event.is_set():
+                    raise Exception("Job cancelled by user")
+
+                # Map log levels to event types
+                event_type = "thought"
+                worker = None
+
+                # Detect worker-specific logs
+                level_upper = level.upper()
+                if level_upper in ["REDDIT", "TECHCRUNCH", "COMPETITOR"]:
+                    worker = level_upper.lower()
+                    if "starting" in message.lower() or "running" in message.lower():
+                        event_type = "worker_start"
+                    elif "complete" in message.lower() or "found" in message.lower():
+                        event_type = "worker_complete"
+                    else:
+                        event_type = "thought"
+                elif level_upper == "PARALLEL":
+                    event_type = "thought"
+                elif level_upper == "STRATEGY":
+                    event_type = "thought"
+                elif level_upper in ["ERROR", "FATAL"]:
+                    event_type = "error"
+
+                event = {
+                    "type": event_type,
+                    "data": message,
+                    "worker": worker,
+                    "timestamp": datetime.now(timezone.utc).isoformat()
+                }
                 job.events.put(event)
 
-            # Create and run flow
-            flow = ProspectingFlow(event_callback=event_callback)
-            result = flow.kickoff(inputs={
-                "query": request.query,
-                "max_leads": request.max_leads
+            # Create and run orchestrator
+            orchestrator = SupervisorOrchestrator(
+                log_callback=log_callback,
+                output_dir="."
+            )
+
+            # Run orchestrator
+            result = orchestrator.run(
+                product_description=request.query,
+                target_leads=request.max_leads
+            )
+
+            # Check for cancellation before completing
+            if job.cancel_event.is_set():
+                job.status = "cancelled"
+                job.events.put({"type": "cancelled", "data": "Job cancelled by user"})
+                return
+
+            # Store result and send leads
+            job.result = result
+
+            # Send leads as a batch event
+            if result.leads:
+                job.events.put({
+                    "type": "lead_batch",
+                    "data": json.dumps(result.leads),
+                    "leads": result.leads,
+                    "count": len(result.leads)
+                })
+
+            job.status = "completed"
+            job.events.put({
+                "type": "completed",
+                "data": json.dumps({
+                    "total_leads": result.total_leads,
+                    "hot_leads": result.hot_leads,
+                    "warm_leads": result.warm_leads,
+                    "execution_time": result.execution_time
+                })
             })
 
-            # Store result
-            job.result = result
-            job.status = "completed"
-            job.events.put({"type": "completed", "data": "Prospecting completed successfully"})
-
         except Exception as e:
-            job.status = "failed"
-            job.error = str(e)
-            job.events.put({"type": "error", "data": str(e)})
+            if job.cancel_event.is_set():
+                job.status = "cancelled"
+                job.events.put({"type": "cancelled", "data": "Job cancelled by user"})
+            else:
+                job.status = "failed"
+                job.error = str(e)
+                job.events.put({"type": "error", "data": str(e)})
 
     # Start background thread
     thread = threading.Thread(target=run_prospecting, daemon=True)
@@ -129,9 +197,11 @@ async def stream_prospecting(job_id: str):
 
     Streams events as they happen:
     - thought: Agent reasoning
-    - tool: Tool execution
-    - lead_found: New lead discovered
+    - worker_start: Worker begins (reddit/techcrunch/competitor)
+    - worker_complete: Worker finished
+    - lead_batch: New leads discovered
     - completed: Job finished
+    - cancelled: Job cancelled
     - error: Error occurred
     """
     # Check if job exists
@@ -151,20 +221,22 @@ async def stream_prospecting(job_id: str):
             if not job.events.empty():
                 event = job.events.get()
                 event_type = event.get("type", "message")
-                event_data = event.get("data", "")
+
+                # Serialize event data as JSON
+                event_data = json.dumps(event)
 
                 # Send SSE event
                 yield f"event: {event_type}\ndata: {event_data}\n\n"
 
-                # If job completed or failed, end stream
-                if event_type in ["completed", "error"]:
+                # If job completed, failed, or cancelled, end stream
+                if event_type in ["completed", "error", "cancelled"]:
                     break
 
             # Sleep briefly to avoid busy waiting
             await asyncio.sleep(0.1)
 
             # If job is in terminal state and queue is empty, end stream
-            if job.status in ["completed", "failed"] and job.events.empty():
+            if job.status in ["completed", "failed", "cancelled"] and job.events.empty():
                 break
 
     return StreamingResponse(
@@ -176,6 +248,27 @@ async def stream_prospecting(job_id: str):
             "X-Accel-Buffering": "no"  # Disable buffering for nginx
         }
     )
+
+
+@router.post("/{job_id}/cancel")
+async def cancel_prospecting(job_id: str):
+    """
+    Cancel a running prospecting job.
+
+    Sets the cancel event which will be checked by the orchestrator.
+    """
+    if job_id not in active_jobs:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    job = active_jobs[job_id]
+
+    if job.status not in ["initializing", "running"]:
+        raise HTTPException(status_code=400, detail=f"Job cannot be cancelled (status: {job.status})")
+
+    # Set cancel event
+    job.cancel_event.set()
+
+    return {"message": "Cancel request sent", "job_id": job_id}
 
 
 @router.get("/{job_id}/status", response_model=JobStatusResponse)
@@ -201,14 +294,11 @@ async def get_job_results(job_id: str):
     """
     Get final results of a completed prospecting job.
 
-    Returns the top 10 qualified leads with:
-    - Fit scores
+    Returns leads with:
+    - Intent scores
     - Intent signals
-    - Match reasons
+    - Source platforms
     - Contact information
-    - Priority levels
-
-    Perfect for demo - shows clean, structured lead data.
     """
     if job_id not in active_jobs:
         raise HTTPException(status_code=404, detail="Job not found")
@@ -221,39 +311,34 @@ async def get_job_results(job_id: str):
     if job.status == "failed":
         raise HTTPException(status_code=500, detail=f"Job failed: {job.error}")
 
-    if job.status != "completed" or not job.result:
-        raise HTTPException(status_code=404, detail="No results available yet")
-
-    # Extract structured results from the flow
-    try:
-        leads_data = job.result.leads if hasattr(job.result, 'leads') else []
-
-        if not leads_data:
-            return {
-                "job_id": job_id,
-                "query": job.query,
-                "status": "completed",
-                "lead_count": 0,
-                "leads": [],
-                "message": "No leads found"
-            }
-
-        # Get qualified leads output (top 10 with scores)
-        qualified_output = leads_data[0].get("qualified_leads", "") if leads_data else ""
-
+    if job.status == "cancelled":
         return {
             "job_id": job_id,
             "query": job.query,
-            "status": "completed",
-            "pipeline": "Reddit → LinkedIn → Twitter → Google → Aggregation → Qualification",
-            "lead_count": "Top 10",
-            "qualified_leads_text": qualified_output,
-            "raw_results": {
-                "aggregation": leads_data[0].get("aggregated_results", "") if leads_data else "",
-                "platform_data": leads_data[0].get("raw_platform_data", {}) if leads_data else {}
-            },
-            "message": "Top 10 highest-quality leads identified and scored"
+            "status": "cancelled",
+            "lead_count": 0,
+            "leads": [],
+            "message": "Job was cancelled"
         }
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing results: {str(e)}")
+    if job.status != "completed" or not job.result:
+        raise HTTPException(status_code=404, detail="No results available yet")
+
+    # Extract results from OrchestratorResult
+    result = job.result
+
+    return {
+        "job_id": job_id,
+        "query": job.query,
+        "status": "completed",
+        "lead_count": result.total_leads,
+        "leads": result.leads,
+        "hot_leads": result.hot_leads,
+        "warm_leads": result.warm_leads,
+        "reddit_leads": result.reddit_leads,
+        "techcrunch_leads": result.techcrunch_leads,
+        "competitor_leads": result.competitor_leads,
+        "platforms_searched": result.platforms_searched,
+        "execution_time": result.execution_time,
+        "message": f"Found {result.total_leads} leads ({result.hot_leads} hot, {result.warm_leads} warm)"
+    }

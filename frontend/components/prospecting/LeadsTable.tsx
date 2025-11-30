@@ -76,7 +76,7 @@ const columns: ColumnDef<Lead>[] = [
     header: 'Title',
     cell: ({ row }) => (
       <div className="text-sm text-muted-foreground max-w-[200px] truncate">
-        {row.original.title}
+        {row.original.title || '-'}
       </div>
     )
   },
@@ -84,14 +84,14 @@ const columns: ColumnDef<Lead>[] = [
     accessorKey: 'company',
     header: 'Company',
     cell: ({ row }) => (
-      <div className="font-medium">{row.original.company}</div>
+      <div className="font-medium">{row.original.company || '-'}</div>
     )
   },
   {
-    accessorKey: 'contact.email',
-    header: 'Email',
+    accessorKey: 'contact.linkedin',
+    header: 'LinkedIn',
     cell: ({ row }) => (
-      row.original.contact.email ? (
+      row.original.contact?.linkedin ? (
         <CheckCircle className="w-4 h-4 text-green-600" />
       ) : (
         <XCircle className="w-4 h-4 text-gray-300" />
@@ -99,20 +99,28 @@ const columns: ColumnDef<Lead>[] = [
     )
   },
   {
-    accessorKey: 'platforms_found',
-    header: 'Platforms',
-    cell: ({ row }) => (
-      <div className="text-sm text-muted-foreground">
-        {row.original.platforms_found.length}
-      </div>
-    )
+    accessorKey: 'source_platform',
+    header: 'Source',
+    cell: ({ row }) => {
+      const platform = row.original.source_platform;
+      const colors: Record<string, string> = {
+        reddit: 'bg-orange-100 text-orange-800',
+        techcrunch: 'bg-green-100 text-green-800',
+        linkedin: 'bg-blue-100 text-blue-800',
+      };
+      return (
+        <Badge variant="outline" className={`text-xs ${colors[platform || ''] || ''}`}>
+          {platform || 'unknown'}
+        </Badge>
+      );
+    }
   },
   {
-    accessorKey: 'recency',
-    header: 'Recency',
+    accessorKey: 'intent_signal',
+    header: 'Signal',
     cell: ({ row }) => (
-      <div className="text-sm text-muted-foreground">
-        {row.original.recency}
+      <div className="text-sm text-muted-foreground max-w-[200px] truncate" title={row.original.intent_signal}>
+        {row.original.intent_signal || '-'}
       </div>
     )
   }

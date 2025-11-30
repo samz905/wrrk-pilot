@@ -5,163 +5,188 @@ import { QueryInput } from '@/components/prospecting/QueryInput';
 import { AgentWorkspace } from '@/components/prospecting/AgentWorkspace';
 import { LeadsTable } from '@/components/prospecting/LeadsTable';
 import { LeadDetailModal } from '@/components/prospecting/LeadDetailModal';
-import { Lead, ActivityEvent, WorkspaceCard } from '@/lib/types';
-import { generateCRMDemoEvents } from '@/lib/mock-data';
-
-// Demo mode flag - set to true to use mock data without backend
-const DEMO_MODE = true;
+import { Lead, WorkspaceCard, PlatformTool, WORKER_TO_PLATFORM, transformLead } from '@/lib/types';
+import { startProspecting, subscribeToEvents, cancelJob, ProspectingEvent } from '@/lib/api';
 
 export default function ProspectingPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [status, setStatus] = useState<'idle' | 'running' | 'completed' | 'failed'>('idle');
+  const [status, setStatus] = useState<'idle' | 'running' | 'completed' | 'failed' | 'cancelled'>('idle');
   const [highlightedLeads, setHighlightedLeads] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   // Workspace cards - chronological list of all reasoning and tool cards
   const [workspaceCards, setWorkspaceCards] = useState<WorkspaceCard[]>([]);
 
-  // Timeout refs for cleanup
-  const timeoutsRef = useRef<NodeJS.Timeout[]>([]);
+  // Job and stream refs
+  const jobIdRef = useRef<string | null>(null);
+  const eventSourceRef = useRef<{ close: () => void } | null>(null);
 
-  const handleStart = async (query: string, maxLeads: number) => {
+  const handleStart = async (query: string) => {
     setIsLoading(true);
     setStatus('running');
     setLeads([]);
     setHighlightedLeads([]);
-    setWorkspaceCards([]); // Start with no cards
+    setWorkspaceCards([]);
+    setError(null);
 
-    // Clear any existing timeouts
-    timeoutsRef.current.forEach(clearTimeout);
-    timeoutsRef.current = [];
+    try {
+      // Start prospecting job (hardcoded 50 leads)
+      const response = await startProspecting(query, 50);
+      jobIdRef.current = response.job_id;
 
-    if (DEMO_MODE) {
-      // Generate events with realistic timing
-      const demoEvents = generateCRMDemoEvents();
-
-      // Schedule all events
-      demoEvents.forEach((event, index) => {
-        const delay = event.timestamp.getTime() - demoEvents[0].timestamp.getTime();
-
-        const timeout = setTimeout(() => {
-          handleDemoEvent(event);
-        }, delay);
-
-        timeoutsRef.current.push(timeout);
-      });
-
-      // Final completion after all events
-      const finalDelay = demoEvents[demoEvents.length - 1].timestamp.getTime() - demoEvents[0].timestamp.getTime();
-      const finalTimeout = setTimeout(() => {
-        setStatus('completed');
-        setIsLoading(false);
-      }, finalDelay + 1000);
-
-      timeoutsRef.current.push(finalTimeout);
-
-      return;
+      // Subscribe to SSE stream
+      eventSourceRef.current = subscribeToEvents(
+        response.job_id,
+        handleEvent,
+        (err) => {
+          console.error('SSE error:', err);
+          setError(err.message);
+          setStatus('failed');
+          setIsLoading(false);
+        }
+      );
+    } catch (err: any) {
+      console.error('Failed to start prospecting:', err);
+      setError(err.message || 'Failed to start prospecting');
+      setStatus('failed');
+      setIsLoading(false);
     }
-
-    // Real API mode (when backend is ready)
-    // TODO: Implement real API integration
   };
 
-  const handleDemoEvent = (event: ActivityEvent) => {
+  const handleStop = async () => {
+    if (!jobIdRef.current) return;
+
+    try {
+      // Close SSE connection
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+      }
+
+      // Cancel job on backend
+      await cancelJob(jobIdRef.current);
+
+      setStatus('cancelled');
+      setIsLoading(false);
+    } catch (err: any) {
+      console.error('Failed to cancel job:', err);
+      // Still update UI even if cancel fails
+      setStatus('cancelled');
+      setIsLoading(false);
+    }
+  };
+
+  const handleEvent = (event: ProspectingEvent) => {
+    const timestamp = event.timestamp ? new Date(event.timestamp) : new Date();
+
     switch (event.type) {
+      case 'status':
+        // Initial status event
+        break;
+
       case 'thought':
-        if (!event.tool) {
+        if (event.worker) {
+          // Add thought to the most recent tool card with this worker
+          const tool = WORKER_TO_PLATFORM[event.worker];
+          if (tool) {
+            setWorkspaceCards(prev => {
+              const lastIndex = prev.map(c => c.tool).lastIndexOf(tool);
+              if (lastIndex >= 0) {
+                return prev.map((card, idx) =>
+                  idx === lastIndex && card.type === 'tool'
+                    ? {
+                        ...card,
+                        thoughts: [...(card.thoughts || []), event.data],
+                        isThinking: false
+                      }
+                    : card
+                );
+              }
+              return prev;
+            });
+          }
+        } else {
           // Create NEW reasoning card
           setWorkspaceCards(prev => [...prev, {
             id: `reasoning-${Date.now()}-${Math.random()}`,
             type: 'reasoning',
             reasoningText: event.data,
-            timestamp: event.timestamp
-          }]);
-        } else {
-          // Add thought to the most recent tool card with this tool
-          setWorkspaceCards(prev => {
-            const lastIndex = prev.map(c => c.tool).lastIndexOf(event.tool);
-            if (lastIndex >= 0) {
-              return prev.map((card, idx) =>
-                idx === lastIndex && card.type === 'tool'
-                  ? {
-                      ...card,
-                      thoughts: [...(card.thoughts || []), event.data],
-                      isThinking: false
-                    }
-                  : card
-              );
-            }
-            return prev;
-          });
-        }
-        break;
-
-      case 'tool_start':
-        if (event.tool) {
-          // ALWAYS create NEW tool card (never reuse)
-          setWorkspaceCards(prev => [...prev, {
-            id: `${event.tool}-${Date.now()}-${Math.random()}`,
-            type: 'tool',
-            tool: event.tool,
-            status: 'active',
-            thoughts: [],
-            isThinking: false,
-            timestamp: event.timestamp
+            timestamp
           }]);
         }
         break;
 
-      case 'thinking':
-        if (event.tool) {
-          // Update most recent tool card with this tool to show thinking state
-          setWorkspaceCards(prev => {
-            const lastIndex = prev.map(c => c.tool).lastIndexOf(event.tool);
-            if (lastIndex >= 0) {
-              return prev.map((card, idx) =>
-                idx === lastIndex && card.type === 'tool'
-                  ? { ...card, isThinking: true }
-                  : card
-              );
-            }
-            return prev;
-          });
+      case 'worker_start':
+        if (event.worker) {
+          const tool = WORKER_TO_PLATFORM[event.worker];
+          if (tool) {
+            // Create NEW tool card
+            setWorkspaceCards(prev => [...prev, {
+              id: `${tool}-${Date.now()}-${Math.random()}`,
+              type: 'tool',
+              tool,
+              status: 'active',
+              thoughts: [event.data],
+              isThinking: true,
+              timestamp
+            }]);
+          }
         }
         break;
 
-      case 'tool_complete':
-        if (event.tool) {
-          // Update most recent tool card with this tool to completed
-          setWorkspaceCards(prev => {
-            const lastIndex = prev.map(c => c.tool).lastIndexOf(event.tool);
-            if (lastIndex >= 0) {
-              return prev.map((card, idx) =>
-                idx === lastIndex && card.type === 'tool'
-                  ? {
-                      ...card,
-                      status: 'completed',
-                      isThinking: false,
-                      results: event.data
-                    }
-                  : card
-              );
-            }
-            return prev;
-          });
+      case 'worker_complete':
+        if (event.worker) {
+          const tool = WORKER_TO_PLATFORM[event.worker];
+          if (tool) {
+            // Update most recent tool card with this tool to completed
+            setWorkspaceCards(prev => {
+              const lastIndex = prev.map(c => c.tool).lastIndexOf(tool);
+              if (lastIndex >= 0) {
+                return prev.map((card, idx) =>
+                  idx === lastIndex && card.type === 'tool'
+                    ? {
+                        ...card,
+                        status: 'completed',
+                        isThinking: false,
+                        results: event.data
+                      }
+                    : card
+                );
+              }
+              return prev;
+            });
+          }
         }
         break;
 
       case 'lead_batch':
-        if (event.leads && event.leads.length > 0) {
+        // Parse leads from event
+        let rawLeads: any[] = [];
+        if (event.leads) {
+          rawLeads = event.leads;
+        } else if (event.data) {
+          try {
+            rawLeads = JSON.parse(event.data);
+          } catch {
+            rawLeads = [];
+          }
+        }
+
+        if (rawLeads.length > 0) {
+          // Transform to frontend Lead format
+          const newLeads = rawLeads.map(transformLead);
+
           // Add new leads
           setLeads(prev => {
-            const combined = [...prev, ...event.leads!];
+            const combined = [...prev, ...newLeads];
             // Sort by score descending
             return combined.sort((a, b) => b.score - a.score);
           });
 
           // Highlight new leads
-          const newLeadNames = event.leads.map(l => l.name);
+          const newLeadNames = newLeads.map(l => l.name);
           setHighlightedLeads(newLeadNames);
 
           // Remove highlight after 2 seconds
@@ -170,24 +195,67 @@ export default function ProspectingPage() {
           }, 2000);
         }
         break;
+
+      case 'completed':
+        setStatus('completed');
+        setIsLoading(false);
+        if (eventSourceRef.current) {
+          eventSourceRef.current.close();
+          eventSourceRef.current = null;
+        }
+        break;
+
+      case 'cancelled':
+        setStatus('cancelled');
+        setIsLoading(false);
+        if (eventSourceRef.current) {
+          eventSourceRef.current.close();
+          eventSourceRef.current = null;
+        }
+        break;
+
+      case 'error':
+        setError(event.data);
+        setStatus('failed');
+        setIsLoading(false);
+        if (eventSourceRef.current) {
+          eventSourceRef.current.close();
+          eventSourceRef.current = null;
+        }
+        break;
     }
   };
 
-  // Cleanup timeouts on unmount
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      timeoutsRef.current.forEach(clearTimeout);
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+      }
     };
   }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Minimal Header - Not Sticky */}
+      {/* Header with Query Input and Stop Button */}
       <header className="bg-white border-b shadow-sm">
         <div className="container mx-auto px-6 py-6">
-          <QueryInput onStart={handleStart} isLoading={isLoading} />
+          <QueryInput
+            onStart={handleStart}
+            onStop={handleStop}
+            isLoading={isLoading}
+          />
         </div>
       </header>
+
+      {/* Error Banner */}
+      {error && (
+        <div className="bg-red-50 border-b border-red-200 px-6 py-3">
+          <div className="container mx-auto text-red-700">
+            Error: {error}
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="container mx-auto p-6">
