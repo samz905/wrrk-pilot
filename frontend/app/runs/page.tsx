@@ -118,9 +118,9 @@ export default function RunsPage() {
             </Link>
           </Card>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {runs.map((run) => (
-              <Link key={run.id} href={`/runs/${run.id}`}>
+              <Link key={run.id} href={`/runs/${run.id}`} className="block">
                 <Card className="p-4 bg-zinc-900/50 border-zinc-700 hover:border-zinc-600 hover:bg-zinc-900/70 transition-all cursor-pointer group">
                   <div className="flex items-center gap-4">
                     {getStatusIcon(run.status)}
