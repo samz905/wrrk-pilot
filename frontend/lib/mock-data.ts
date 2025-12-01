@@ -16,8 +16,7 @@ export const MOCK_LEADS_BATCH_1: Lead[] = [
     company: 'SalesForce Analytics',
     contact: {
       email: 'marcus.j@salesforceanalytics.com',
-      linkedin: 'linkedin.com/in/marcusjohnson',
-      twitter: '@marcusj_sales'
+      linkedin: 'linkedin.com/in/marcusjohnson'
     },
     fit_score: 92,
     icp_match: {
@@ -50,8 +49,7 @@ export const MOCK_LEADS_BATCH_1: Lead[] = [
     title: 'Head of Sales',
     company: 'CloudScale Solutions',
     contact: {
-      linkedin: 'linkedin.com/in/davidtorres',
-      twitter: '@dtorres_sales'
+      linkedin: 'linkedin.com/in/davidtorres'
     },
     fit_score: 84,
     icp_match: {
@@ -161,8 +159,7 @@ export const MOCK_LEADS_BATCH_3: Lead[] = [
     company: 'SalesOps Pro',
     contact: {
       email: 'alex@salesopspro.io',
-      linkedin: 'linkedin.com/in/alexpatel',
-      twitter: '@alex_revops'
+      linkedin: 'linkedin.com/in/alexpatel'
     },
     fit_score: 76,
     icp_match: {
@@ -199,8 +196,7 @@ export const MOCK_LEADS_BATCH_4: Lead[] = [
     title: 'CEO',
     company: 'StartupBoost',
     contact: {
-      linkedin: 'linkedin.com/in/sarahoconnor',
-      twitter: '@sarah_ceo'
+      linkedin: 'linkedin.com/in/sarahoconnor'
     },
     fit_score: 72,
     icp_match: {
@@ -233,8 +229,7 @@ export const MOCK_LEADS_BATCH_4: Lead[] = [
     title: 'Head of Business Development',
     company: 'GrowthEngine',
     contact: {
-      linkedin: 'linkedin.com/in/lisawang',
-      twitter: '@lisa_biz'
+      linkedin: 'linkedin.com/in/lisawang'
     },
     fit_score: 65,
     icp_match: {

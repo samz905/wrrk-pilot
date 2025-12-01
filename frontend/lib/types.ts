@@ -28,6 +28,27 @@ export interface Lead {
   // Additional fields
   platforms_found: string[];
   user_type?: string;
+
+  // Extended fields for rich demo data
+  fit_score?: number;
+  icp_match?: {
+    title_score: number;
+    industry_score: number;
+    signals_score: number;
+  };
+  final_score_breakdown?: {
+    icp_contribution: number;
+    platform_diversity: number;
+    contact_quality: number;
+    intent_strength: number;
+    data_completeness: number;
+  };
+  match_reason?: string;
+  intent_signals?: Array<{ platform: string; signal: string }>;
+  recency?: string;
+  domain?: string;
+  recommended_action?: string;
+  tier?: number;
 }
 
 /**
