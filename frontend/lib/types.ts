@@ -72,7 +72,7 @@ export function transformLead(raw: any): Lead {
 }
 
 export interface ActivityEvent {
-  type: 'thought' | 'worker_start' | 'worker_complete' | 'error' | 'tool_start' | 'tool_complete' | 'thinking' | 'lead_batch' | 'completed' | 'cancelled' | 'status';
+  type: 'thought' | 'worker_start' | 'worker_complete' | 'error' | 'tool_start' | 'tool_complete' | 'thinking' | 'lead_batch' | 'completed' | 'cancelled' | 'status' | 'crew_started' | 'crew_completed';
   data: string;
   timestamp: Date;
   tool?: PlatformTool;
