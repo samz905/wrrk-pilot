@@ -27,6 +27,14 @@ class Settings(BaseSettings):
     MAX_REQUESTS_PER_MINUTE: int = 10
     MAX_TOKENS_PER_REQUEST: int = 2048
 
+    # Supabase
+    SUPABASE_URL: str = ""
+    SUPABASE_ANON_KEY: str = ""
+    SUPABASE_SERVICE_KEY: Optional[str] = None
+
+    # Production
+    ALLOWED_ORIGINS: str = "*"  # Comma-separated list in production
+
     # ==========================================================================
     # MODEL CONFIGURATION - Change models in ONE place!
     # ==========================================================================

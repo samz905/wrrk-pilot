@@ -6,21 +6,30 @@ Routes:
 - GET /api/v1/prospect/{job_id}/stream - SSE stream for real-time updates
 - GET /api/v1/prospect/{job_id}/status - Get job status
 - POST /api/v1/prospect/{job_id}/cancel - Cancel running job
+- GET /api/v1/prospect/runs - List user's past runs
+- GET /api/v1/prospect/runs/{job_id} - Get run details with leads
 """
 import asyncio
 import uuid
 import json
+import csv
+import io
 from typing import Dict, Any, List
 from datetime import datetime, timezone
 from queue import Queue
 import threading
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends, Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Optional
 
 from app.supervisor_orchestrator import SupervisorOrchestrator, OrchestratorResult
+from app.core.auth import get_current_user, get_optional_user, AuthenticatedUser
+from app.core.database import (
+    create_job, update_job_status, get_job, get_user_jobs,
+    save_leads, get_job_leads, get_job_lead_count
+)
 import re
 
 
@@ -152,14 +161,30 @@ class JobStatusResponse(BaseModel):
 
 
 @router.post("/start", response_model=StartProspectingResponse)
-async def start_prospecting(request: StartProspectingRequest):
+async def start_prospecting(
+    request: StartProspectingRequest,
+    user: Optional[AuthenticatedUser] = Depends(get_optional_user)
+):
     """
     Start a new prospecting job.
 
     Returns job_id and SSE stream URL for real-time updates.
+    If authenticated, job is saved to database for history.
     """
     # Generate unique job ID
     job_id = str(uuid.uuid4())
+    db_job_id = None
+
+    # If user is authenticated, save job to database
+    if user:
+        try:
+            db_job = create_job(user.user_id, request.query, request.max_leads)
+            if db_job:
+                job_id = db_job["id"]  # Use database-generated UUID
+                db_job_id = job_id
+        except Exception as e:
+            print(f"[DB] Failed to create job in database: {e}")
+            # Continue without database - job will still work, just not persisted
 
     # Create job
     job = ProspectingJob(
@@ -167,6 +192,8 @@ async def start_prospecting(request: StartProspectingRequest):
         query=request.query,
         max_leads=request.max_leads
     )
+    job.db_job_id = db_job_id  # Track if this is a DB-backed job
+    job.user_id = user.user_id if user else None
     active_jobs[job_id] = job
 
     # Start prospecting in background thread
@@ -254,8 +281,27 @@ async def start_prospecting(request: StartProspectingRequest):
             # Store result (leads already sent via lead_callback)
             job.result = result
 
-            # Note: leads are now streamed in real-time via lead_callback
-            # No final batch needed - leads were emitted as workers completed
+            # Save to database if authenticated
+            if job.db_job_id:
+                # Try to save leads (may fail due to data format issues)
+                try:
+                    save_leads(job.db_job_id, result.leads)
+                except Exception as e:
+                    print(f"[DB] Failed to save leads: {e}")
+
+                # Always update job status, even if leads save failed
+                try:
+                    update_job_status(
+                        job.db_job_id,
+                        status="completed",
+                        total_leads=result.total_leads,
+                        reddit_leads=result.reddit_leads,
+                        techcrunch_leads=result.techcrunch_leads,
+                        competitor_leads=result.competitor_leads,
+                        duration_seconds=int(result.execution_time)
+                    )
+                except Exception as e:
+                    print(f"[DB] Failed to update job status: {e}")
 
             job.status = "completed"
             job.events.put({
@@ -271,10 +317,20 @@ async def start_prospecting(request: StartProspectingRequest):
         except Exception as e:
             if job.cancel_event.is_set():
                 job.status = "cancelled"
+                if job.db_job_id:
+                    try:
+                        update_job_status(job.db_job_id, status="cancelled")
+                    except:
+                        pass
                 job.events.put({"type": "cancelled", "data": "Job cancelled by user"})
             else:
                 job.status = "failed"
                 job.error = str(e)
+                if job.db_job_id:
+                    try:
+                        update_job_status(job.db_job_id, status="failed", error=str(e))
+                    except:
+                        pass
                 job.events.put({"type": "error", "data": str(e)})
 
     # Start background thread
@@ -440,3 +496,121 @@ async def get_job_results(job_id: str):
         "execution_time": result.execution_time,
         "message": f"Found {result.total_leads} leads ({result.hot_leads} hot, {result.warm_leads} warm)"
     }
+
+
+# =============================================================================
+# New endpoints for job history (requires auth)
+# =============================================================================
+
+@router.get("/runs")
+async def list_runs(
+    user: AuthenticatedUser = Depends(get_current_user),
+    limit: int = 50
+):
+    """
+    List all prospecting runs for the authenticated user.
+
+    Returns jobs ordered by created_at desc.
+    """
+    try:
+        jobs = get_user_jobs(user.user_id, limit=limit)
+        return {
+            "runs": jobs,
+            "count": len(jobs)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch runs: {str(e)}")
+
+
+@router.get("/runs/{run_id}")
+async def get_run_details(
+    run_id: str,
+    user: AuthenticatedUser = Depends(get_current_user),
+    limit: int = 100,
+    offset: int = 0
+):
+    """
+    Get details of a specific run including leads.
+
+    Supports pagination for leads with limit/offset.
+    """
+    try:
+        # Get job details
+        job = get_job(run_id)
+        if not job:
+            raise HTTPException(status_code=404, detail="Run not found")
+
+        # Verify ownership
+        if job.get("user_id") != user.user_id:
+            raise HTTPException(status_code=403, detail="Not authorized to view this run")
+
+        # Get leads for this job
+        leads = get_job_leads(run_id, limit=limit, offset=offset)
+        total_leads = get_job_lead_count(run_id)
+
+        return {
+            "run": job,
+            "leads": leads,
+            "total_leads": total_leads,
+            "limit": limit,
+            "offset": offset,
+            "has_more": (offset + limit) < total_leads
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch run: {str(e)}")
+
+
+@router.get("/runs/{run_id}/export")
+async def export_run_csv(
+    run_id: str,
+    user: AuthenticatedUser = Depends(get_current_user)
+):
+    """
+    Export run leads as CSV file.
+    """
+    try:
+        # Get job details
+        job = get_job(run_id)
+        if not job:
+            raise HTTPException(status_code=404, detail="Run not found")
+
+        # Verify ownership
+        if job.get("user_id") != user.user_id:
+            raise HTTPException(status_code=403, detail="Not authorized to export this run")
+
+        # Get all leads (no limit for export)
+        leads = get_job_leads(run_id, limit=10000, offset=0)
+
+        # Generate CSV
+        output = io.StringIO()
+        if leads:
+            fieldnames = ["name", "title", "company", "linkedin_url", "platform", "intent_score", "intent_signals", "bio", "source_url"]
+            writer = csv.DictWriter(output, fieldnames=fieldnames, extrasaction='ignore')
+            writer.writeheader()
+
+            for lead in leads:
+                # Convert intent_signals list to string
+                row = dict(lead)
+                if isinstance(row.get("intent_signals"), list):
+                    row["intent_signals"] = "; ".join(row["intent_signals"])
+                writer.writerow(row)
+
+        csv_content = output.getvalue()
+
+        # Create filename from query
+        query_slug = re.sub(r'[^a-zA-Z0-9]+', '_', job.get("query", "leads"))[:30]
+        filename = f"leads_{query_slug}_{run_id[:8]}.csv"
+
+        return Response(
+            content=csv_content,
+            media_type="text/csv",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"'
+            }
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to export: {str(e)}")

@@ -2,12 +2,17 @@
 fastapi
 uvicorn[standard]
 python-dotenv
+pydantic-settings
 
 # CrewAI (use latest versions with anthropic support)
 crewai[tools,anthropic]
 
 # HTTP Client
 httpx
+
+# Database & Auth
+supabase
+PyJWT
 
 # Testing
 pytest

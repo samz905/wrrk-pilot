@@ -5,8 +5,10 @@ import { QueryInput } from '@/components/prospecting/QueryInput';
 import { AgentWorkspace } from '@/components/prospecting/AgentWorkspace';
 import { LeadsTable } from '@/components/prospecting/LeadsTable';
 import { LeadDetailModal } from '@/components/prospecting/LeadDetailModal';
+import { Header } from '@/components/layout/Header';
 import { Lead, WorkspaceCard, PlatformTool, WORKER_TO_PLATFORM, transformLead } from '@/lib/types';
 import { startProspecting, subscribeToEvents, cancelJob, ProspectingEvent } from '@/lib/api';
+import { createClient } from '@/lib/supabase/client';
 
 export default function ProspectingPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -36,8 +38,13 @@ export default function ProspectingPage() {
     setProgress({ current: 0, target: 50 });
 
     try {
+      // Get auth token for persistence
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
       // Start prospecting job (hardcoded 50 leads)
-      const response = await startProspecting(query, 50);
+      const response = await startProspecting(query, 50, token);
       jobIdRef.current = response.job_id;
 
       // Subscribe to SSE stream
@@ -252,31 +259,52 @@ export default function ProspectingPage() {
         break;
 
       case 'completed':
-        setStatus('completed');
-        setIsLoading(false);
+        // Close connection FIRST to prevent any more events
         if (eventSourceRef.current) {
           eventSourceRef.current.close();
           eventSourceRef.current = null;
         }
+        setStatus('completed');
+        setIsLoading(false);
+        // Mark ALL tool cards as completed (not just active ones)
+        setWorkspaceCards(prev => prev.map(card =>
+          card.type === 'tool' && card.status !== 'completed'
+            ? { ...card, status: 'completed', isThinking: false }
+            : card
+        ));
         break;
 
       case 'cancelled':
-        setStatus('cancelled');
-        setIsLoading(false);
+        // Close connection FIRST
         if (eventSourceRef.current) {
           eventSourceRef.current.close();
           eventSourceRef.current = null;
         }
+        setStatus('cancelled');
+        setIsLoading(false);
+        // Mark all tool cards as completed to stop spinners
+        setWorkspaceCards(prev => prev.map(card =>
+          card.type === 'tool' && card.status !== 'completed'
+            ? { ...card, status: 'completed', isThinking: false }
+            : card
+        ));
         break;
 
       case 'error':
-        setError(event.data);
-        setStatus('failed');
-        setIsLoading(false);
+        // Close connection FIRST
         if (eventSourceRef.current) {
           eventSourceRef.current.close();
           eventSourceRef.current = null;
         }
+        setError(event.data);
+        setStatus('failed');
+        setIsLoading(false);
+        // Mark all tool cards as completed to stop spinners
+        setWorkspaceCards(prev => prev.map(card =>
+          card.type === 'tool' && card.status !== 'completed'
+            ? { ...card, status: 'completed', isThinking: false }
+            : card
+        ));
         break;
     }
   };
@@ -291,9 +319,12 @@ export default function ProspectingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header with Query Input and Stop Button */}
-      <header className="bg-white border-b shadow-sm">
+    <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900">
+      {/* Navigation Header */}
+      <Header />
+
+      {/* Query Input Section */}
+      <div className="border-b border-zinc-800 bg-zinc-900/50">
         <div className="container mx-auto px-6 py-6">
           <QueryInput
             onStart={handleStart}
@@ -301,7 +332,7 @@ export default function ProspectingPage() {
             isLoading={isLoading}
           />
         </div>
-      </header>
+      </div>
 
       {/* Error Banner */}
       {error && (
