@@ -8,7 +8,7 @@ import {
   ColumnDef,
   flexRender
 } from '@tanstack/react-table';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import {
   Table,
@@ -130,6 +130,14 @@ export function LeadsTable({ leads, onLeadClick, highlightedLeads = [] }: LeadsT
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'score', desc: true } // Default sort by score descending
   ]);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when new leads are added
+  useEffect(() => {
+    if (contentRef.current && leads.length > 0) {
+      contentRef.current.scrollTop = contentRef.current.scrollHeight;
+    }
+  }, [leads.length]);
 
   const isHighlighted = (leadName: string) => highlightedLeads.includes(leadName);
 
@@ -146,8 +154,8 @@ export function LeadsTable({ leads, onLeadClick, highlightedLeads = [] }: LeadsT
 
   if (leads.length === 0) {
     return (
-      <Card>
-        <CardHeader>
+      <Card className="h-full flex flex-col">
+        <CardHeader className="flex-shrink-0">
           <CardTitle className="flex items-center gap-2">
             <Users className="w-5 h-5" />
             Results
@@ -156,8 +164,8 @@ export function LeadsTable({ leads, onLeadClick, highlightedLeads = [] }: LeadsT
             Top qualified leads will appear here
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center h-64 text-muted-foreground">
+        <CardContent className="flex-1 flex items-center justify-center">
+          <div className="text-center text-muted-foreground">
             <p>No leads yet. Start a prospecting search to see results.</p>
           </div>
         </CardContent>
@@ -166,8 +174,8 @@ export function LeadsTable({ leads, onLeadClick, highlightedLeads = [] }: LeadsT
   }
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="h-full flex flex-col">
+      <CardHeader className="flex-shrink-0">
         <CardTitle className="flex items-center gap-2 justify-between">
           <div className="flex items-center gap-2">
             <Users className="w-5 h-5" />
@@ -181,7 +189,7 @@ export function LeadsTable({ leads, onLeadClick, highlightedLeads = [] }: LeadsT
           Top {leads.length} qualified leads ranked by score
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent ref={contentRef} className="flex-1 overflow-y-auto">
         <div className="rounded-md border">
           <Table>
             <TableHeader>

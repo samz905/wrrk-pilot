@@ -131,6 +131,7 @@ class SupervisorOrchestrator:
     def __init__(
         self,
         log_callback: Optional[Callable[[str, str], None]] = None,
+        lead_callback: Optional[Callable[[str, List[Dict]], None]] = None,
         output_dir: str = "."
     ):
         """
@@ -138,9 +139,11 @@ class SupervisorOrchestrator:
 
         Args:
             log_callback: Optional callback for logging (level, message)
+            lead_callback: Optional callback for leads found (worker_name, leads)
             output_dir: Directory for log/output files
         """
         self.log_callback = log_callback or self._default_log
+        self.lead_callback = lead_callback  # For real-time lead streaming
         self.output_dir = output_dir
 
         # Initialize LLM
@@ -259,6 +262,8 @@ class SupervisorOrchestrator:
                     # Add new leads (deduped via context)
                     new_leads = ctx.add_leads(extra_leads)
                     all_leads.extend(new_leads)
+
+                    # Note: Don't emit leads here - wait for aggregation to respect target
 
                     # Track result for agent's next decision
                     round_history.append({
@@ -443,6 +448,8 @@ class SupervisorOrchestrator:
                     # Review result
                     reviewed = self._review_worker_result(source, worker_result, strategy)
                     results[source] = reviewed
+
+                    # Note: Don't emit leads here - wait for aggregation to respect target
 
                 except Exception as e:
                     self._log("ERROR", f"{source} worker failed: {str(e)}")
@@ -920,6 +927,20 @@ Rules:
 
         self._log("COMPLETE", f"Final: {len(final_leads)} qualified leads")
         self._log("COMPLETE", f"Hot: {hot_leads}, Warm: {warm_leads}")
+
+        # Emit final leads via callback (AFTER aggregation respects target)
+        if self.lead_callback and final_leads:
+            # Group leads by source platform for proper worker card updates
+            leads_by_source = {}
+            for lead in final_leads:
+                source = lead.get('source_platform', 'unknown')
+                if source not in leads_by_source:
+                    leads_by_source[source] = []
+                leads_by_source[source].append(lead)
+
+            # Emit per source for frontend worker card updates
+            for source, leads in leads_by_source.items():
+                self.lead_callback(source, leads)
 
         return OrchestratorResult(
             success=True,

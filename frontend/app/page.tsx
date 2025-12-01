@@ -16,6 +16,9 @@ export default function ProspectingPage() {
   const [highlightedLeads, setHighlightedLeads] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
+  // Progress tracking
+  const [progress, setProgress] = useState({ current: 0, target: 50 });
+
   // Workspace cards - chronological list of all reasoning and tool cards
   const [workspaceCards, setWorkspaceCards] = useState<WorkspaceCard[]>([]);
 
@@ -30,6 +33,7 @@ export default function ProspectingPage() {
     setHighlightedLeads([]);
     setWorkspaceCards([]);
     setError(null);
+    setProgress({ current: 0, target: 50 });
 
     try {
       // Start prospecting job (hardcoded 50 leads)
@@ -108,13 +112,29 @@ export default function ProspectingPage() {
             });
           }
         } else {
-          // Create NEW reasoning card
-          setWorkspaceCards(prev => [...prev, {
-            id: `reasoning-${Date.now()}-${Math.random()}`,
-            type: 'reasoning',
-            reasoningText: event.data,
-            timestamp
-          }]);
+          // Only show meaningful reasoning cards (strategy decisions, completion)
+          const MEANINGFUL_PATTERNS = [
+            /planning/i,
+            /strategy/i,
+            /identified.*competitors?/i,
+            /target.*reached/i,
+            /complete/i,
+            /found \d+ leads/i,
+            /deploying/i,
+            /starting lead search/i,
+          ];
+
+          const isReasoningMeaningful = MEANINGFUL_PATTERNS.some(p => p.test(event.data));
+          if (isReasoningMeaningful) {
+            // Create NEW reasoning card
+            setWorkspaceCards(prev => [...prev, {
+              id: `reasoning-${Date.now()}-${Math.random()}`,
+              type: 'reasoning',
+              reasoningText: event.data,
+              timestamp
+            }]);
+          }
+          // Otherwise skip - don't clutter UI with technical details
         }
         break;
 
@@ -178,12 +198,47 @@ export default function ProspectingPage() {
           // Transform to frontend Lead format
           const newLeads = rawLeads.map(transformLead);
 
-          // Add new leads
+          // Add new leads (backend already limits to target via aggregation)
           setLeads(prev => {
             const combined = [...prev, ...newLeads];
             // Sort by score descending
             return combined.sort((a, b) => b.score - a.score);
           });
+
+          // Update progress
+          setProgress(prev => ({
+            ...prev,
+            current: prev.current + newLeads.length
+          }));
+
+          // Update workspace card with strategic details AND mark as complete
+          if (event.worker) {
+            const tool = WORKER_TO_PLATFORM[event.worker];
+            if (tool) {
+              // Extract unique company names from leads
+              const companies = [...new Set(newLeads.map(l => l.company).filter(Boolean))] as string[];
+
+              setWorkspaceCards(prev => {
+                const lastIndex = prev.map(c => c.tool).lastIndexOf(tool);
+                if (lastIndex >= 0) {
+                  return prev.map((card, idx) =>
+                    idx === lastIndex && card.type === 'tool'
+                      ? {
+                          ...card,
+                          status: 'completed',  // Mark worker as complete when leads arrive
+                          isThinking: false,
+                          strategicDetails: {
+                            leadCount: (card.strategicDetails?.leadCount || 0) + newLeads.length,
+                            companies: [...(card.strategicDetails?.companies || []), ...companies].slice(0, 10)
+                          }
+                        }
+                      : card
+                  );
+                }
+                return prev;
+              });
+            }
+          }
 
           // Highlight new leads
           const newLeadNames = newLeads.map(l => l.name);
@@ -263,7 +318,11 @@ export default function ProspectingPage() {
           {/* Left Panel - Agent Workspace */}
           <div className="col-span-12 lg:col-span-4">
             {status !== 'idle' ? (
-              <AgentWorkspace workspaceCards={workspaceCards} />
+              <AgentWorkspace
+                workspaceCards={workspaceCards}
+                progress={progress}
+                phase={status === 'completed' ? 'complete' : status === 'running' ? 'searching' : 'idle'}
+              />
             ) : (
               <div className="flex items-center justify-center h-[calc(100vh-180px)] bg-white rounded-lg border-2 border-dashed border-gray-200">
                 <div className="text-center text-muted-foreground p-8">
@@ -275,7 +334,7 @@ export default function ProspectingPage() {
           </div>
 
           {/* Right Panel - Results Table */}
-          <div className="col-span-12 lg:col-span-8">
+          <div className="col-span-12 lg:col-span-8 h-[calc(100vh-180px)]">
             <LeadsTable
               leads={leads}
               onLeadClick={setSelectedLead}

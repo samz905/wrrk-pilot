@@ -21,6 +21,88 @@ from pydantic import BaseModel
 from typing import Optional
 
 from app.supervisor_orchestrator import SupervisorOrchestrator, OrchestratorResult
+import re
+
+
+def transform_message(level: str, message: str) -> tuple[str | None, str | None]:
+    """Transform technical log to user-friendly message.
+
+    Returns (display_message, event_type) or (None, None) to hide.
+    """
+    level_upper = level.upper()
+
+    # Messages to HIDE completely (internal/technical)
+    HIDE_LEVELS = {"THOUGHT", "REVIEW", "COLLECT", "AGGREGATE", "RUN", "LLM", "RETRY", "FIX"}
+
+    if level_upper in HIDE_LEVELS:
+        return None, None
+
+    # Messages to hide by content patterns
+    HIDE_PATTERNS = [
+        "Supervisor Orchestrator",
+        "Architecture:",
+        "intra-step",
+        "Parallel workers",
+        "Product:",
+        "ICP:",
+    ]
+
+    if any(p.lower() in message.lower() for p in HIDE_PATTERNS):
+        return None, None
+
+    # Transform known level patterns
+    if level_upper == "START":
+        return "Starting lead search...", "thought"
+
+    if level_upper == "PARALLEL":
+        if "deploying" in message.lower() or "worker" in message.lower():
+            return "Deploying search agents...", "thought"
+        return None, None
+
+    if level_upper == "TARGET":
+        return "Target reached!", "thought"
+
+    # Strategy messages - keep but clean up
+    if level_upper == "STRATEGY":
+        if "planning" in message.lower():
+            return "Planning search strategy...", "thought"
+        if "competitors" in message.lower():
+            # Extract competitor count if present
+            match = re.search(r"(\d+)\s*competitors?", message.lower())
+            if match:
+                return f"Identified {match.group(1)} competitors to analyze", "thought"
+            return "Analyzing competitors...", "thought"
+        return None, None
+
+    # Approved messages - reformat
+    if level_upper == "APPROVED":
+        # "reddit: 15 leads approved" → "Reddit: Found 15 leads"
+        match = re.match(r"(\w+):\s*(\d+)\s*leads?\s*approved", message, re.IGNORECASE)
+        if match:
+            platform_map = {"reddit": "Reddit", "techcrunch": "TechCrunch", "competitor": "LinkedIn"}
+            platform = platform_map.get(match.group(1).lower(), match.group(1).title())
+            return f"{platform}: Found {match.group(2)} leads", "thought"
+        return None, None
+
+    # Complete messages
+    if level_upper == "COMPLETE":
+        if "final:" in message.lower():
+            match = re.search(r"final:\s*(\d+)", message.lower())
+            if match:
+                return f"Complete: {match.group(1)} qualified leads", "thought"
+            return message.replace("Final:", "Complete:"), "thought"
+        return None, None
+
+    # Worker messages - pass through (handled separately)
+    if level_upper in ["REDDIT", "TECHCRUNCH", "COMPETITOR"]:
+        # Clean up worker messages
+        cleaned = message
+        # Remove [INFO], [DEBUG], etc prefixes
+        cleaned = re.sub(r"\[(?:INFO|DEBUG|WARN|ERROR)\]\s*", "", cleaned)
+        return cleaned, None  # None event_type means handle normally as worker
+
+    # Default: pass through for other messages
+    return message, "thought"
 
 
 router = APIRouter(prefix="/api/v1/prospect", tags=["prospecting"])
@@ -100,38 +182,60 @@ async def start_prospecting(request: StartProspectingRequest):
                 if job.cancel_event.is_set():
                     raise Exception("Job cancelled by user")
 
-                # Map log levels to event types
-                event_type = "thought"
-                worker = None
+                # Transform message for better UX
+                transformed_msg, transformed_type = transform_message(level, message)
 
-                # Detect worker-specific logs
+                # Skip messages that should be hidden
+                if transformed_msg is None:
+                    return
+
+                # Determine event type and worker
+                event_type = transformed_type or "thought"
+                worker = None
                 level_upper = level.upper()
+
+                # Handle worker-specific events
                 if level_upper in ["REDDIT", "TECHCRUNCH", "COMPETITOR"]:
                     worker = level_upper.lower()
-                    if "starting" in message.lower() or "running" in message.lower():
+                    msg_lower = message.lower()
+                    # Determine worker event type based on content
+                    if any(x in msg_lower for x in ["starting", "running", "searching", "fetching", "scraping"]):
                         event_type = "worker_start"
-                    elif "complete" in message.lower() or "found" in message.lower():
+                    elif any(x in msg_lower for x in ["complete", "found", "approved", "finished", "done"]):
                         event_type = "worker_complete"
                     else:
-                        event_type = "thought"
-                elif level_upper == "PARALLEL":
-                    event_type = "thought"
-                elif level_upper == "STRATEGY":
-                    event_type = "thought"
+                        event_type = "worker_update"
                 elif level_upper in ["ERROR", "FATAL"]:
                     event_type = "error"
 
                 event = {
                     "type": event_type,
-                    "data": message,
+                    "data": transformed_msg,
                     "worker": worker,
                     "timestamp": datetime.now(timezone.utc).isoformat()
                 }
                 job.events.put(event)
 
+            # Lead callback for real-time streaming
+            def lead_callback(worker_name: str, leads: list):
+                """Emit leads as they're found by each worker."""
+                if job.cancel_event.is_set():
+                    return
+
+                if leads:
+                    job.events.put({
+                        "type": "lead_batch",
+                        "data": json.dumps(leads),
+                        "leads": leads,
+                        "worker": worker_name,
+                        "count": len(leads),
+                        "timestamp": datetime.now(timezone.utc).isoformat()
+                    })
+
             # Create and run orchestrator
             orchestrator = SupervisorOrchestrator(
                 log_callback=log_callback,
+                lead_callback=lead_callback,
                 output_dir="."
             )
 
@@ -147,17 +251,11 @@ async def start_prospecting(request: StartProspectingRequest):
                 job.events.put({"type": "cancelled", "data": "Job cancelled by user"})
                 return
 
-            # Store result and send leads
+            # Store result (leads already sent via lead_callback)
             job.result = result
 
-            # Send leads as a batch event
-            if result.leads:
-                job.events.put({
-                    "type": "lead_batch",
-                    "data": json.dumps(result.leads),
-                    "leads": result.leads,
-                    "count": len(result.leads)
-                })
+            # Note: leads are now streamed in real-time via lead_callback
+            # No final batch needed - leads were emitted as workers completed
 
             job.status = "completed"
             job.events.put({

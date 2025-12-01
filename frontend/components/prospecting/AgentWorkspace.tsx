@@ -6,12 +6,15 @@ import { Bot } from 'lucide-react';
 import { WorkspaceCard } from '@/lib/types';
 import { ToolCard } from './ToolCard';
 import { ReasoningCard } from './ReasoningCard';
+import { ProgressHeader } from './ProgressHeader';
 
 interface AgentWorkspaceProps {
   workspaceCards: WorkspaceCard[];
+  progress?: { current: number; target: number };
+  phase?: 'searching' | 'complete' | 'idle';
 }
 
-export function AgentWorkspace({ workspaceCards }: AgentWorkspaceProps) {
+export function AgentWorkspace({ workspaceCards, progress, phase = 'idle' }: AgentWorkspaceProps) {
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const bottomRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -64,7 +67,16 @@ export function AgentWorkspace({ workspaceCards }: AgentWorkspaceProps) {
         </CardTitle>
       </CardHeader>
       <CardContent ref={contentRef} className="h-[calc(100%-80px)] overflow-y-auto space-y-3">
-        {workspaceCards.length === 0 ? (
+        {/* Progress Header */}
+        {progress && (
+          <ProgressHeader
+            currentLeads={progress.current}
+            targetLeads={progress.target}
+            phase={phase}
+          />
+        )}
+
+        {workspaceCards.length === 0 && !progress ? (
           <div className="flex items-center justify-center h-full text-muted-foreground">
             <p className="text-sm">Waiting for query...</p>
           </div>
@@ -86,7 +98,8 @@ export function AgentWorkspace({ workspaceCards }: AgentWorkspaceProps) {
                       status: card.status === 'active' ? 'active' : 'completed',
                       thoughts: card.thoughts || [],
                       isThinking: card.isThinking || false,
-                      results: card.results
+                      results: card.results,
+                      strategicDetails: card.strategicDetails
                     }}
                     isExpanded={expandedCards.has(card.id)}
                     onToggle={() => toggleExpand(card.id)}
