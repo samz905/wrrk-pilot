@@ -10,6 +10,10 @@ from openai import OpenAI
 
 # Centralized config for models
 from app.core.config import settings
+from app.core.cost_tracker import track_apify_cost
+
+# LinkedIn Employees actor ID
+LINKEDIN_EMPLOYEES_ACTOR_ID = "cIdqlEvw6afc1do1p"
 
 
 class LinkedInEmployeesSearchInput(BaseModel):
@@ -144,11 +148,12 @@ class LinkedInEmployeesSearchTool(BaseTool):
 
         # Debug logging
         print(f"[DEBUG] Apify run_input: {json.dumps(run_input, indent=2)}")
-        print(f"[DEBUG] Calling Apify actor cIdqlEvw6afc1do1p (LinkedIn Company Employees)...")
+        print(f"[DEBUG] Calling Apify actor {LINKEDIN_EMPLOYEES_ACTOR_ID} (LinkedIn Company Employees)...")
 
         try:
             # Run the actor
-            run = client.actor("cIdqlEvw6afc1do1p").call(run_input=run_input)
+            run = client.actor(LINKEDIN_EMPLOYEES_ACTOR_ID).call(run_input=run_input)
+            track_apify_cost(LINKEDIN_EMPLOYEES_ACTOR_ID, run)  # Track cost
             print(f"[DEBUG] Apify run completed, dataset: {run.get('defaultDatasetId', 'N/A')}")
 
             # Fetch results

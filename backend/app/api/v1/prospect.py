@@ -30,7 +30,9 @@ from app.core.database import (
     create_job, update_job_status, get_job, get_user_jobs,
     save_leads, get_job_leads, get_job_lead_count
 )
+from app.core.cost_tracker import get_tracker, remove_tracker
 import re
+import os
 
 
 def transform_message(level: str, message: str) -> tuple[str | None, str | None]:
@@ -202,6 +204,9 @@ async def start_prospecting(
         try:
             job.status = "running"
 
+            # Set job ID in environment for cost tracking by Apify tools
+            os.environ["CURRENT_JOB_ID"] = job_id
+
             # Log callback to queue events for SSE
             def log_callback(level: str, message: str):
                 """Convert orchestrator logs to SSE events."""
@@ -281,6 +286,14 @@ async def start_prospecting(
             # Store result (leads already sent via lead_callback)
             job.result = result
 
+            # Get cost tracking data
+            cost_usd = None
+            tracker = remove_tracker(job_id)  # Remove and get final costs
+            if tracker:
+                cost_usd = tracker.total_cost_usd
+                print(f"[COST] Job {job_id} total cost: ${cost_usd:.6f}")
+                print(f"[COST] Breakdown: {tracker.get_summary()}")
+
             # Save to database if authenticated
             if job.db_job_id:
                 # Try to save leads (may fail due to data format issues)
@@ -298,7 +311,8 @@ async def start_prospecting(
                         reddit_leads=result.reddit_leads,
                         techcrunch_leads=result.techcrunch_leads,
                         competitor_leads=result.competitor_leads,
-                        duration_seconds=int(result.execution_time)
+                        duration_seconds=int(result.execution_time),
+                        cost_usd=cost_usd
                     )
                 except Exception as e:
                     print(f"[DB] Failed to update job status: {e}")

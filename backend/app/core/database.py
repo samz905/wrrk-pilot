@@ -46,7 +46,8 @@ def update_job_status(
     reddit_leads: Optional[int] = None,
     techcrunch_leads: Optional[int] = None,
     competitor_leads: Optional[int] = None,
-    duration_seconds: Optional[int] = None
+    duration_seconds: Optional[int] = None,
+    cost_usd: Optional[float] = None
 ) -> Dict[str, Any]:
     """Update job status and stats."""
     supabase = get_supabase()
@@ -65,6 +66,8 @@ def update_job_status(
         update_data["competitor_leads"] = competitor_leads
     if duration_seconds is not None:
         update_data["duration_seconds"] = duration_seconds
+    if cost_usd is not None:
+        update_data["cost_usd"] = round(cost_usd, 6)
     if status in ["completed", "failed", "cancelled"]:
         update_data["completed_at"] = datetime.utcnow().isoformat()
 

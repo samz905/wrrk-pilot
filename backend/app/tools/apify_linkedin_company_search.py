@@ -10,6 +10,10 @@ from openai import OpenAI
 
 # Centralized config for models
 from app.core.config import settings
+from app.core.cost_tracker import track_apify_cost
+
+# LinkedIn Company Search actor ID
+LINKEDIN_COMPANY_SEARCH_ACTOR_ID = "apimaestro/linkedin-companies-search-scraper"
 
 
 # === Structured Output Models ===
@@ -92,8 +96,9 @@ class LinkedInCompanySearchTool(BaseTool):
                 "limit": 5  # Get top 5 results to choose from
             }
 
-            print(f"[LINKEDIN_SEARCH] Calling Apify actor apimaestro/linkedin-companies-search-scraper...")
-            run = client.actor("apimaestro/linkedin-companies-search-scraper").call(run_input=run_input)
+            print(f"[LINKEDIN_SEARCH] Calling Apify actor {LINKEDIN_COMPANY_SEARCH_ACTOR_ID}...")
+            run = client.actor(LINKEDIN_COMPANY_SEARCH_ACTOR_ID).call(run_input=run_input)
+            track_apify_cost(LINKEDIN_COMPANY_SEARCH_ACTOR_ID, run)  # Track cost
 
             # Fetch results
             results = []
@@ -252,7 +257,8 @@ class LinkedInCompanyBatchSearchTool(BaseTool):
             try:
                 client = ApifyClient(apify_token)  # Each thread gets own client
                 run_input = {"keyword": name, "limit": 5}
-                run = client.actor("apimaestro/linkedin-companies-search-scraper").call(run_input=run_input)
+                run = client.actor(LINKEDIN_COMPANY_SEARCH_ACTOR_ID).call(run_input=run_input)
+                track_apify_cost(LINKEDIN_COMPANY_SEARCH_ACTOR_ID, run)  # Track cost
 
                 results = []
                 for item in client.dataset(run["defaultDatasetId"]).iterate_items():

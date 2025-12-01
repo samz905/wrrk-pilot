@@ -4,6 +4,10 @@ from typing import Type, Optional
 from crewai.tools import BaseTool
 from pydantic import BaseModel, Field
 from apify_client import ApifyClient
+from app.core.cost_tracker import track_apify_cost
+
+# Twitter actor ID
+TWITTER_ACTOR_ID = "kaitoeasyapi/twitter-x-data-tweet-scraper-pay-per-result-cheapest"
 
 
 class ApifyTwitterSearchInput(BaseModel):
@@ -99,7 +103,8 @@ class ApifyTwitterSearchTool(BaseTool):
         try:
             # Run the pay-per-result Twitter scraper (cheaper alternative)
             print("[INFO] Running Twitter Scraper actor (pay-per-result)...")
-            run = client.actor("kaitoeasyapi/twitter-x-data-tweet-scraper-pay-per-result-cheapest").call(run_input=run_input)
+            run = client.actor(TWITTER_ACTOR_ID).call(run_input=run_input)
+            track_apify_cost(TWITTER_ACTOR_ID, run)  # Track cost
 
             # Fetch results from dataset
             print("[INFO] Fetching results...")

@@ -4,6 +4,10 @@ from crewai.tools import BaseTool
 from pydantic import BaseModel, Field
 from apify_client import ApifyClient
 import os
+from app.core.cost_tracker import track_apify_cost
+
+# LinkedIn Profile Detail actor ID
+LINKEDIN_PROFILE_ACTOR_ID = "VhxlqQXRwhW8H5hNV"
 
 
 class LinkedInProfileDetailInput(BaseModel):
@@ -56,10 +60,11 @@ class ApifyLinkedInProfileDetailTool(BaseTool):
                 }
             }
 
-            print(f"[INFO] Calling Apify actor VhxlqQXRwhW8H5hNV (LinkedIn Profile Detail)...")
+            print(f"[INFO] Calling Apify actor {LINKEDIN_PROFILE_ACTOR_ID} (LinkedIn Profile Detail)...")
 
             # Run the Actor and wait for it to finish
-            run = client.actor("VhxlqQXRwhW8H5hNV").call(run_input=run_input)
+            run = client.actor(LINKEDIN_PROFILE_ACTOR_ID).call(run_input=run_input)
+            track_apify_cost(LINKEDIN_PROFILE_ACTOR_ID, run)  # Track cost
 
             print(f"[INFO] Actor run completed. Fetching profile details...")
 

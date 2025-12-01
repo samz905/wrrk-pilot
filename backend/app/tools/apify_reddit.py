@@ -11,6 +11,10 @@ from openai import OpenAI
 
 # Centralized config for models
 from app.core.config import settings
+from app.core.cost_tracker import track_apify_cost
+
+# Reddit actor ID for cost tracking
+REDDIT_ACTOR_ID = "TwqHBuZZPHJxiQrTU"
 
 
 class ApifyRedditSearchInput(BaseModel):
@@ -128,8 +132,9 @@ class ApifyRedditSearchTool(BaseTool):
 
         try:
             # Run the actor
-            print(f"[DEBUG] Calling Apify actor TwqHBuZZPHJxiQrTU...")
-            run = client.actor("TwqHBuZZPHJxiQrTU").call(run_input=run_input)
+            print(f"[DEBUG] Calling Apify actor {REDDIT_ACTOR_ID}...")
+            run = client.actor(REDDIT_ACTOR_ID).call(run_input=run_input)
+            track_apify_cost(REDDIT_ACTOR_ID, run)  # Track cost
             print(f"[DEBUG] Apify run completed, dataset: {run.get('defaultDatasetId', 'N/A')}")
 
             # Fetch results
@@ -249,7 +254,8 @@ class ApifyRedditSearchTool(BaseTool):
         try:
             # Run the actor
             print(f"[DEBUG] Calling Apify actor for {len(urls)} URLs...")
-            run = client.actor("TwqHBuZZPHJxiQrTU").call(run_input=run_input)
+            run = client.actor(REDDIT_ACTOR_ID).call(run_input=run_input)
+            track_apify_cost(REDDIT_ACTOR_ID, run)  # Track cost
             print(f"[DEBUG] URL batch run completed, dataset: {run.get('defaultDatasetId', 'N/A')}")
 
             # Fetch results
